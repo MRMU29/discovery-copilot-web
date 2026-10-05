@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+.vite/
+coverage/
+*.tsbuildinfo
+
+# Environment variables — never commit real values (.env.example is tracked)
+.env
+.env.*
+!.env.example
+
+# Secrets & keys
+*.pem
+*.key
+*.p12
+*.pfx
+secrets.*
+
+# Local user data & app export files
+*.dcopilot
+*.sqlite
+*.sqlite3
+*.sqlitedb
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Caches
+.cache/
+.eslintcache
+
+# Test artifacts
+playwright-report/
+test-results/
+
+# Deployment platform temp files
+.vercel/
+.wrangler/
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini

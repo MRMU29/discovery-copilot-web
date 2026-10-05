@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <title>Discovery Copilot</title>
+  </head>
+  <body>
+    <!-- GitHub Pages SPA fallback: deep links land here (GH Pages serves 404.html
+         for unknown paths). Stash the original URL and reload the app root —
+         main.tsx restores the path before the router boots.
+         NOTE: base path mirrors the deploy workflow's PAGES_BASE_PATH. -->
+    <script>
+      (function () {
+        var BASE = '/discovery-copilot-web/';
+        var target = location.pathname + location.search + location.hash;
+        var atRoot = location.pathname.replace(/\/+$/, '') === BASE.replace(/\/+$/, '');
+        if (!atRoot) {
+          try { sessionStorage.setItem('dc-redirect', target); } catch (e) {}
+          location.replace(BASE);
+        }
+      })();
+    </script>
+  </body>
+</html>

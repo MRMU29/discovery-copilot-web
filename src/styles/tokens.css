@@ -1,0 +1,228 @@
+@import 'tailwindcss';
+
+/*
+ * Design tokens — the single source of truth for all visual values.
+ *
+ * Dark app chrome:  docs/design/linear-DESIGN.md   (Linear: #010102 canvas, surface ladder,
+ *                   hairline borders, #5E6AD2 as the ONLY chromatic accent)
+ * Light reading:    docs/design/notion-DESIGN.md   (Notion: white/paper reading surfaces for
+ *                   reports, 16px/1.55 body, pastel category tints, soft modal shadow)
+ *
+ * Rule: components consume semantic tokens via Tailwind utilities
+ * (bg-surface-1, text-ink-muted, border-hairline, ...). Hard-coded hex/px in
+ * components are a review-reject.
+ */
+
+@theme {
+  /* ---- Dark chrome palette (Linear) ---- */
+  --color-canvas: #010102;
+  --color-surface-1: #0f1011;
+  --color-surface-2: #141516;
+  --color-surface-3: #18191a;
+  --color-surface-4: #191a1b;
+  --color-hairline: #23252a;
+  --color-hairline-strong: #34343a;
+  --color-hairline-tertiary: #3e3e44;
+  --color-ink: #f7f8f8;
+  --color-ink-secondary: #d0d6e0;
+  --color-ink-muted: #8a8f98;
+  --color-ink-faint: #62666d;
+
+  /* Single chromatic accent (Linear lavender-blue) + its states */
+  --color-accent: #5e6ad2;
+  --color-accent-hover: #828fff;
+  --color-accent-focus: #5e69d1;
+  --color-accent-muted: #7a7fad;
+
+  /* Semantic status (Notion-derived; Linear canvas itself only blesses success) */
+  --color-success: #27a644;
+  --color-warning: #dd5b00;
+  --color-danger: #e03131;
+
+  /* ---- Light reading palette (Notion) — Report / long-form pages ---- */
+  --color-reading-bg: #ffffff;
+  --color-reading-paper: #f6f5f4;
+  --color-reading-ink: #37352f;
+  --color-reading-ink-secondary: #787774;
+  --color-reading-border: #e9e7e4;
+
+  /* Pastel category tints (assumption types, badges, OST node kinds) */
+  --color-tint-blue: #dcecfa;
+  --color-tint-green: #d9f3e1;
+  --color-tint-yellow: #fef7d6;
+  --color-tint-orange: #ffe8d4;
+  --color-tint-pink: #fde0ec;
+  --color-tint-purple: #e6e0f5;
+
+  /* ---- Typography ---- */
+  --font-sans: 'Inter', 'Inter Variable', -apple-system, 'Segoe UI', 'PingFang SC',
+    'Microsoft YaHei', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, 'Courier New', monospace;
+
+  /* Linear type scale (web-app subset; display-lg/xl heroes omitted).
+     Each entry: size / weight / line-height / letter-spacing per the source scale. */
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.4;
+  --text-eyebrow: 0.8125rem;
+  --text-eyebrow--line-height: 1.3;
+  --text-eyebrow--font-weight: 500;
+  --text-eyebrow--letter-spacing: 0.4px;
+  --text-body-sm: 0.875rem;
+  --text-body-sm--line-height: 1.5;
+  --text-button: 0.875rem;
+  --text-button--line-height: 1.2;
+  --text-button--font-weight: 500;
+  --text-body: 1rem;
+  --text-body--line-height: 1.5;
+  --text-body--letter-spacing: -0.05px;
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.5;
+  --text-body-lg--letter-spacing: -0.1px;
+  --text-subhead: 1.25rem;
+  --text-subhead--line-height: 1.4;
+  --text-subhead--letter-spacing: -0.2px;
+  --text-card-title: 1.375rem;
+  --text-card-title--line-height: 1.25;
+  --text-card-title--font-weight: 500;
+  --text-card-title--letter-spacing: -0.4px;
+  --text-headline: 1.75rem;
+  --text-headline--line-height: 1.2;
+  --text-headline--font-weight: 600;
+  --text-headline--letter-spacing: -0.6px;
+  --text-display-md: 2.5rem;
+  --text-display-md--line-height: 1.15;
+  --text-display-md--font-weight: 600;
+  --text-display-md--letter-spacing: -1px;
+
+  /* Notion reading body — 16px / 1.55 for report reading surfaces */
+  --text-reading: 1rem;
+  --text-reading--line-height: 1.55;
+
+  /* ---- Radius (Linear: 12px cards, never pill; Notion: 8px buttons) ---- */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-btn: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+
+  /* ---- Shadows (Notion, used on light reading surfaces) ---- */
+  --shadow-modal: 0 16px 48px -8px rgba(15, 15, 15, 0.16);
+  --shadow-card: 0 1px 2px rgba(15, 15, 15, 0.08);
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
+  letter-spacing: var(--text-body--letter-spacing);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Light reading surface (reports, long-form AI output) — Notion rules */
+.reading-surface {
+  background: var(--color-reading-bg);
+  color: var(--color-reading-ink);
+  font-size: var(--text-reading);
+  line-height: var(--text-reading--line-height);
+}
+
+/* Markdown body rendered inside a reading surface (lib/markdown.ts output). */
+.reading-prose > :first-child {
+  margin-top: 0;
+}
+.reading-prose h1,
+.reading-prose h2,
+.reading-prose h3 {
+  color: var(--color-reading-ink);
+  font-weight: 600;
+  line-height: 1.35;
+}
+.reading-prose h1 {
+  font-size: 1.5rem;
+  margin: 1.8rem 0 0.6rem;
+}
+.reading-prose h2 {
+  font-size: 1.2rem;
+  margin: 1.7rem 0 0.6rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--color-reading-border);
+}
+.reading-prose h3 {
+  font-size: 1.05rem;
+  margin: 1.4rem 0 0.5rem;
+}
+.reading-prose p {
+  margin: 0.6rem 0;
+}
+.reading-prose ul,
+.reading-prose ol {
+  padding-left: 1.5rem;
+  margin: 0.6rem 0;
+}
+.reading-prose li {
+  margin: 0.25rem 0;
+}
+.reading-prose table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.9rem 0;
+  font-size: 0.875rem;
+}
+.reading-prose th,
+.reading-prose td {
+  border: 1px solid var(--color-reading-border);
+  padding: 0.5rem 0.7rem;
+  text-align: left;
+}
+.reading-prose th {
+  background: var(--color-reading-paper);
+}
+.reading-prose blockquote {
+  border-left: 3px solid var(--color-reading-border);
+  margin: 0.8rem 0;
+  padding: 0.1rem 1rem;
+  color: var(--color-reading-ink-secondary);
+}
+.reading-prose code {
+  background: var(--color-reading-paper);
+  border-radius: 4px;
+  padding: 0.1rem 0.3rem;
+  font-size: 0.9em;
+}
+.reading-prose pre {
+  background: var(--color-reading-paper);
+  border-radius: 8px;
+  padding: 0.9rem;
+  overflow-x: auto;
+}
+.reading-prose pre code {
+  background: none;
+  padding: 0;
+}
+.reading-prose hr {
+  border: none;
+  border-top: 1px solid var(--color-reading-border);
+  margin: 1.6rem 0;
+}
+.reading-prose a {
+  color: #5e6ad2;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.reading-prose img {
+  max-width: 100%;
+  border-radius: 8px;
+}
