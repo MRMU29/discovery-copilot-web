@@ -2,6 +2,7 @@ import { useDraggable } from '@dnd-kit/core'
 import { BlocksIcon, FlaskIcon, MessageIcon, TargetIcon } from '@/components/ui/icons'
 import type { Assumption, Experiment, OstNode } from '@/schemas/entities'
 import { NODE_HEIGHT, NODE_WIDTH, OST_TYPE_META, type OstNodeType } from './ost-meta'
+import { useT } from '@/lib/i18n'
 
 const TYPE_ICONS: Record<OstNodeType, typeof TargetIcon> = {
   outcome: TargetIcon,
@@ -43,6 +44,7 @@ export function OstNodeCard({
   onDelete,
   onPosition,
 }: OstNodeCardProps) {
+  const t = useT()
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: node.id,
     data: { position: node.position },
@@ -90,7 +92,7 @@ export function OstNodeCard({
     <div
       ref={setNodeRef}
       role="group"
-      aria-label={`${meta.label}节点：${node.title}`}
+      aria-label={t('ost.nodeAria', { type: t(meta.labelKey), title: node.title })}
       tabIndex={0}
       onKeyDown={handleKeyDown}
       style={{ left: x, top: y, width: NODE_WIDTH, minHeight: NODE_HEIGHT, touchAction: 'none' }}
@@ -102,11 +104,11 @@ export function OstNodeCard({
         <span
           {...listeners}
           {...attributes}
-          aria-label={`拖拽移动「${node.title}」`}
+          aria-label={t('ost.dragAria', { title: node.title })}
           className="flex cursor-grab touch-none items-center gap-1 rounded-full px-1.5 py-0.5 text-caption active:cursor-grabbing"
         >
           <TypeIcon size={12} />
-          <span className={`rounded-full px-1.5 py-0.5 text-caption ${meta.badgeClass}`}>{meta.label}</span>
+          <span className={`rounded-full px-1.5 py-0.5 text-caption ${meta.badgeClass}`}>{t(meta.labelKey)}</span>
         </span>
         <span className="ml-auto text-caption text-ink-faint" aria-hidden>
           ⠿
@@ -128,7 +130,7 @@ export function OstNodeCard({
           onClick={() => onEdit(node)}
           className="min-h-7 rounded-btn px-1.5 text-caption text-ink-secondary hover:bg-surface-2 hover:text-ink"
         >
-          编辑
+          {t('common.edit')}
         </button>
         <button
           type="button"
@@ -136,14 +138,14 @@ export function OstNodeCard({
           aria-pressed={cutting}
           className="min-h-7 rounded-btn px-1.5 text-caption text-ink-secondary hover:bg-surface-2 hover:text-ink"
         >
-          {cutting ? '剪切中' : '换父'}
+          {cutting ? t('ost.cutting') : t('ost.reparent')}
         </button>
         <button
           type="button"
           onClick={() => onDelete(node)}
           className="ml-auto min-h-7 rounded-btn px-1.5 text-caption text-danger hover:bg-danger/10"
         >
-          删除
+          {t('common.delete')}
         </button>
       </div>
     </div>

@@ -7,10 +7,12 @@ import { reportMetaLine } from '@/lib/report-export'
 import type { Report } from '@/schemas/entities'
 import { getProject } from '@/services/projects'
 import { createReport, deleteReport, listReportsByProject } from '@/services/reports'
+import { useT } from '@/lib/i18n'
 import { AIReportDialog } from './report/AIReportDialog'
 import { ReportDetail } from './report/ReportDetail'
 
 export default function Report({ projectId }: { projectId: string }) {
+  const t = useT()
   const reports = useLiveQuery(() => listReportsByProject(projectId), [projectId])
   const project = useLiveQuery(async () => {
     try {
@@ -49,11 +51,7 @@ export default function Report({ projectId }: { projectId: string }) {
       onApplied={(report, mode) => {
         setSelectedId(report.id)
         setAiTarget(null)
-        setNotice(
-          mode === 'updated'
-            ? '报告已用 AI 草稿更新，可继续编辑确认。'
-            : 'AI 草稿已应用为报告，可继续编辑确认。',
-        )
+        setNotice(mode === 'updated' ? t('report.noticeUpdated') : t('report.noticeCreated'))
       }}
     />
   ) : null
@@ -72,7 +70,7 @@ export default function Report({ projectId }: { projectId: string }) {
       setNewOpen(false)
       setNewTitle('')
       setNewContent('')
-      setNotice('已创建报告。')
+      setNotice(t('report.createdNotice'))
     } catch (err) {
       setFormError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -81,7 +79,7 @@ export default function Report({ projectId }: { projectId: string }) {
   }
 
   async function handleDelete(report: Report) {
-    if (!window.confirm(`删除报告「${report.title}」？此操作不可恢复。`)) return
+    if (!window.confirm(t('report.deleteConfirm', { title: report.title }))) return
     try {
       await deleteReport(report.id)
     } catch (err) {
@@ -119,15 +117,15 @@ export default function Report({ projectId }: { projectId: string }) {
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-headline text-ink">报告</h1>
+          <h1 className="text-headline text-ink">{t('report.title')}</h1>
           <p className="mt-1 text-body-sm text-ink-muted">
-            汇总已确认的发现结果，AI 生成内容先审核后入库 · 共 {reports.length} 份
+            {t('report.desc', { count: reports.length })}
           </p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={() => setAiOpen(true)}>AI 生成报告</Button>
+          <Button onClick={() => setAiOpen(true)}>{t('report.aiCta')}</Button>
           <Button variant="secondary" onClick={() => setNewOpen(true)}>
-            手动新建
+            {t('report.newCta')}
           </Button>
         </div>
       </header>
@@ -145,12 +143,12 @@ export default function Report({ projectId }: { projectId: string }) {
 
       {reports.length === 0 ? (
         <EmptyState
-          title="还没有报告"
-          description="完成假设识别与实验设计后，用 AI 把项目数据整理成一份发现报告（先审核再入库），或手动新建自由撰写；支持导出 HTML/PNG 分享。"
-          action={<Button onClick={() => setAiOpen(true)}>用 AI 生成报告</Button>}
+          title={t('report.emptyTitle')}
+          description={t('report.emptyDesc')}
+          action={<Button onClick={() => setAiOpen(true)}>{t('report.emptyCta')}</Button>}
         />
       ) : (
-        <section aria-label="报告列表" className="space-y-3">
+        <section aria-label={t('report.listAria')} className="space-y-3">
           {reports.map((r) => (
             <div key={r.id} className="rounded-lg border border-hairline bg-surface-1 p-4">
               <div className="flex flex-wrap items-start justify-between gap-2">
@@ -166,7 +164,7 @@ export default function Report({ projectId }: { projectId: string }) {
                   {r.title}
                 </button>
                 <Button variant="ghost" onClick={() => void handleDelete(r)}>
-                  删除
+                  {t('common.delete')}
                 </Button>
               </div>
               <p className="mt-1 text-caption text-ink-muted">{reportMetaLine(r)}</p>
@@ -192,24 +190,24 @@ export default function Report({ projectId }: { projectId: string }) {
         </section>
       )}
 
-      <Dialog open={newOpen} title="手动新建报告" onClose={() => setNewOpen(false)}>
+      <Dialog open={newOpen} title={t('report.newTitle')} onClose={() => setNewOpen(false)}>
         <div className="space-y-3">
           <div>
             <label htmlFor="new-report-title" className="text-caption text-ink-muted">
-              标题
+              {t('report.titleLabel')}
             </label>
             <input
               id="new-report-title"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
               maxLength={200}
-              placeholder="例：第一期发现报告"
+              placeholder={t('report.titlePlaceholder')}
               className="mt-1 w-full rounded-btn border border-hairline-strong bg-surface-1 px-3 py-2 text-body text-ink placeholder:text-ink-faint focus:border-accent-focus focus:outline-none"
             />
           </div>
           <div>
             <label htmlFor="new-report-content" className="text-caption text-ink-muted">
-              正文（Markdown，可留空稍后编辑）
+              {t('report.contentLabel')}
             </label>
             <textarea
               id="new-report-content"
@@ -227,10 +225,10 @@ export default function Report({ projectId }: { projectId: string }) {
           )}
           <div className="flex gap-2">
             <Button onClick={() => void handleCreate()} disabled={creating || !newTitle.trim()}>
-              {creating ? '创建中…' : '创建报告'}
+              {creating ? t('common.saving2') : t('report.create')}
             </Button>
             <Button variant="ghost" onClick={() => setNewOpen(false)}>
-              取消
+              {t('common.cancel')}
             </Button>
           </div>
         </div>

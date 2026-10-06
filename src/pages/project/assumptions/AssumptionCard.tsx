@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { ASSUMPTION_TYPE_META, STATUS_META, type AssumptionStatus } from '@/lib/assumption-meta'
 import type { Assumption } from '@/schemas/entities'
+import { useT } from '@/lib/i18n'
 import { deleteAssumption, updateAssumption } from '@/services/assumptions'
 import { AssumptionAudit } from './AssumptionAudit'
 import { AssumptionForm } from './AssumptionForm'
@@ -17,6 +18,7 @@ export function AssumptionCard({
   assumption: Assumption
   highlighted: boolean
 }) {
+  const t = useT()
   const [pane, setPane] = useState<Pane>('none')
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -33,7 +35,7 @@ export function AssumptionCard({
   }
 
   async function handleDelete() {
-    if (!window.confirm('删除该假设及其评分审计记录？已关联的实验与 OST 节点将解除关联。')) return
+    if (!window.confirm(t('assumption.deleteConfirm'))) return
     setDeleting(true)
     setError(null)
     try {
@@ -55,37 +57,41 @@ export function AssumptionCard({
       }`}
     >
       <div className="flex flex-wrap items-center gap-2">
-        <span className={`rounded-full px-2 py-0.5 text-caption ${typeMeta.badgeClass}`}>{typeMeta.label}</span>
+        <span className={`rounded-full px-2 py-0.5 text-caption ${typeMeta.badgeClass}`}>{t(typeMeta.labelKey)}</span>
         <span className={`rounded-full px-2 py-0.5 text-caption ${statusMeta.badgeClass}`}>
-          {statusMeta.label}
+          {t(statusMeta.labelKey)}
         </span>
         {assumption.confidence === null && (
           <span className="rounded-full border border-warning/40 bg-warning/10 px-2 py-0.5 text-caption text-warning">
-            证据未评估
+            {t('assumption.unassessedBadge')}
           </span>
         )}
         <span className="ml-auto text-caption text-ink-faint">
-          优先分 <span className="text-body-sm text-ink">{assumption.priorityScore.toFixed(2)}</span>
+          {t('assumption.priorityScore')} <span className="text-body-sm text-ink">{assumption.priorityScore.toFixed(2)}</span>
         </span>
       </div>
 
       <p className="mt-2 text-body text-ink">{assumption.statement}</p>
 
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-caption text-ink-muted">
-        <span>影响 {assumption.impact}</span>
-        <span>风险 {assumption.risk}</span>
-        <span>信心 {assumption.confidence === null ? '未评估' : `${Math.round(assumption.confidence * 100)}%`}</span>
+        <span>{t('assumption.impactLabel', { value: assumption.impact })}</span>
+        <span>{t('assumption.riskLabel', { value: assumption.risk })}</span>
+        <span>
+          {t('assumption.confidenceLabel', {
+            value: assumption.confidence === null ? t('assumption.unassessed') : `${Math.round(assumption.confidence * 100)}%`,
+          })}
+        </span>
         <label className="ml-auto flex items-center gap-1.5">
-          <span className="text-ink-faint">状态</span>
+          <span className="text-ink-faint">{t('assumption.statusLabel')}</span>
           <select
             value={assumption.status}
             onChange={(e) => void handleStatus(e.target.value as AssumptionStatus)}
-            aria-label="假设状态"
+            aria-label={t('assumption.statusLabel')}
             className="min-h-9 rounded-btn border border-hairline-strong bg-surface-2 px-2 text-caption text-ink focus:border-accent-focus focus:outline-none"
           >
             {STATUS_OPTIONS.map(([value, meta]) => (
               <option key={value} value={value}>
-                {meta.label}
+                {t(meta.labelKey)}
               </option>
             ))}
           </select>
@@ -94,13 +100,13 @@ export function AssumptionCard({
 
       <div className="mt-3 flex flex-wrap gap-2">
         <Button variant="secondary" aria-expanded={pane === 'edit'} onClick={() => toggle('edit')}>
-          编辑
+          {t('common.edit')}
         </Button>
         <Button variant="ghost" aria-expanded={pane === 'audit'} onClick={() => toggle('audit')}>
-          评分历史
+          {t('assumption.history')}
         </Button>
         <Button variant="danger" onClick={handleDelete} disabled={deleting}>
-          删除
+          {t('common.delete')}
         </Button>
       </div>
 

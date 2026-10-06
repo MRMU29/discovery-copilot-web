@@ -12,6 +12,7 @@ import {
 } from '@/lib/report-export'
 import type { Report } from '@/schemas/entities'
 import { deleteReport, updateReport } from '@/services/reports'
+import { useT } from '@/lib/i18n'
 
 interface ReportDetailProps {
   report: Report
@@ -27,6 +28,7 @@ interface ReportDetailProps {
  * HTML = fidelity path, PNG = best-effort).
  */
 export function ReportDetail({ report, projectName, onBack, onAiRewrite }: ReportDetailProps) {
+  const t = useT()
   const docRef = useRef<HTMLDivElement>(null)
   const draftTimerRef = useRef<number | null>(null)
   const [editing, setEditing] = useState(false)
@@ -59,7 +61,7 @@ export function ReportDetail({ report, projectName, onBack, onAiRewrite }: Repor
     if (draft) {
       setEditTitle(draft.title)
       setEditContent(draft.content)
-      setNotice('已恢复上次未保存的编辑草稿；保存或取消后草稿清除。')
+      setNotice(t('report.draftRestored'))
     } else {
       resetEditState()
     }
@@ -76,7 +78,7 @@ export function ReportDetail({ report, projectName, onBack, onAiRewrite }: Repor
       })
       clearReportDraft(report.id)
       setEditing(false)
-      setNotice('已保存修改。')
+      setNotice(t('report.savedNotice'))
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -85,7 +87,7 @@ export function ReportDetail({ report, projectName, onBack, onAiRewrite }: Repor
   }
 
   async function handleDelete() {
-    if (!window.confirm(`删除报告「${report.title}」？此操作不可恢复。`)) return
+    if (!window.confirm(t('report.deleteConfirm', { title: report.title }))) return
     try {
       await deleteReport(report.id)
       clearReportDraft(report.id)
@@ -101,9 +103,9 @@ export function ReportDetail({ report, projectName, onBack, onAiRewrite }: Repor
     setNotice(null)
     try {
       const logo = await loadBrandLogoDataUrl()
-      const html = buildReportHtmlDocument({ ...report, projectName: projectName ?? '未命名项目' }, logo)
+      const html = buildReportHtmlDocument({ ...report, projectName: projectName ?? t('report.unnamedProject') }, logo)
       downloadFile(reportFileName(report.title, 'html'), html, 'text/html;charset=utf-8')
-      setNotice('已导出 HTML（自包含样式，可离线打开与分享）。')
+      setNotice(t('report.exportedHtml'))
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -120,9 +122,9 @@ export function ReportDetail({ report, projectName, onBack, onAiRewrite }: Repor
     try {
       const dataUrl = await toPng(node, { pixelRatio: 2, cacheBust: true })
       downloadDataUrl(reportFileName(report.title, 'png'), dataUrl)
-      setNotice('已导出 PNG（尽力而为路径，建议检查中文与版式保真）。')
+      setNotice(t('report.exportedPng'))
     } catch (err) {
-      setError('PNG 导出失败：' + (err instanceof Error ? err.message : String(err)))
+      setError(t('report.exportPngFailed') + (err instanceof Error ? err.message : String(err)))
     } finally {
       setBusyExport(null)
     }
@@ -132,32 +134,32 @@ export function ReportDetail({ report, projectName, onBack, onAiRewrite }: Repor
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <Button variant="ghost" onClick={onBack}>
-          ← 返回列表
+          ← {t('report.backList')}
         </Button>
         <div className="ml-auto flex flex-wrap gap-2">
           <Button variant="secondary" onClick={() => void handleExportHtml()} disabled={busyExport !== null || editing}>
-            {busyExport === 'html' ? '导出中…' : '导出 HTML'}
+            {busyExport === 'html' ? t('report.exporting') : t('report.exportHtml')}
           </Button>
           <Button
             variant="secondary"
             onClick={() => void handleExportPng()}
             disabled={busyExport !== null || editing}
-            title="尽力而为路径：复杂样式（渐变/特殊字体）可能有偏差，保真分享请用 HTML"
+            title={t('report.pngTitle')}
           >
-            {busyExport === 'png' ? '导出中…' : '导出 PNG'}
+            {busyExport === 'png' ? t('report.exporting') : t('report.exportPng')}
           </Button>
           <Button
             variant="secondary"
             onClick={onAiRewrite}
             disabled={busyExport !== null || editing}
-            title="基于项目已确认数据重新生成本报告内容，应用前先审核"
+            title={t('report.aiRewriteTitle')}
           >
-            AI 重写
+            {t('report.aiRewrite')}
           </Button>
           {editing ? (
             <>
               <Button onClick={() => void handleSave()} disabled={saving || !editTitle.trim()}>
-                {saving ? '保存中…' : '保存'}
+                {saving ? t('common.saving') : t('common.save')}
               </Button>
               <Button
                 variant="ghost"
@@ -167,7 +169,7 @@ export function ReportDetail({ report, projectName, onBack, onAiRewrite }: Repor
                   resetEditState()
                 }}
               >
-                取消
+                {t('common.cancel')}
               </Button>
             </>
           ) : (
@@ -175,11 +177,11 @@ export function ReportDetail({ report, projectName, onBack, onAiRewrite }: Repor
               variant="secondary"
               onClick={startEditing}
             >
-              编辑
+              {t('common.edit')}
             </Button>
           )}
           <Button variant="danger" onClick={() => void handleDelete()} disabled={editing}>
-            删除
+            {t('common.delete')}
           </Button>
         </div>
       </div>
@@ -199,7 +201,7 @@ export function ReportDetail({ report, projectName, onBack, onAiRewrite }: Repor
         <div className="space-y-3 rounded-lg border border-hairline bg-surface-1 p-4">
           <div>
             <label htmlFor="report-edit-title" className="text-caption text-ink-muted">
-              标题
+              {t('report.titleLabel')}
             </label>
             <input
               id="report-edit-title"
@@ -211,7 +213,7 @@ export function ReportDetail({ report, projectName, onBack, onAiRewrite }: Repor
           </div>
           <div>
             <label htmlFor="report-edit-content" className="text-caption text-ink-muted">
-              正文（Markdown）
+              {t('report.contentLabelShort')}
             </label>
             <textarea
               id="report-edit-content"
@@ -229,7 +231,7 @@ export function ReportDetail({ report, projectName, onBack, onAiRewrite }: Repor
               Discovery Report
             </p>
             <h1 className="mt-2 text-2xl font-semibold leading-tight text-reading-ink">{report.title}</h1>
-            {projectName && <p className="mt-1 text-caption text-reading-ink-secondary">项目：{projectName}</p>}
+            {projectName && <p className="mt-1 text-caption text-reading-ink-secondary">{t('report.projectLabel')}{projectName}</p>}
             <p className="text-caption text-reading-ink-secondary">{reportMetaLine(report)}</p>
           </div>
           <hr className="mx-6 border-reading-border sm:mx-9" />

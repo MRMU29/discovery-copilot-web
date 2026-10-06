@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button'
 import { EmptyState, ErrorState, PageSkeleton } from '@/components/common/states'
 import { FieldHint } from '@/components/onboarding/FieldHint'
 import { projectPath } from '@/app/nav'
+import { useT } from '@/lib/i18n'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
@@ -18,6 +19,7 @@ function formatBytes(bytes: number): string {
 }
 
 export default function Dashboard() {
+  const t = useT()
   const navigate = useNavigate()
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
@@ -92,7 +94,7 @@ export default function Dashboard() {
   }
 
   async function handleSoftDelete(id: string) {
-    if (!window.confirm('把该项目移入回收站？30 天后自动清除，期间可随时恢复。')) return
+    if (!window.confirm(t('dashboard.confirmSoftDelete'))) return
     setError(null)
     try {
       await softDeleteProject(id)
@@ -102,7 +104,7 @@ export default function Dashboard() {
   }
 
   async function handleHardDelete(id: string, name: string) {
-    if (!window.confirm(`永久删除「${name}」及其全部数据？此操作不可恢复。`)) return
+    if (!window.confirm(t('dashboard.confirmHardDelete', { name }))) return
     setError(null)
     try {
       await deleteProjectCascade(id)
@@ -118,7 +120,7 @@ export default function Dashboard() {
       id="new-project-name"
       value={name}
       onChange={(e) => setName(e.target.value)}
-      placeholder="新建项目：产品 / 功能名称"
+      placeholder={t('dashboard.namePlaceholder')}
       maxLength={120}
       className="min-h-11 w-full rounded-btn border border-hairline-strong bg-surface-1 px-4 text-body text-ink placeholder:text-ink-faint focus:border-accent-focus focus:outline-none"
     />
@@ -130,7 +132,7 @@ export default function Dashboard() {
       onChange={(e) => setDescription(e.target.value)}
       rows={3}
       maxLength={2000}
-      placeholder="一句话说清做什么、给谁用、解决什么问题（AI 依据此识别假设，越具体越好）"
+      placeholder={t('dashboard.descPlaceholder')}
       className="w-full rounded-btn border border-hairline-strong bg-surface-1 px-4 py-2.5 text-body text-ink placeholder:text-ink-faint focus:border-accent-focus focus:outline-none"
     />
   )
@@ -138,46 +140,48 @@ export default function Dashboard() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-display-md text-ink">项目</h1>
+        <h1 className="text-display-md text-ink">{t('dashboard.title')}</h1>
         <p className="mt-1 text-body text-ink-muted">
-          本地优先 · 数据保存在当前浏览器 · .dcopilot 文件跨设备迁移
+          {t('dashboard.subtitle')}
         </p>
       </div>
 
       {quota?.low && (
         <div role="status" className="rounded-lg border border-warning/40 bg-surface-1 px-4 py-3 text-body-sm text-ink">
-          存储空间不足 50 MB（已用 {quota.usage != null ? formatBytes(quota.usage) : '未知'} / 配额{' '}
-          {quota.quota != null ? formatBytes(quota.quota) : '未知'}），建议导出 .dcopilot 备份并清理浏览器空间。
+          {t('dashboard.quotaLow', {
+            used: quota.usage != null ? formatBytes(quota.usage) : t('settings.dataBackup.unknown'),
+            quota: quota.quota != null ? formatBytes(quota.quota) : t('settings.dataBackup.unknown'),
+          })}
         </div>
       )}
 
       <form
         onSubmit={handleCreate}
         className="space-y-3 rounded-lg border border-hairline bg-surface-1 p-4"
-        aria-label="新建项目"
+        aria-label={t('dashboard.formLabel')}
       >
         <div>
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <label htmlFor="new-project-name" className="text-caption text-ink-muted">
-              项目名称
+              {t('dashboard.nameLabel')}
             </label>
             <FieldHint
-              field="项目名称"
+              field={t('dashboard.nameField')}
               highlighted={hintsHighlighted}
               onRead={() => void markOnboardingDone('fieldHints').catch(() => undefined)}
-              good="宠物鲜食外卖 · 试点版"
-              bad="一个伟大的项目"
+              good={t('dashboard.hintNameGood')}
+              bad={t('dashboard.hintNameBad')}
             />
           </div>
           {nameInput}
         </div>
         <div>
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <label htmlFor="new-project-desc" className="text-caption text-ink-muted">
-              项目描述（想法）
+              {t('dashboard.descLabel')}
             </label>
             <FieldHint
-              field="项目描述"
+              field={t('dashboard.descField')}
               highlighted={hintsHighlighted}
               onRead={() => void markOnboardingDone('fieldHints').catch(() => undefined)}
               good="面向一二线城市、月宠物支出 500 元以上的养猫家庭（谁）；想喂鲜食但没时间做（问题）；期望每周 30 分钟搞定一周喂食（期望结果）。"
@@ -188,10 +192,10 @@ export default function Dashboard() {
         </div>
         <div className="flex flex-wrap gap-2">
           <Button type="submit" disabled={!name.trim() || creating}>
-            {creating ? '创建中…' : '新建项目'}
+            {creating ? t('dashboard.creating') : t('dashboard.create')}
           </Button>
           <Button variant="secondary" onClick={() => void handleLoadSample()} disabled={loadingSample}>
-            {loadingSample ? '加载中…' : '加载示例项目'}
+            {loadingSample ? t('dashboard.loadingSample') : t('dashboard.loadSample')}
           </Button>
         </div>
       </form>
@@ -199,8 +203,8 @@ export default function Dashboard() {
 
       {data.active.length === 0 ? (
         <EmptyState
-          title="还没有项目"
-          description="用上方表单创建第一个项目，开始梳理关键假设、设计验证实验；或点「加载示例项目」看看每个页面长什么样。"
+          title={t('dashboard.emptyTitle')}
+          description={t('dashboard.emptyDesc')}
         />
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -212,15 +216,15 @@ export default function Dashboard() {
               >
                 <p className="text-card-title text-ink">{p.name}</p>
                 {p.description && <p className="mt-1 text-body-sm text-ink-muted">{p.description}</p>}
-                <p className="mt-3 text-caption text-ink-faint">更新于 {p.updatedAt.slice(0, 10)}</p>
+                <p className="mt-3 text-caption text-ink-faint">{t('dashboard.updatedAt', { date: p.updatedAt.slice(0, 10) })}</p>
               </Link>
               <button
                 type="button"
-                aria-label={`删除项目「${p.name}」（移入回收站）`}
+                aria-label={t('dashboard.deleteAria', { name: p.name })}
                 onClick={() => void handleSoftDelete(p.id)}
                 className="absolute right-2 top-2 min-h-9 rounded-btn px-2 text-caption text-ink-faint hover:bg-danger/10 hover:text-danger"
               >
-                删除
+                {t('common.delete')}
               </button>
             </li>
           ))}
@@ -228,8 +232,8 @@ export default function Dashboard() {
       )}
 
       {data.deleted.length > 0 && (
-        <section aria-label="回收站">
-          <h2 className="text-eyebrow text-ink-muted">回收站（{data.deleted.length}）</h2>
+        <section aria-label={t('dashboard.trash', { count: data.deleted.length })}>
+          <h2 className="text-eyebrow text-ink-muted">{t('dashboard.trash', { count: data.deleted.length })}</h2>
           <ul className="mt-3 space-y-2">
             {data.deleted.map((p) => (
               <li
@@ -238,14 +242,14 @@ export default function Dashboard() {
               >
                 <span className="min-w-0 flex-1 truncate text-body-sm text-ink-secondary">
                   {p.name}
-                  <span className="ml-2 text-caption text-ink-faint">{p.daysLeft} 天后自动清除</span>
+                  <span className="ml-2 text-caption text-ink-faint">{t('dashboard.daysLeft', { days: p.daysLeft })}</span>
                 </span>
                 <span className="flex shrink-0 gap-2">
                   <Button variant="secondary" onClick={() => void restoreProject(p.id)}>
-                    恢复
+                    {t('dashboard.restore')}
                   </Button>
                   <Button variant="danger" onClick={() => void handleHardDelete(p.id, p.name)}>
-                    永久删除
+                    {t('dashboard.deleteForever')}
                   </Button>
                 </span>
               </li>

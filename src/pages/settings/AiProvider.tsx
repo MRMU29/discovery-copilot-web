@@ -4,17 +4,30 @@ import { AIError, createProvider as createAiProvider, clearSessionKeys, getSessi
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/common/states'
 import { db } from '@/db/db'
-import { resolveAiRoute, AI_MODE_META, AI_MODES, type AiMode } from '@/lib/ai-mode'
+import { resolveAiRoute, AI_MODES, type AiMode } from '@/lib/ai-mode'
 import type { AiRequest, ProviderConfigRow } from '@/schemas/entities'
 import { listActiveProjects } from '@/services/projects'
 import { createProvider, deleteProvider, listProviders, setDefaultProvider } from '@/services/ai-providers'
 import { getSettings, updateSettings } from '@/services/settings'
+import { useT } from '@/lib/i18n'
 
 type ProviderKind = ProviderConfigRow['kind']
 
-const KIND_LABELS: Record<ProviderKind, string> = {
-  'openai-compatible': 'OpenAI 兼容（DeepSeek / Kimi / GLM…）',
-  gemini: 'Gemini',
+const KIND_LABEL_KEYS: Record<ProviderKind, string> = {
+  'openai-compatible': 'settings.aiProvider.kindOpenai',
+  gemini: 'settings.aiProvider.kindGemini',
+}
+
+const MODE_LABEL_KEYS: Record<AiMode, string> = {
+  byok: 'settings.aiProvider.mode.byok.label',
+  relay: 'settings.aiProvider.mode.relay.label',
+  hybrid: 'settings.aiProvider.mode.hybrid.label',
+}
+
+const MODE_DESC_KEYS: Record<AiMode, string> = {
+  byok: 'settings.aiProvider.mode.byok.desc',
+  relay: 'settings.aiProvider.mode.relay.desc',
+  hybrid: 'settings.aiProvider.mode.hybrid.desc',
 }
 
 const cardClass = 'rounded-lg border border-hairline bg-surface-1 p-4'
@@ -30,11 +43,11 @@ const PROVIDER_PRESETS = [
 const inputClass =
   'mt-1 w-full rounded-btn border border-hairline-strong bg-surface-1 px-3 py-2 text-body text-ink placeholder:text-ink-faint focus:border-accent-focus focus:outline-none'
 
-const PROMPT_LABELS: Record<string, string> = {
-  'identify-assumptions': '假设识别',
-  'design-experiments': '实验设计',
-  chat: '对话',
-  'chat-json': 'JSON 对话',
+const PROMPT_LABEL_KEYS: Record<string, string> = {
+  'identify-assumptions': 'settings.aiProvider.prompt.identifyAssumptions',
+  'design-experiments': 'settings.aiProvider.prompt.designExperiments',
+  chat: 'settings.aiProvider.prompt.chat',
+  'chat-json': 'settings.aiProvider.prompt.chatJson',
 }
 
 function fmtUsd(usd: number): string {
@@ -43,25 +56,30 @@ function fmtUsd(usd: number): string {
 
 /** §6.4 用量视图：月合计 + 按日汇总 + 最近 20 条明细。 */
 function UsageView({ rows, projects }: { rows: AiRequest[]; projects: { id: string; name: string }[] }) {
+  const t = useT()
   const summary = summarizeUsage(rows)
   const projectNameById = new Map(projects.map((p) => [p.id, p.name]))
   const details = rows.slice(0, 20)
   return (
     <div className="space-y-4">
       <p className="text-body-sm text-ink">
-        共 {summary.totalCount} 次请求 · 输入 {summary.totalInputTokens.toLocaleString()} / 输出{' '}
-        {summary.totalOutputTokens.toLocaleString()} tokens · 预估 {fmtUsd(summary.totalUsd)}
-        <span className="ml-1 text-caption text-ink-faint">（内置参考价，实际以 Provider 账单为准）</span>
+        {t('settings.aiProvider.usageSummary', {
+          count: summary.totalCount,
+          input: summary.totalInputTokens.toLocaleString(),
+          output: summary.totalOutputTokens.toLocaleString(),
+          usd: fmtUsd(summary.totalUsd),
+        })}
+        <span className="ml-1 text-caption text-ink-faint">{t('settings.aiProvider.usagePricingNote')}</span>
       </p>
 
       <div className="overflow-x-auto rounded-lg border border-hairline">
         <table className="w-full min-w-[480px] text-left text-caption">
           <thead className="border-b border-hairline bg-surface-2 text-ink-muted">
             <tr>
-              <th scope="col" className="px-3 py-2 font-medium">日期</th>
-              <th scope="col" className="px-3 py-2 font-medium">请求</th>
-              <th scope="col" className="px-3 py-2 font-medium">Tokens（入/出）</th>
-              <th scope="col" className="px-3 py-2 font-medium">预估费用</th>
+              <th scope="col" className="px-3 py-2 font-medium">{t('settings.aiProvider.usageTableDate')}</th>
+              <th scope="col" className="px-3 py-2 font-medium">{t('settings.aiProvider.usageTableRequest')}</th>
+              <th scope="col" className="px-3 py-2 font-medium">{t('settings.aiProvider.usageTableTokens')}</th>
+              <th scope="col" className="px-3 py-2 font-medium">{t('settings.aiProvider.usageTableUsd')}</th>
             </tr>
           </thead>
           <tbody>
@@ -80,16 +98,16 @@ function UsageView({ rows, projects }: { rows: AiRequest[]; projects: { id: stri
       </div>
 
       <details className="rounded-lg border border-hairline bg-surface-2 p-3">
-        <summary className="cursor-pointer text-caption text-ink-secondary">最近 {details.length} 条请求明细</summary>
+        <summary className="cursor-pointer text-caption text-ink-secondary">{t('settings.aiProvider.usageDetails', { count: details.length })}</summary>
         <ul className="mt-2 space-y-1.5">
           {details.map((row) => (
             <li key={row.id} className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-caption text-ink-secondary">
               <span className="text-ink-faint">{row.createdAt.slice(5, 16).replace('T', ' ')}</span>
               <span className="text-ink">{projectNameById.get(row.projectId ?? '') ?? '—'}</span>
               <span>{row.model}</span>
-              <span>{PROMPT_LABELS[row.promptId] ?? row.promptId}</span>
+              <span>{t(PROMPT_LABEL_KEYS[row.promptId] ?? row.promptId)}</span>
               <span className={row.status === 'ok' ? 'text-success' : 'text-danger'}>
-                {row.status === 'ok' ? '成功' : (row.errorCode ?? '失败')}
+                {row.status === 'ok' ? t('settings.aiProvider.usageOk') : (row.errorCode ?? t('settings.aiProvider.usageFailed'))}
               </span>
               <span className="text-ink-faint">
                 {row.inputTokens}/{row.outputTokens} tok · {row.estimatedUsd != null ? fmtUsd(row.estimatedUsd) : '—'}
@@ -104,6 +122,7 @@ function UsageView({ rows, projects }: { rows: AiRequest[]; projects: { id: stri
 
 /** 设置页「AI Provider」：AI 模式切换（即改即存）+ Provider 最小管理。 */
 export default function AiProvider() {
+  const t = useT()
   const settings = useLiveQuery(() => getSettings(), [])
   const providers = useLiveQuery(() => listProviders(), [])
   const [showAdd, setShowAdd] = useState(false)
@@ -111,7 +130,6 @@ export default function AiProvider() {
   const [kind, setKind] = useState<ProviderKind>('openai-compatible')
   const [baseUrl, setBaseUrl] = useState('')
   const [model, setModel] = useState('')
-  const [addKey, setAddKey] = useState('')
   const [error, setError] = useState<string | null>(null)
   /** 会话内 Key 管理：providerId → 输入值 / 保存态 / 测试态。 */
   const [keyDrafts, setKeyDrafts] = useState<Record<string, string>>({})
@@ -142,7 +160,7 @@ export default function AiProvider() {
     }
     const value = Number(trimmed)
     if (!Number.isFinite(value) || value <= 0) {
-      setError('预算上限必须是正数（USD），留空表示不设限。')
+      setError(t('settings.aiProvider.budgetInvalid'))
       return
     }
     setError(null)
@@ -155,7 +173,7 @@ export default function AiProvider() {
   }
 
   function handleClearSessionKeys() {
-    if (!window.confirm('清除本会话保存的全部 API Key？Provider 配置保留，之后调用 AI 需重新输入 Key。')) return
+    if (!window.confirm(t('settings.aiProvider.clearSessionKeysConfirm'))) return
     clearSessionKeys()
     setKeyDrafts({})
     setKeySaved({})
@@ -169,21 +187,17 @@ export default function AiProvider() {
     try {
       const row = await createProvider({ label: label.trim(), kind, baseUrl: baseUrl.trim(), model: model.trim() })
       if (!providers || providers.length === 0) await setDefaultProvider(row.id)
-      // 添加时顺手把 Key 存入会话内存——保存完即可直接测试连接（留空则稍后在卡片里填）。
-      const key = addKey.trim()
-      if (key) setSessionKey(row.id, key)
       setShowAdd(false)
       setLabel('')
       setBaseUrl('')
       setModel('')
-      setAddKey('')
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     }
   }
 
   async function handleDelete(id: string) {
-    if (!window.confirm('删除该 Provider 配置？API Key 从未落库，无需额外清理。')) return
+    if (!window.confirm(t('settings.aiProvider.deleteConfirm'))) return
     setError(null)
     try {
       await deleteProvider(id)
@@ -195,7 +209,7 @@ export default function AiProvider() {
   function handleSaveKey(id: string) {
     const value = (keyDrafts[id] ?? '').trim()
     if (!value) {
-      setError('请先输入 API Key。')
+      setError(t('settings.aiProvider.keyEmptyError'))
       return
     }
     setError(null)
@@ -206,7 +220,7 @@ export default function AiProvider() {
   async function handleTestKey(row: ProviderConfigRow) {
     const key = (keyDrafts[row.id] ?? '').trim() || getSessionKey(row.id)
     if (!key) {
-      setError('请先输入或保存该 Provider 的 API Key，再测试连接。')
+      setError(t('settings.aiProvider.keyTestNeedError'))
       return
     }
     setError(null)
@@ -233,14 +247,14 @@ export default function AiProvider() {
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-headline text-ink">AI Provider</h1>
+        <h1 className="text-headline text-ink">{t('settings.aiProvider.title')}</h1>
         <p className="mt-1 text-body-sm text-ink-muted">
-          应用自身不持有密钥：BYOK 直连你配置的服务，或用 Prompt Relay 借外部 AI 助手完成任务。
+          {t('settings.aiProvider.desc')}
         </p>
       </header>
 
-      <section aria-label="AI 模式" className="space-y-3">
-        <h2 className="text-eyebrow text-ink-muted">AI 模式</h2>
+      <section aria-label={t('settings.aiProvider.modeHeading')} className="space-y-3">
+        <h2 className="text-eyebrow text-ink-muted">{t('settings.aiProvider.modeHeading')}</h2>
         <div className="grid gap-3 sm:grid-cols-3">
           {AI_MODES.map((mode) => (
             <label
@@ -258,25 +272,29 @@ export default function AiProvider() {
                   onChange={() => void handleMode(mode)}
                   className="size-4 accent-accent"
                 />
-                {AI_MODE_META[mode].label}
+                {t(MODE_LABEL_KEYS[mode])}
               </span>
-              <span className="text-caption text-ink-muted">{AI_MODE_META[mode].description}</span>
+              <span className="text-caption text-ink-muted">{t(MODE_DESC_KEYS[mode])}</span>
             </label>
           ))}
         </div>
         <p role="status" className="rounded-lg border border-hairline bg-surface-2 px-3 py-2 text-caption text-ink-secondary">
-          当前生效路径：
+          {t('settings.aiProvider.currentRoutePrefix')}
           {resolveAiRoute(settings.aiMode, providers.length > 0) === 'byok'
-            ? `内置 AI（BYOK）${providers.length > 0 ? `——使用 ${providers.find((p) => p.id === settings.defaultProviderId)?.label ?? providers[0].label}` : '（尚未配置 Provider，AI 对话框会先引导你添加）'}`
-            : 'Prompt Relay——生成 Prompt 交给你的外部 AI 助手，零配置'}
+            ? providers.length > 0
+              ? t('settings.aiProvider.routeByokWith', {
+                  label: providers.find((p) => p.id === settings.defaultProviderId)?.label ?? providers[0].label,
+                })
+              : t('settings.aiProvider.routeByokNone')
+            : t('settings.aiProvider.routeRelay')}
         </p>
       </section>
 
-      <section aria-label="预算熔断" className="space-y-3">
-        <h2 className="text-eyebrow text-ink-muted">预算熔断（USD · 留空 = 不限）</h2>
+      <section aria-label={t('settings.aiProvider.budgetHeading')} className="space-y-3">
+        <h2 className="text-eyebrow text-ink-muted">{t('settings.aiProvider.budgetHeading')}</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="text-caption text-ink-muted">
-            单次请求上限
+            {t('settings.aiProvider.budgetPerRequest')}
             <input
               type="number"
               min="0"
@@ -284,12 +302,12 @@ export default function AiProvider() {
               value={perRequestValue}
               onChange={(e) => setBudgetDrafts((prev) => ({ ...prev, perRequest: e.target.value }))}
               onBlur={(e) => void handleBudget('perRequestBudgetUsd', e.target.value)}
-              placeholder="例：0.50"
+              placeholder={t('settings.aiProvider.budgetPerRequestPlaceholder')}
               className="mt-1 w-full rounded-btn border border-hairline-strong bg-surface-1 px-3 py-2 text-body text-ink placeholder:text-ink-faint focus:border-accent-focus focus:outline-none"
             />
           </label>
           <label className="text-caption text-ink-muted">
-            月度上限
+            {t('settings.aiProvider.budgetMonthly')}
             <input
               type="number"
               min="0"
@@ -297,39 +315,39 @@ export default function AiProvider() {
               value={monthlyValue}
               onChange={(e) => setBudgetDrafts((prev) => ({ ...prev, monthly: e.target.value }))}
               onBlur={(e) => void handleBudget('monthlyBudgetUsd', e.target.value)}
-              placeholder="例：10"
+              placeholder={t('settings.aiProvider.budgetMonthlyPlaceholder')}
               className="mt-1 w-full rounded-btn border border-hairline-strong bg-surface-1 px-3 py-2 text-body text-ink placeholder:text-ink-faint focus:border-accent-focus focus:outline-none"
             />
           </label>
         </div>
         <p className="text-caption text-ink-faint">
-          发起请求前按内置参考价预估费用，超过上限时进入确认流程而非静默失败；确认单次绕过后才继续。
+          {t('settings.aiProvider.budgetHint')}
         </p>
       </section>
 
-      <section aria-label="Provider 列表" className="space-y-3">
+      <section aria-label={t('settings.aiProvider.providersHeading')} className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-eyebrow text-ink-muted">Provider（BYOK / 混合模式使用）</h2>
+          <h2 className="text-eyebrow text-ink-muted">{t('settings.aiProvider.providersHeading')}</h2>
           <Button variant="secondary" onClick={() => setShowAdd((v) => !v)}>
-            {showAdd ? '取消添加' : '添加 Provider'}
+            {showAdd ? t('settings.aiProvider.cancelAdd') : t('settings.aiProvider.add')}
           </Button>
         </div>
 
         <p className="text-caption text-ink-faint">
-          API Key 仅保存在当前会话内存，不写入本地数据库，也不随 .dcopilot 文件导出。
+          {t('settings.aiProvider.sessionKeyNote')}{' '}
           <button
             type="button"
             onClick={handleClearSessionKeys}
             className="ml-2 text-caption text-danger underline-offset-2 hover:underline"
           >
-            清除全部会话 Key
+            {t('settings.aiProvider.clearSessionKeys')}
           </button>
         </p>
 
         {showAdd && (
           <form onSubmit={handleAdd} className="space-y-3 rounded-lg border border-hairline bg-surface-2 p-4">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-caption text-ink-muted">快速预填：</span>
+              <span className="text-caption text-ink-muted">{t('settings.aiProvider.presetsLabel')}</span>
               {PROVIDER_PRESETS.map((preset) => (
                 <button
                   key={preset.label}
@@ -349,20 +367,20 @@ export default function AiProvider() {
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <label htmlFor="provider-label" className="text-caption text-ink-muted">
-                  名称
+                  {t('settings.aiProvider.fieldLabel')}
                 </label>
                 <input
                   id="provider-label"
                   value={label}
                   onChange={(e) => setLabel(e.target.value)}
-                  placeholder="例：DeepSeek"
+                  placeholder={t('settings.aiProvider.fieldLabelPlaceholder')}
                   maxLength={60}
                   className={inputClass}
                 />
               </div>
               <div>
                 <label htmlFor="provider-kind" className="text-caption text-ink-muted">
-                  类型
+                  {t('settings.aiProvider.fieldKind')}
                 </label>
                 <select
                   id="provider-kind"
@@ -370,9 +388,9 @@ export default function AiProvider() {
                   onChange={(e) => setKind(e.target.value as ProviderKind)}
                   className={`${inputClass} min-h-11`}
                 >
-                  {(Object.keys(KIND_LABELS) as ProviderKind[]).map((k) => (
+                  {(Object.keys(KIND_LABEL_KEYS) as ProviderKind[]).map((k) => (
                     <option key={k} value={k}>
-                      {KIND_LABELS[k]}
+                      {t(KIND_LABEL_KEYS[k])}
                     </option>
                   ))}
                 </select>
@@ -380,7 +398,7 @@ export default function AiProvider() {
             </div>
             <div>
               <label htmlFor="provider-base-url" className="text-caption text-ink-muted">
-                Base URL
+                {t('settings.aiProvider.fieldBaseUrl')}
               </label>
               <input
                 id="provider-base-url"
@@ -392,7 +410,7 @@ export default function AiProvider() {
             </div>
             <div>
               <label htmlFor="provider-model" className="text-caption text-ink-muted">
-                模型
+                {t('settings.aiProvider.fieldModel')}
               </label>
               <input
                 id="provider-model"
@@ -402,30 +420,19 @@ export default function AiProvider() {
                 className={inputClass}
               />
             </div>
-            <div>
-              <label htmlFor="provider-add-key" className="text-caption text-ink-muted">
-                API Key（可选，仅保存在当前会话内存，关闭页面即消失）
-              </label>
-              <input
-                id="provider-add-key"
-                type="password"
-                value={addKey}
-                onChange={(e) => setAddKey(e.target.value)}
-                placeholder="sk-…"
-                autoComplete="off"
-                className={inputClass}
-              />
-            </div>
+            <p className="rounded-lg border border-hairline bg-surface-1 px-3 py-2 text-caption text-ink-muted">
+              {t('settings.aiProvider.noKeyNote')}
+            </p>
             <Button type="submit" disabled={!label.trim() || !baseUrl.trim() || !model.trim()}>
-              保存
+              {t('common.save')}
             </Button>
           </form>
         )}
 
         {providers.length === 0 ? (
           <EmptyState
-            title="还没有 Provider"
-            description="Relay 模式无需任何配置即可使用全部 AI 功能；只有 BYOK / 混合模式需要在这里添加 Provider。"
+            title={t('settings.aiProvider.emptyTitle')}
+            description={t('settings.aiProvider.emptyDesc')}
           />
         ) : (
           <ul className="space-y-3">
@@ -434,12 +441,12 @@ export default function AiProvider() {
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="text-card-title text-ink">{p.label}</p>
                   {settings.defaultProviderId === p.id && (
-                    <span className="rounded-full bg-accent/15 px-2 py-0.5 text-caption text-ink">默认</span>
+                    <span className="rounded-full bg-accent/15 px-2 py-0.5 text-caption text-ink">{t('settings.aiProvider.defaultBadge')}</span>
                   )}
                   <span className="ml-auto flex gap-2">
                     {settings.defaultProviderId !== p.id && (
                       <Button variant="ghost" onClick={() => void setDefaultProvider(p.id)}>
-                        设为默认
+                        {t('settings.aiProvider.setDefault')}
                       </Button>
                     )}
                     <Button variant="danger" onClick={() => void handleDelete(p.id)}>
@@ -448,11 +455,11 @@ export default function AiProvider() {
                   </span>
                 </div>
                 <p className="mt-1 text-caption text-ink-muted">
-                  {KIND_LABELS[p.kind]} · {p.baseUrl} · {p.model}
+                  {t(KIND_LABEL_KEYS[p.kind])} · {p.baseUrl} · {p.model}
                 </p>
                 <div className="mt-3 space-y-2 border-t border-hairline pt-3">
                   <label htmlFor={`provider-key-${p.id}`} className="text-caption text-ink-muted">
-                    API Key（仅保存在当前会话内存，关闭页面即消失）
+                    {t('settings.aiProvider.keyLabel')}
                   </label>
                   <div className="flex flex-wrap gap-2">
                     <input
@@ -464,21 +471,21 @@ export default function AiProvider() {
                         setKeySaved((prev) => ({ ...prev, [p.id]: false }))
                         setKeyTesting((prev) => ({ ...prev, [p.id]: undefined }))
                       }}
-                      placeholder={keySaved[p.id] ? '已保存（本会话）——输入可替换' : 'sk-…'}
+                      placeholder={keySaved[p.id] ? t('settings.aiProvider.keySavedPlaceholder') : 'sk-…'}
                       autoComplete="off"
                       className="min-h-11 flex-1 rounded-btn border border-hairline-strong bg-surface-1 px-3 text-body text-ink placeholder:text-ink-faint focus:border-accent-focus focus:outline-none"
                     />
                     <Button variant="secondary" onClick={() => handleSaveKey(p.id)}>
-                      保存到本会话
+                      {t('settings.aiProvider.saveKey')}
                     </Button>
                     <Button variant="ghost" onClick={() => void handleTestKey(p)} disabled={keyTesting[p.id] === 'busy'}>
-                      {keyTesting[p.id] === 'busy' ? '测试中…' : '测试连接'}
+                      {keyTesting[p.id] === 'busy' ? t('settings.aiProvider.testing') : t('settings.aiProvider.testConnection')}
                     </Button>
                   </div>
-                  {keyTesting[p.id] === 'ok' && <p className="text-caption text-success">连接成功。</p>}
-                  {keyTesting[p.id] === 'fail' && <p className="text-caption text-danger">连接失败，见下方错误。</p>}
+                  {keyTesting[p.id] === 'ok' && <p className="text-caption text-success">{t('settings.aiProvider.testOk')}</p>}
+                  {keyTesting[p.id] === 'fail' && <p className="text-caption text-danger">{t('settings.aiProvider.testFail')}</p>}
                   {keySaved[p.id] && keyTesting[p.id] === undefined && (
-                    <p className="text-caption text-ink-faint">已保存到本会话——AI 对话框将直接使用，无需重复输入。</p>
+                    <p className="text-caption text-ink-faint">{t('settings.aiProvider.keySavedNote')}</p>
                   )}
                 </div>
               </li>
@@ -487,11 +494,11 @@ export default function AiProvider() {
         )}
       </section>
 
-      <section aria-label="用量" className="space-y-3">
-        <h2 className="text-eyebrow text-ink-muted">用量（仅存本地，不随 .dcopilot 导出）</h2>
+      <section aria-label={t('settings.aiProvider.usageHeading')} className="space-y-3">
+        <h2 className="text-eyebrow text-ink-muted">{t('settings.aiProvider.usageHeading')}</h2>
         {!usageRows || usageRows.length === 0 ? (
           <p className="text-caption text-ink-faint">
-            暂无 AI 请求记录——使用内置 AI（BYOK）识别假设或设计实验后，这里会展示按日用量与请求明细。
+            {t('settings.aiProvider.usageEmpty')}
           </p>
         ) : (
           <UsageView rows={usageRows} projects={projects ?? []} />

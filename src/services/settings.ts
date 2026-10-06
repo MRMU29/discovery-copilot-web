@@ -16,6 +16,7 @@ export async function getSettings(): Promise<Settings> {
   const parsed = settingsRowSchema.parse(row)
   return {
     theme: parsed.theme,
+    language: parsed.language,
     defaultProviderId: parsed.defaultProviderId,
     aiMode: parsed.aiMode,
     perRequestBudgetUsd: parsed.perRequestBudgetUsd,

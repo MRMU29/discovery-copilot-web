@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/Button'
+import { useT } from '@/lib/i18n'
 
 interface AIReviewActionsProps {
   /** 已勾选条数。 */
@@ -39,6 +40,7 @@ export function AIReviewActions({
   onBack,
   backLabel,
 }: AIReviewActionsProps) {
+  const t = useT()
   const allChecked = total > 0 && count === total
   return (
     <div className="space-y-3">
@@ -49,9 +51,10 @@ export function AIReviewActions({
             checked={allChecked}
             onChange={(e) => onToggleAll(e.target.checked)}
             className="size-4 accent-accent"
-            aria-label={`全选${applyLabel}`}
+            aria-label={t('review.selectAllAria', { label: applyLabel })}
           />
-          {allChecked ? '全不选' : '全选'}（已选 {count}/{total}）
+          {allChecked ? t('review.allSelected') : t('review.selectAll')}
+          {t('review.selectionStatus', { count, total })}
         </label>
       )}
 
@@ -59,15 +62,20 @@ export function AIReviewActions({
         <Button
           onClick={onApply}
           disabled={applying || count === 0}
-          aria-label={applyText ?? `应用选中的 ${count} 条${applyLabel}`}
+          aria-label={applyText ?? t('review.applyAria', { count, label: applyLabel })}
         >
-          {applyText ?? (applying ? '应用中…' : `应用选中的 ${count} 条${applyLabel ? `（${applyLabel}）` : ''}`)}
+          {applyText ??
+            (applying
+              ? t('review.applying')
+              : applyLabel
+                ? t('review.applyCountLabeled', { count, label: applyLabel })
+                : t('review.applyCount', { count }))}
         </Button>
         <Button variant="ghost" onClick={onRegenerate} disabled={regenerating || applying}>
-          {regenerating ? '重新生成中…' : '重新生成'}
+          {regenerating ? t('review.regenerating') : t('review.regenerate')}
         </Button>
         <Button variant="ghost" onClick={onReject} disabled={applying || regenerating}>
-          拒绝全部
+          {t('review.rejectAll')}
         </Button>
         <Button variant="ghost" onClick={onBack} disabled={applying || regenerating}>
           {backLabel}

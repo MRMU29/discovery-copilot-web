@@ -4,6 +4,7 @@ import type { Assumption, Experiment, OstNode } from '@/schemas/entities'
 import { OST_NODE_TYPES } from '@/schemas/entities'
 import { createOstNode, moveOstNode } from '@/services/ost'
 import { OST_TYPE_META, NODE_WIDTH, descendantIds, requiredParentType } from './ost-meta'
+import { useT } from '@/lib/i18n'
 
 interface OstNodeFormProps {
   projectId: string
@@ -36,6 +37,7 @@ export function OstNodeForm({
   onDone,
   onCancel,
 }: OstNodeFormProps) {
+  const t = useT()
   const [type, setType] = useState<OstNode['type']>(initial?.type ?? defaultType ?? 'opportunity')
   const [parentId, setParentId] = useState(initial?.parentId ?? '')
   const [title, setTitle] = useState(initial?.title ?? '')
@@ -69,11 +71,11 @@ export function OstNodeForm({
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
     if (!title.trim()) {
-      setError('请填写节点标题。')
+      setError(t('ost.titleRequired'))
       return
     }
     if (requiredType && !parentId) {
-      setError(`${OST_TYPE_META[type].label} 必须挂在「${OST_TYPE_META[requiredType].label}」之下。`)
+      setError(t('ost.parentRule', { type: t(OST_TYPE_META[type].labelKey), parent: t(OST_TYPE_META[requiredType].labelKey) }))
       return
     }
     setSaving(true)
@@ -109,7 +111,7 @@ export function OstNodeForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label htmlFor="ost-type" className="text-caption text-ink-muted">
-          节点类型{editing && '（创建后不可更改）'}
+          {t('ost.typeLabel')}{editing ? t('ost.typeLocked') : ''}
         </label>
         <select
           id="ost-type"
@@ -118,10 +120,10 @@ export function OstNodeForm({
           onChange={(e) => handleTypeChange(e.target.value as OstNode['type'])}
           className={`${inputClass} min-h-11`}
         >
-          {OST_NODE_TYPES.map((t) => (
-            <option key={t} value={t}>
-              {OST_TYPE_META[t].label}
-              {t === 'outcome' ? '（根节点）' : ''}
+          {OST_NODE_TYPES.map((ty) => (
+            <option key={ty} value={ty}>
+              {t(OST_TYPE_META[ty].labelKey)}
+              {ty === 'outcome' ? t('ost.rootSuffix') : ''}
             </option>
           ))}
         </select>
@@ -130,7 +132,7 @@ export function OstNodeForm({
       {requiredType && (
         <div>
           <label htmlFor="ost-parent" className="text-caption text-ink-muted">
-            父节点（必须是「{OST_TYPE_META[requiredType].label}」）
+            {t('ost.parentLabel', { type: t(OST_TYPE_META[requiredType].labelKey) })}
           </label>
           <select
             id="ost-parent"
@@ -138,7 +140,7 @@ export function OstNodeForm({
             onChange={(e) => setParentId(e.target.value)}
             className={`${inputClass} min-h-11`}
           >
-            <option value="">{legalParents.length === 0 ? '暂无可选父节点' : '请选择…'}</option>
+            <option value="">{legalParents.length === 0 ? t('ost.noParents') : t('common.selectPlaceholder')}</option>
             {legalParents.map((n) => (
               <option key={n.id} value={n.id}>
                 {truncate(n.title)}
@@ -146,36 +148,36 @@ export function OstNodeForm({
             ))}
           </select>
           {legalParents.length === 0 && (
-            <p className="mt-1 text-caption text-warning">先创建一个「{OST_TYPE_META[requiredType].label}」节点。</p>
+            <p className="mt-1 text-caption text-warning">{t('ost.createParentHint', { type: t(OST_TYPE_META[requiredType].labelKey) })}</p>
           )}
         </div>
       )}
 
       <div>
         <label htmlFor="ost-title" className="text-caption text-ink-muted">
-          标题（一句话说清这个节点）
+          {t('ost.titleLabel')}
         </label>
         <input
           id="ost-title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           maxLength={200}
-          placeholder={
+          placeholder={t(
             type === 'outcome'
-              ? '例：3 个月内验证订阅需求真实存在'
+              ? 'ost.titlePlaceholder.outcome'
               : type === 'opportunity'
-                ? '例：养宠家庭想喂鲜食，但被制作时间劝退'
+                ? 'ost.titlePlaceholder.opportunity'
                 : type === 'solution'
-                  ? '例：每周订阅菜单 + 冷链配送'
-                  : '例：实验：假门测试订阅意向'
-          }
+                  ? 'ost.titlePlaceholder.solution'
+                  : 'ost.titlePlaceholder.experiment',
+          )}
           className={inputClass}
         />
       </div>
 
       <div>
         <label htmlFor="ost-assumption" className="text-caption text-ink-muted">
-          关联假设（可选）
+          {t('experiment.linkAssumption')}
         </label>
         <select
           id="ost-assumption"
@@ -183,7 +185,7 @@ export function OstNodeForm({
           onChange={(e) => setLinkedAssumptionId(e.target.value)}
           className={`${inputClass} min-h-11`}
         >
-          <option value="">不关联</option>
+          <option value="">{t('experiment.linkNone')}</option>
           {assumptions.map((a) => (
             <option key={a.id} value={a.id}>
               {truncate(a.statement, 36)}
@@ -194,7 +196,7 @@ export function OstNodeForm({
 
       <div>
         <label htmlFor="ost-experiment" className="text-caption text-ink-muted">
-          关联实验（可选）
+          {t('experiment.linkExperiment')}
         </label>
         <select
           id="ost-experiment"
@@ -202,7 +204,7 @@ export function OstNodeForm({
           onChange={(e) => setLinkedExperimentId(e.target.value)}
           className={`${inputClass} min-h-11`}
         >
-          <option value="">不关联</option>
+          <option value="">{t('experiment.linkNone')}</option>
           {experiments.map((e) => (
             <option key={e.id} value={e.id}>
               {truncate(e.hypothesis, 36)}
@@ -213,7 +215,7 @@ export function OstNodeForm({
 
       <fieldset>
         <legend className="text-caption text-ink-muted">
-          位置（拖拽的表单等价操作；画布宽约 {NODE_WIDTH * 10}px）
+          {t('ost.positionLabel', { width: NODE_WIDTH * 10 })}
         </legend>
         <div className="mt-1 flex items-center gap-3">
           <label className="flex items-center gap-1 text-caption text-ink-muted">
@@ -224,7 +226,7 @@ export function OstNodeForm({
               step={10}
               value={x}
               onChange={(e) => setX(Math.max(0, Number(e.target.value)))}
-              aria-label="节点 X 坐标"
+              aria-label={t('ost.xAria')}
               className="w-24 rounded-btn border border-hairline-strong bg-surface-1 px-2 py-1.5 text-caption text-ink focus:border-accent-focus focus:outline-none"
             />
           </label>
@@ -236,7 +238,7 @@ export function OstNodeForm({
               step={10}
               value={y}
               onChange={(e) => setY(Math.max(0, Number(e.target.value)))}
-              aria-label="节点 Y 坐标"
+              aria-label={t('ost.yAria')}
               className="w-24 rounded-btn border border-hairline-strong bg-surface-1 px-2 py-1.5 text-caption text-ink focus:border-accent-focus focus:outline-none"
             />
           </label>
@@ -251,10 +253,10 @@ export function OstNodeForm({
 
       <div className="flex gap-2">
         <Button type="submit" disabled={saving || !title.trim()}>
-          {saving ? '保存中…' : editing ? '保存修改' : '创建节点'}
+          {saving ? t('common.saving') : editing ? t('common.saveEdit') : t('ost.createNode')}
         </Button>
         <Button variant="ghost" onClick={onCancel}>
-          取消
+          {t('common.cancel')}
         </Button>
       </div>
     </form>

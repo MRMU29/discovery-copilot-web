@@ -109,7 +109,9 @@ export const reportSchema = z.object({
  * rejects secret-looking keys explicitly for a readable error.
  */
 export const settingsSchema = z.strictObject({
-  theme: z.enum(['dark', 'light', 'system']).default('dark'),
+  theme: z.enum(['dark', 'light', 'system']).default('system'),
+  /** UI locale (src/lib/i18n). Old rows/backup files without it fall back to zh-Hans. */
+  language: z.enum(['zh-Hans', 'zh-Hant', 'en', 'ja', 'ko', 'ru', 'de', 'fr']).default('zh-Hans'),
   defaultProviderId: z.string().nullable().default(null),
   /**
    * AI 执行模式（Prompt Relay 需求）：byok = 配置 Key 全自动；relay = 生成

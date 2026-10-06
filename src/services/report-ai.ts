@@ -4,7 +4,7 @@ import { resolvePricing } from '@/ai/pricing'
 import { runAi } from '@/ai/run'
 import type { AIProvider, GenerateJSONResult } from '@/ai/types'
 import { assumptionsRepo, experimentsRepo, ostRepo, projectsRepo } from '@/db/repositories'
-import { ASSUMPTION_TYPE_META, STATUS_META } from '@/lib/assumption-meta'
+import { zhHans } from '@/lib/i18n/dictionaries/zh-Hans'
 import { nowIso } from '@/lib/clock'
 import { DomainError } from '@/lib/errors'
 import type { OstNode } from '@/schemas/entities'
@@ -85,8 +85,10 @@ export async function buildReportContext(projectId: string): Promise<string> {
       .sort((a, b) => b.priorityScore - a.priorityScore)
       .map((a) => {
         const confidence = a.confidence === null ? '未评估' : `${Math.round(a.confidence * 100)}%`
-        const type = ASSUMPTION_TYPE_META[a.type]?.label ?? a.type
-        const status = STATUS_META[a.status]?.label ?? a.status
+        const type =
+          (zhHans as Record<string, string>)[`assumption.type.${a.type}`] ?? a.type
+        const status =
+          (zhHans as Record<string, string>)[`assumption.status.${a.status}`] ?? a.status
         return `- [${type}] ${a.statement}（影响 ${a.impact} / 风险 ${a.risk} / 信心 ${confidence} / 优先分 ${a.priorityScore.toFixed(2)} / 状态：${status}）`
       })
     blocks.push(`### 关键假设（按优先分降序）\n${lines.join('\n')}`)

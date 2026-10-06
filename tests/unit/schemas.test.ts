@@ -43,7 +43,8 @@ describe('entity schemas — §9.2 类型与 Schema 同步', () => {
 
   it('settingsRow is strict: secret-shaped fields are structurally impossible', () => {
     const ok = settingsRowSchema.parse({ key: 'app', updatedAt: '2026-10-03T00:00:00.000Z' })
-    expect(ok.theme).toBe('dark')
+    expect(ok.theme).toBe('system')
+    expect(ok.language).toBe('zh-Hans')
     expect(() =>
       settingsRowSchema.parse({ key: 'app', updatedAt: '2026-10-03T00:00:00.000Z', apiKey: 'sk-x' }),
     ).toThrow()

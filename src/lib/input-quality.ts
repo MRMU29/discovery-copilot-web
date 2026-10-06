@@ -4,6 +4,8 @@
  * 生成 Prompt 前补强上下文，减少「AI 只能给泛泛假设」的情况。
  */
 
+import { translate } from '@/lib/i18n'
+
 export interface InputQuality {
   level: 'ok' | 'warn'
   issues: string[]
@@ -18,17 +20,17 @@ export function analyzeInputQuality(text: string): InputQuality {
   const issues: string[] = []
 
   if (trimmed.length < 40) {
-    issues.push(`描述过短（当前 ${trimmed.length} 字，建议 40 字以上），AI 可能只能给出泛泛的假设。`)
+    issues.push(translate('ai.quality.tooShort', { length: trimmed.length }))
   }
   if (!/\d/.test(trimmed)) {
-    issues.push('未包含数字或量化信息（如用户量、频率、金额、时间），建议补充可衡量的场景。')
+    issues.push(translate('ai.quality.noNumbers'))
   }
   if (!AUDIENCE_HINT.test(trimmed)) {
-    issues.push('未提及目标人群（如「自由职业者」「中小企业主」），建议明确服务对象。')
+    issues.push(translate('ai.quality.noAudience'))
   }
   const hedges = HEDGES.filter((w) => trimmed.includes(w))
   if (hedges.length > 0) {
-    issues.push(`包含模糊表述（${hedges.join('、')}），建议改为具体、可证伪的陈述。`)
+    issues.push(translate('ai.quality.hedges', { words: hedges.join('、') }))
   }
 
   return { level: issues.length > 0 ? 'warn' : 'ok', issues }

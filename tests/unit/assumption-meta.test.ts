@@ -11,7 +11,7 @@ describe('assumption display metadata', () => {
   it('covers all 8 risk categories with a label and tint badge', () => {
     expect(Object.keys(ASSUMPTION_TYPE_META)).toHaveLength(8)
     for (const type of ASSUMPTION_TYPES) {
-      expect(ASSUMPTION_TYPE_META[type].label.length).toBeGreaterThan(0)
+      expect(ASSUMPTION_TYPE_META[type].labelKey.length).toBeGreaterThan(0)
       expect(ASSUMPTION_TYPE_META[type].badgeClass).toContain('bg-tint-')
     }
   })

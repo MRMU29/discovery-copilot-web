@@ -8,9 +8,12 @@ import { TokensPreview } from '@/app/TokensPreview'
 
 const Dashboard = lazy(() => import('@/pages/Dashboard'))
 const AiProvider = lazy(() => import('@/pages/settings/AiProvider'))
+const Appearance = lazy(() => import('@/pages/settings/Appearance'))
 const DataBackup = lazy(() => import('@/pages/settings/DataBackup'))
 const Privacy = lazy(() => import('@/pages/settings/Privacy'))
 const About = lazy(() => import('@/pages/settings/About'))
+const Product = lazy(() => import('@/pages/settings/Product'))
+const Terms = lazy(() => import('@/pages/settings/Terms'))
 
 /**
  * §3.1 contract: /project/:projectId/<section> flat children, ≤3 segments;
@@ -31,9 +34,12 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <Navigate to="ai-provider" replace /> },
           { path: 'ai-provider', element: <AiProvider /> },
+          { path: 'appearance', element: <Appearance /> },
           { path: 'data-backup', element: <DataBackup /> },
           { path: 'privacy', element: <Privacy /> },
           { path: 'about', element: <About /> },
+          { path: 'product', element: <Product /> },
+          { path: 'terms', element: <Terms /> },
         ],
       },
       { path: '*', element: <Navigate to="/" replace /> },

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { BotIcon, ClipboardIcon, CopyIcon } from '@/components/ui/icons'
 import { downloadFile } from '@/lib/download'
 import { getOnboarding, markOnboardingDone } from '@/services/onboarding'
+import { useT } from '@/lib/i18n'
 
 interface RelayPanelProps<T> {
   /** 完整 Relay 文本（指令 + 输入 + few-shot），来自 prompt builder。 */
@@ -18,21 +19,21 @@ interface RelayPanelProps<T> {
 }
 
 const RELAY_STEPS = [
-  { icon: CopyIcon, title: '复制', body: '点下方「复制 Prompt」，内容已进入剪贴板' },
-  { icon: BotIcon, title: '粘给 AI', body: '打开你的 AI 助手（Claude / ChatGPT / 豆包…），粘贴并发送' },
-  { icon: ClipboardIcon, title: '粘回结果', body: '整体复制 AI 回复，点「下一步：粘贴结果」粘回这里解析' },
+  { icon: CopyIcon, titleKey: 'relay.step1.title', bodyKey: 'relay.step1.body' },
+  { icon: BotIcon, titleKey: 'relay.step2.title', bodyKey: 'relay.step2.body' },
+  { icon: ClipboardIcon, titleKey: 'relay.step3.title', bodyKey: 'relay.step3.body' },
 ]
 
 const RELAY_EXAMPLE = [
   {
-    label: 'Prompt 长这样（节选）：',
+    labelKey: 'relay.examplePromptLabel',
     text:
       '你是资深产品发现教练……给定项目背景后，你从八个风险类别中识别出最关键、' +
       '最值得验证的产品假设。……只输出一个 JSON 对象：{"assumptions":[…]}。\n' +
       '## 待处理输入\n项目名称：AI 记账助手\n项目背景与想法：面向自由职业者的…',
   },
   {
-    label: 'AI 的回复长这样（解析器兼容围栏/解释文字/字段名变体）：',
+    labelKey: 'relay.exampleReplyLabel',
     text:
       '好的，这是我识别的假设：\n```json\n{"assumptions":[{"statement":"自由职业者愿意为自动报税整理支付每月 10 元",' +
       '"type":"value","rationale":"付费意愿未经验证","suggestedImpact":4,"suggestedRisk":4}]}\n```',
@@ -46,6 +47,7 @@ const RELAY_EXAMPLE = [
  * 全文供修改后重新解析。
  */
 export function RelayPanel<T>({ promptText, schema, schemaDescription, taskType, onApply }: RelayPanelProps<T>) {
+  const t = useT()
   const [stage, setStage] = useState<'prompt' | 'result'>('prompt')
   const [text, setText] = useState(promptText)
   const [editing, setEditing] = useState(false)
@@ -75,7 +77,7 @@ export function RelayPanel<T>({ promptText, schema, schemaDescription, taskType,
       setCopied(true)
       window.setTimeout(() => setCopied(false), 2000)
     } catch {
-      setError('自动复制失败，请点击文本区域手动全选复制。')
+      setError(t('relay.copyFailed'))
     }
   }
 
@@ -114,9 +116,7 @@ export function RelayPanel<T>({ promptText, schema, schemaDescription, taskType,
   if (stage === 'result') {
     return (
       <div className="space-y-3">
-        <p className="text-caption text-ink-muted">
-          把外部 AI 助手的回复粘贴到下面（支持纯 JSON、markdown 围栏或带解释文字的回复），然后解析。
-        </p>
+        <p className="text-caption text-ink-muted">{t('relay.resultIntro')}</p>
         <textarea
           value={raw}
           onChange={(e) => {
@@ -124,23 +124,23 @@ export function RelayPanel<T>({ promptText, schema, schemaDescription, taskType,
             setIssues([])
           }}
           rows={8}
-          placeholder='粘贴 AI 回复，例如：{"experiments":[…]}'
-          aria-label="粘贴 AI 回复结果"
+          placeholder={t('relay.resultPlaceholder')}
+          aria-label={t('relay.resultAria')}
           className="w-full rounded-btn border border-hairline-strong bg-surface-1 px-3 py-2 font-mono text-body-sm text-ink placeholder:text-ink-faint focus:border-accent-focus focus:outline-none"
         />
         <div className="flex flex-wrap items-center gap-3">
           <label className="inline-flex min-h-11 cursor-pointer items-center rounded-btn border border-hairline-strong bg-surface-2 px-4 py-2.5 text-button text-ink hover:bg-surface-3">
-            导入结果文件
+            {t('relay.importFile')}
             <input type="file" accept=".json,.txt" onChange={handleFile} className="sr-only" />
           </label>
           <Button variant="ghost" onClick={() => setStage('prompt')}>
-            返回修改 Prompt
+            {t('relay.backToPrompt')}
           </Button>
         </div>
 
         {issues.length > 0 && (
           <div role="alert" className="rounded-lg border border-danger/40 bg-danger/5 p-3">
-            <p className="text-body-sm font-medium text-danger">解析失败（原文已保留，可修改后重新解析）：</p>
+            <p className="text-body-sm font-medium text-danger">{t('relay.parseFailed')}</p>
             <ul className="mt-1 list-disc space-y-1 pl-5 text-caption text-ink-secondary">
               {issues.map((issue) => (
                 <li key={issue}>{issue}</li>
@@ -154,7 +154,7 @@ export function RelayPanel<T>({ promptText, schema, schemaDescription, taskType,
           </p>
         )}
 
-        <Button onClick={handleParse}>解析结果</Button>
+        <Button onClick={handleParse}>{t('relay.parse')}</Button>
       </div>
     )
   }
@@ -162,16 +162,16 @@ export function RelayPanel<T>({ promptText, schema, schemaDescription, taskType,
   return (
     <div className="space-y-3">
       {showRelaySteps && (
-        <section aria-label="Prompt Relay 操作引导" className="rounded-lg border border-hairline bg-surface-2 p-3">
+        <section aria-label={t('relay.guideAria')} className="rounded-lg border border-hairline bg-surface-2 p-3">
           <ol className="grid gap-1.5">
             {RELAY_STEPS.map((s, i) => (
-              <li key={s.title} className="flex items-center gap-2">
+              <li key={s.titleKey} className="flex items-center gap-2">
                 <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-accent/15 text-accent">
                   <s.icon size={13} />
                 </span>
                 <p className="text-caption text-ink">
-                  <span className="font-medium">{i + 1}. {s.title}</span>
-                  <span className="text-ink-muted"> — {s.body}</span>
+                  <span className="font-medium">{i + 1}. {t(s.titleKey)}</span>
+                  <span className="text-ink-muted"> — {t(s.bodyKey)}</span>
                 </p>
               </li>
             ))}
@@ -183,21 +183,21 @@ export function RelayPanel<T>({ promptText, schema, schemaDescription, taskType,
               onClick={() => setShowExample((v) => !v)}
               className="min-h-7 rounded-btn px-2 text-caption text-accent hover:text-accent-hover"
             >
-              {showExample ? '收起示例' : '查看示例'}
+              {showExample ? t('relay.hideExample') : t('relay.showExample')}
             </button>
             <button
               type="button"
               onClick={() => setShowRelaySteps(false)}
               className="min-h-7 rounded-btn px-2 text-caption text-ink-faint hover:text-ink"
             >
-              知道了
+              {t('relay.ack')}
             </button>
           </div>
           {showExample && (
             <div className="mt-2 space-y-2">
               {RELAY_EXAMPLE.map((block) => (
-                <div key={block.label}>
-                  <p className="text-caption text-ink-muted">{block.label}</p>
+                <div key={block.labelKey}>
+                  <p className="text-caption text-ink-muted">{t(block.labelKey)}</p>
                   <pre className="reading-surface mt-1 max-h-40 overflow-y-auto whitespace-pre-wrap break-words rounded-btn border border-hairline p-2 font-mono text-xs">
                     {block.text}
                   </pre>
@@ -208,14 +208,14 @@ export function RelayPanel<T>({ promptText, schema, schemaDescription, taskType,
         </section>
       )}
       <p className="text-caption text-ink-muted">
-        把下面的 Prompt 复制给你的 AI 助手（Claude / ChatGPT / 豆包…），等它回复后点击「粘贴结果」继续。
+        {t('relay.intro')}
       </p>
       {editing ? (
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={12}
-          aria-label="编辑 Prompt"
+          aria-label={t('relay.editPromptAria')}
           className="w-full rounded-btn border border-hairline-strong bg-surface-1 px-3 py-2 font-mono text-body-sm text-ink focus:border-accent-focus focus:outline-none"
         />
       ) : (
@@ -227,16 +227,16 @@ export function RelayPanel<T>({ promptText, schema, schemaDescription, taskType,
       )}
       <div className="flex flex-wrap items-center gap-2">
         <Button variant="secondary" onClick={handleCopy}>
-          {copied ? '已复制' : '复制 Prompt'}
+          {copied ? t('relay.copied') : t('relay.copy')}
         </Button>
         <Button variant="ghost" onClick={() => setEditing((v) => !v)}>
-          {editing ? '完成编辑' : '编辑'}
+          {editing ? t('relay.finishEditing') : t('common.edit')}
         </Button>
         <Button variant="ghost" onClick={handleDownloadTxt}>
-          下载 .txt
+          {t('relay.downloadTxt')}
         </Button>
         <Button variant="ghost" onClick={handleExportTask}>
-          导出任务文件
+          {t('relay.exportTask')}
         </Button>
       </div>
       {error && (
@@ -244,7 +244,7 @@ export function RelayPanel<T>({ promptText, schema, schemaDescription, taskType,
           {error}
         </p>
       )}
-      <Button onClick={() => setStage('result')}>下一步：粘贴结果</Button>
+      <Button onClick={() => setStage('result')}>{t('relay.nextPaste')}</Button>
     </div>
   )
 }

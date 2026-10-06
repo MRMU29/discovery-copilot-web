@@ -189,7 +189,7 @@ describe('reports & settings', () => {
     const list = await reports.listReportsByProject(p.id)
     expect(list[0].content).toBe('## 结论')
 
-    expect((await settings.getSettings()).theme).toBe('dark')
+    expect((await settings.getSettings()).theme).toBe('system')
     await settings.updateSettings({ theme: 'light' })
     expect((await settings.getSettings()).theme).toBe('light')
     await expect(settings.updateSettings({ apiKey: 'sk-x' })).rejects.toMatchObject({

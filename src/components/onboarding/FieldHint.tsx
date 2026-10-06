@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { HelpCircleIcon } from '@/components/ui/icons'
+import { useT } from '@/lib/i18n'
 
 interface FieldHintProps {
   /** 字段名，用于无障碍标签。 */
@@ -20,13 +21,14 @@ interface FieldHintProps {
  * 展开，读完或提交成功后折叠为纯问号——任何状态下都不阻断填写。
  */
 export function FieldHint({ field, good, bad, highlighted = false, onRead }: FieldHintProps) {
+  const t = useT()
   const [expanded, setExpanded] = useState(highlighted)
 
   if (!expanded) {
     return (
       <button
         type="button"
-        aria-label={`查看「${field}」的填写示例`}
+        aria-label={t('common.hintExpandAria', { field })}
         aria-expanded={false}
         onClick={() => setExpanded(true)}
         className="inline-flex size-6 shrink-0 items-center justify-center rounded-full text-ink-faint hover:bg-surface-2 hover:text-ink"
@@ -37,25 +39,25 @@ export function FieldHint({ field, good, bad, highlighted = false, onRead }: Fie
   }
 
   return (
-    <div className="rounded-lg border border-hairline bg-surface-2 p-3 text-caption">
+    <div className="w-full min-w-0 rounded-lg border border-hairline bg-surface-2 p-3 text-caption sm:w-auto">
       <div className="flex items-center gap-1.5 text-ink-secondary">
         <HelpCircleIcon size={14} />
-        <span className="font-medium">{field} · 这样填更好</span>
+        <span className="font-medium">{t('common.hintTitle', { field })}</span>
         <button
           type="button"
-          aria-label={`收起「${field}」示例`}
+          aria-label={t('common.hintCollapseAria', { field })}
           onClick={() => setExpanded(false)}
           className="ml-auto min-h-6 rounded-btn px-2 text-caption text-ink-faint hover:text-ink"
         >
-          收起
+          {t('common.hintCollapse')}
         </button>
       </div>
       <p className="mt-1.5 text-success">
-        <span className="font-medium">好例子：</span>
+        <span className="font-medium">{t('common.hintGoodLabel')}</span>
         {good}
       </p>
       <p className="mt-1 text-danger">
-        <span className="font-medium">坏例子：</span>
+        <span className="font-medium">{t('common.hintBadLabel')}</span>
         {bad}
       </p>
       {highlighted && (
@@ -67,7 +69,7 @@ export function FieldHint({ field, good, bad, highlighted = false, onRead }: Fie
           }}
           className="mt-2 min-h-8 rounded-btn bg-surface-3 px-3 text-caption text-ink hover:bg-surface-4"
         >
-          知道了，不再提示
+          {t('common.hintAck')}
         </button>
       )}
     </div>

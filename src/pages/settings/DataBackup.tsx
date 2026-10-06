@@ -7,6 +7,7 @@ import { Dialog } from '@/components/ui/Dialog'
 import { PageSkeleton } from '@/components/common/states'
 import { downloadFile } from '@/lib/download'
 import { formatWhen } from '@/lib/report-export'
+import { useT } from '@/lib/i18n'
 import {
   DCOPILT_MAX_BYTES,
   applyImport,
@@ -24,19 +25,23 @@ import { clearProductData } from '@/services/maintenance'
 import { listActiveProjects, listDeletedProjects } from '@/services/projects'
 
 function formatBytes(bytes: number | null): string {
-  return bytes != null ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : '未知'
+  return bytes != null ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : '—'
 }
 
-const STRATEGY_OPTIONS: { value: ConflictStrategy; label: string; hint: string }[] = [
-  { value: 'copy', label: '创建副本', hint: '冲突项目以新 ID 导入，本地原样保留（默认）' },
-  { value: 'overwrite', label: '覆盖现有项目', hint: '本地数据整体替换为文件内容，导入前自动快照' },
-  { value: 'skip', label: '跳过冲突项目', hint: '冲突项目不导入' },
+const STRATEGY_OPTIONS: { value: ConflictStrategy; labelKey: string; hintKey: string }[] = [
+  { value: 'copy', labelKey: 'settings.dataBackup.strategyCopy', hintKey: 'settings.dataBackup.strategyCopyHint' },
+  {
+    value: 'overwrite',
+    labelKey: 'settings.dataBackup.strategyOverwrite',
+    hintKey: 'settings.dataBackup.strategyOverwriteHint',
+  },
+  { value: 'skip', labelKey: 'settings.dataBackup.strategySkip', hintKey: 'settings.dataBackup.strategySkipHint' },
 ]
 
-const STATUS_LABELS: Record<ImportItemStatus, string> = {
-  new: '新项目',
-  conflict: '内容冲突',
-  duplicate: '与本地一致',
+const STATUS_LABEL_KEYS: Record<ImportItemStatus, string> = {
+  new: 'settings.dataBackup.status.new',
+  conflict: 'settings.dataBackup.status.conflict',
+  duplicate: 'settings.dataBackup.status.duplicate',
 }
 
 const STATUS_BADGES: Record<ImportItemStatus, string> = {
@@ -51,6 +56,7 @@ interface PendingImport {
 }
 
 export default function DataBackup() {
+  const t = useT()
   const [quota, setQuota] = useState<QuotaReport | null>(null)
   const [persist, setPersist] = useState<'idle' | 'granted' | 'denied'>('idle')
   const [clearing, setClearing] = useState(false)
@@ -92,13 +98,13 @@ export default function DataBackup() {
   }
 
   async function handleClearData() {
-    if (!window.confirm('清除全部项目数据（项目/假设/实验/OST/报告）？此操作不可恢复，建议先导出 .dcopilot 备份。')) return
-    if (!window.confirm('再次确认：真的要清除全部项目数据吗？AI 模式、Provider 配置与引导状态会保留。')) return
+    if (!window.confirm(t('settings.dataBackup.clearConfirm1'))) return
+    if (!window.confirm(t('settings.dataBackup.clearConfirm2'))) return
     setClearing(true)
     setError(null)
     try {
       await clearProductData()
-      setNotice('已清除全部项目数据；应用设置与 Provider 配置保留。')
+      setNotice(t('settings.dataBackup.clearDone'))
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -112,8 +118,8 @@ export default function DataBackup() {
     setNotice(null)
     try {
       const file = await buildDcopilotFile('all')
-      downloadFile(dcopilotFileName('全部项目备份'), JSON.stringify(file, null, 2), 'application/json')
-      setNotice(`已导出 ${file.projects.length} 个项目的 .dcopilot 备份（不含 API Key）。`)
+      downloadFile(dcopilotFileName(t('dashboard.title')), JSON.stringify(file, null, 2), 'application/json')
+      setNotice(t('settings.dataBackup.exportAllDone', { count: file.projects.length }))
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -128,9 +134,9 @@ export default function DataBackup() {
     setNotice(null)
     try {
       const file = await buildDcopilotFile(selectedProjectId)
-      const name = file.projects[0]?.name ?? '项目'
+      const name = file.projects[0]?.name ?? ''
       downloadFile(dcopilotFileName(name), JSON.stringify(file, null, 2), 'application/json')
-      setNotice(`已导出「${name}」的 .dcopilot 文件。`)
+      setNotice(t('settings.dataBackup.exportOneDone', { name }))
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -144,7 +150,7 @@ export default function DataBackup() {
     setNotice(null)
     try {
       const snapshot = await createSnapshot()
-      setNotice(`已创建本地快照（${snapshot.projectCount} 个项目）。`)
+      setNotice(t('settings.dataBackup.snapshotDone', { count: snapshot.projectCount }))
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -153,11 +159,11 @@ export default function DataBackup() {
   }
 
   async function handleDeleteSnapshot(id: string) {
-    if (!window.confirm('删除该快照？此操作不可恢复。')) return
+    if (!window.confirm(t('settings.dataBackup.snapshotDeleteConfirm'))) return
     setError(null)
     try {
       await snapshotsRepo.delete(id)
-      setNotice('已删除快照。')
+      setNotice(t('settings.dataBackup.snapshotDeleted'))
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     }
@@ -188,7 +194,7 @@ export default function DataBackup() {
     event.target.value = ''
     if (!file) return
     if (file.size > DCOPILT_MAX_BYTES) {
-      setParseIssues([`文件超过 20 MB 导入上限（§5.4），已拒绝。`])
+      setParseIssues([t('settings.dataBackup.importTooLarge')])
       return
     }
     openImport(await file.text())
@@ -202,10 +208,15 @@ export default function DataBackup() {
       const result = await applyImport(pending.file, { conflictStrategy: strategy, restoreSettings })
       setPending(null)
       setNotice(
-        `导入完成：新增 ${result.created} · 覆盖 ${result.overwritten} · 跳过 ${result.skipped}` +
-          `（其中与本地一致 ${result.duplicates}）` +
-          `${result.settingsRestored ? '；应用设置已恢复' : ''}` +
-          `${result.snapshotId ? '；已创建覆盖前快照' : ''}。`,
+        t('settings.dataBackup.importDone', {
+          created: result.created,
+          overwritten: result.overwritten,
+          skipped: result.skipped,
+          duplicates: result.duplicates,
+        }) +
+          (result.settingsRestored ? t('settings.dataBackup.importDoneSettings') : '') +
+          (result.snapshotId ? t('settings.dataBackup.importDoneSnapshot') : '') +
+          '.',
       )
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
@@ -216,45 +227,47 @@ export default function DataBackup() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-headline text-ink">数据与备份</h2>
+      <h2 className="text-headline text-ink">{t('settings.dataBackup.title')}</h2>
 
-      <section aria-label="存储配额" className="rounded-lg border border-hairline bg-surface-1 p-4">
-        <h3 className="text-eyebrow text-ink-muted">存储配额</h3>
+      <section aria-label={t('settings.dataBackup.quotaHeading')} className="rounded-lg border border-hairline bg-surface-1 p-4">
+        <h3 className="text-eyebrow text-ink-muted">{t('settings.dataBackup.quotaHeading')}</h3>
         <p className="mt-2 text-body text-ink">
-          已用 {formatBytes(quota?.usage ?? null)} / 可用配额 {formatBytes(quota?.quota ?? null)}
+          {t('settings.dataBackup.quotaUsage', {
+            used: quota?.usage != null ? formatBytes(quota.usage) : t('settings.dataBackup.unknown'),
+            quota: quota?.quota != null ? formatBytes(quota.quota) : t('settings.dataBackup.unknown'),
+          })}
         </p>
+        <p className="mt-1 text-caption text-ink-faint">{t('settings.dataBackup.quotaNote')}</p>
         {quota?.low && (
           <p role="status" className="mt-2 text-body-sm text-warning">
-            可用空间不足 50 MB：浏览器可能在存储压力下清理站点数据，请尽快导出备份。
+            {t('settings.dataBackup.quotaLow')}
           </p>
         )}
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <Button variant="secondary" onClick={() => void handlePersist()}>
-            申请持久存储
+            {t('settings.dataBackup.requestPersistent')}
           </Button>
-          {persist === 'granted' && <span className="text-body-sm text-success">已授予持久存储</span>}
+          {persist === 'granted' && <span className="text-body-sm text-success">{t('settings.dataBackup.persistGranted')}</span>}
           {persist === 'denied' && (
-            <span className="text-body-sm text-ink-muted">未授予（浏览器可能要求更多使用痕迹）</span>
+            <span className="text-body-sm text-ink-muted">{t('settings.dataBackup.persistDenied')}</span>
           )}
         </div>
       </section>
 
-      <section aria-label="备份与恢复" className="rounded-lg border border-hairline bg-surface-1 p-4">
-        <h3 className="text-eyebrow text-ink-muted">.dcopilot 备份 / 恢复</h3>
-        <p className="mt-2 text-caption text-ink-faint">
-          导出文件不含 API Key（Key 仅存在会话内存，从不落库）；覆盖式导入前会自动生成本地快照。
-        </p>
+      <section aria-label={t('settings.dataBackup.backupHeading')} className="rounded-lg border border-hairline bg-surface-1 p-4">
+        <h3 className="text-eyebrow text-ink-muted">{t('settings.dataBackup.backupHeading')}</h3>
+        <p className="mt-2 text-caption text-ink-faint">{t('settings.dataBackup.backupNote')}</p>
 
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <Button onClick={() => void handleExportAll()} disabled={exportingAll}>
-            {exportingAll ? '导出中…' : '导出全部项目'}
+            {exportingAll ? t('settings.dataBackup.exportingAll') : t('settings.dataBackup.exportAll')}
           </Button>
         </div>
 
         <div className="mt-3 flex flex-wrap items-end gap-3">
           <div>
             <label htmlFor="backup-project-select" className="text-caption text-ink-muted">
-              导出单个项目（含回收站项目）
+              {t('settings.dataBackup.exportOneLabel')}
             </label>
             <select
               id="backup-project-select"
@@ -262,11 +275,11 @@ export default function DataBackup() {
               onChange={(e) => setSelectedProjectId(e.target.value)}
               className="mt-1 min-h-11 w-64 rounded-btn border border-hairline-strong bg-surface-1 px-3 text-body text-ink focus:border-accent-focus focus:outline-none"
             >
-              <option value="">选择项目…</option>
+              <option value="">{t('settings.dataBackup.selectPlaceholder')}</option>
               {projectRows.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}
-                  {p.deletedAt ? '（回收站）' : ''}
+                  {p.deletedAt ? t('settings.dataBackup.trashSuffix') : ''}
                 </option>
               ))}
             </select>
@@ -276,20 +289,20 @@ export default function DataBackup() {
             onClick={() => void handleExportOne()}
             disabled={!selectedProjectId || exportingOne}
           >
-            {exportingOne ? '导出中…' : '导出所选项目'}
+            {exportingOne ? t('settings.dataBackup.exportingOne') : t('settings.dataBackup.exportSelected')}
           </Button>
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <label className="inline-flex min-h-11 cursor-pointer items-center rounded-btn border border-hairline-strong bg-surface-2 px-4 py-2.5 text-button text-ink hover:bg-surface-3">
-            导入 .dcopilot / .json 文件
+            {t('settings.dataBackup.importLabel')}
             <input type="file" accept=".dcopilot,.json" onChange={handleImportFile} className="sr-only" />
           </label>
         </div>
 
         {parseIssues && (
           <div role="alert" className="mt-3 rounded-lg border border-danger/40 bg-danger/5 p-3">
-            <p className="text-body-sm font-medium text-danger">导入已拒绝（本地数据未做任何改动）：</p>
+            <p className="text-body-sm font-medium text-danger">{t('settings.dataBackup.importRejected')}</p>
             <ul className="mt-1 list-disc space-y-0.5 pl-5 text-caption text-ink-secondary">
               {parseIssues.map((issue) => (
                 <li key={issue}>{issue}</li>
@@ -299,18 +312,16 @@ export default function DataBackup() {
         )}
       </section>
 
-      <section aria-label="本地快照" className="rounded-lg border border-hairline bg-surface-1 p-4">
-        <h3 className="text-eyebrow text-ink-muted">本地快照</h3>
-        <p className="mt-2 text-caption text-ink-faint">
-          覆盖式导入前自动创建（也可手动创建），保留最近 3 份；「恢复」走与文件导入相同的确认流程。
-        </p>
+      <section aria-label={t('settings.dataBackup.snapshotHeading')} className="rounded-lg border border-hairline bg-surface-1 p-4">
+        <h3 className="text-eyebrow text-ink-muted">{t('settings.dataBackup.snapshotHeading')}</h3>
+        <p className="mt-2 text-caption text-ink-faint">{t('settings.dataBackup.snapshotNote')}</p>
         <div className="mt-3">
           <Button variant="secondary" onClick={() => void handleCreateSnapshot()} disabled={snapshotting}>
-            {snapshotting ? '创建中…' : '立即创建快照'}
+            {snapshotting ? t('settings.dataBackup.creatingSnapshot') : t('settings.dataBackup.createSnapshot')}
           </Button>
         </div>
         {snapshots.length === 0 ? (
-          <p className="mt-3 text-caption text-ink-faint">还没有快照。</p>
+          <p className="mt-3 text-caption text-ink-faint">{t('settings.dataBackup.noSnapshots')}</p>
         ) : (
           <ul className="mt-3 space-y-2">
             {snapshots.map((s) => (
@@ -319,23 +330,20 @@ export default function DataBackup() {
                 className="flex flex-wrap items-center justify-between gap-2 rounded-btn border border-hairline bg-surface-2 px-3 py-2"
               >
                 <span className="text-caption text-ink">
-                  {formatWhen(s.createdAt)} · {s.projectCount} 个项目 ·{' '}
-                  {Math.max(1, Math.round(s.payload.length / 1024))} KB
+                  {formatWhen(s.createdAt)} · {s.projectCount} · {Math.max(1, Math.round(s.payload.length / 1024))} KB
                 </span>
                 <span className="flex gap-2">
                   <Button variant="ghost" onClick={() => void openImport(s.payload)}>
-                    恢复…
+                    {t('settings.dataBackup.snapshotRestore')}
                   </Button>
                   <Button
                     variant="ghost"
-                    onClick={() =>
-                      downloadFile(dcopilotFileName('本地快照'), s.payload, 'application/json')
-                    }
+                    onClick={() => downloadFile(dcopilotFileName(t('dashboard.title')), s.payload, 'application/json')}
                   >
-                    下载
+                    {t('settings.dataBackup.snapshotDownload')}
                   </Button>
                   <Button variant="ghost" onClick={() => void handleDeleteSnapshot(s.id)}>
-                    删除
+                    {t('common.delete')}
                   </Button>
                 </span>
               </li>
@@ -344,12 +352,9 @@ export default function DataBackup() {
         )}
       </section>
 
-      <section aria-label="危险区" className="rounded-lg border border-danger/40 bg-surface-1 p-4">
-        <h3 className="text-eyebrow text-danger">危险区</h3>
-        <p className="mt-2 text-body-sm text-ink-secondary">
-          清除全部项目数据（项目 / 假设 / 实验 / OST / 报告 / 评分审计）。AI 模式、Provider
-          配置、新手指引状态会保留；此操作不可恢复。
-        </p>
+      <section aria-label={t('settings.dataBackup.dangerHeading')} className="rounded-lg border border-danger/40 bg-surface-1 p-4">
+        <h3 className="text-eyebrow text-danger">{t('settings.dataBackup.dangerHeading')}</h3>
+        <p className="mt-2 text-body-sm text-ink-secondary">{t('settings.dataBackup.dangerDesc')}</p>
         {notice && (
           <p role="status" className="mt-2 text-body-sm text-success">
             {notice}
@@ -361,13 +366,13 @@ export default function DataBackup() {
           </p>
         )}
         <Button className="mt-3" variant="danger" onClick={() => void handleClearData()} disabled={clearing}>
-          {clearing ? '清除中…' : '清除项目数据…'}
+          {clearing ? t('settings.dataBackup.clearing') : t('settings.dataBackup.clearData')}
         </Button>
       </section>
 
       <Dialog
         open={pending !== null}
-        title="导入确认"
+        title={t('settings.dataBackup.importConfirmTitle')}
         onClose={() => {
           if (!importing) setPending(null)
         }}
@@ -375,17 +380,29 @@ export default function DataBackup() {
         {pending && (
           <div className="space-y-4">
             <div className="rounded-lg border border-hairline bg-surface-2 p-3 text-caption text-ink-secondary">
-              <p className="font-medium text-ink">数据摘要</p>
+              <p className="font-medium text-ink">{t('settings.dataBackup.summaryTitle')}</p>
               <p className="mt-1">
-                项目 {pending.file.projects.length} 个（新增 {pending.summary.counts.new} · 冲突{' '}
-                {pending.summary.counts.conflict} · 与本地一致 {pending.summary.counts.duplicate}）
+                {t('settings.dataBackup.summaryProjects', {
+                  count: pending.file.projects.length,
+                  created: pending.summary.counts.new,
+                  conflict: pending.summary.counts.conflict,
+                  duplicate: pending.summary.counts.duplicate,
+                })}
               </p>
               <p className="mt-0.5">
-                假设 {pending.summary.totals.assumptions} · 实验 {pending.summary.totals.experiments} · OST
-                节点 {pending.summary.totals.ostNodes} · 报告 {pending.summary.totals.reports}
+                {t('settings.dataBackup.summaryTotals', {
+                  assumptions: pending.summary.totals.assumptions,
+                  experiments: pending.summary.totals.experiments,
+                  ostNodes: pending.summary.totals.ostNodes,
+                  reports: pending.summary.totals.reports,
+                })}
               </p>
               <p className="mt-0.5">
-                应用设置：{pending.summary.hasSettings ? '文件内含' : '文件不含'}
+                {t('settings.dataBackup.summarySettings', {
+                  has: pending.summary.hasSettings
+                    ? t('settings.dataBackup.settingsInFile')
+                    : t('settings.dataBackup.settingsNotInFile'),
+                })}
               </p>
             </div>
 
@@ -395,19 +412,19 @@ export default function DataBackup() {
                   <span className="text-body-sm text-ink">{item.project.name}</span>
                   {item.project.deletedAt && (
                     <span className="rounded-full border border-hairline bg-surface-2 px-2 py-0.5 text-ink-faint">
-                      回收站
+                      {t('settings.dataBackup.trashSuffix')}
                     </span>
                   )}
                   <span className={`rounded-full px-2 py-0.5 ${STATUS_BADGES[item.status]}`}>
-                    {STATUS_LABELS[item.status]}
+                    {t(STATUS_LABEL_KEYS[item.status])}
                   </span>
-                  {item.sameName && <span className="text-warning">本地存在同名项目</span>}
+                  {item.sameName && <span className="text-warning">{t('settings.dataBackup.sameNameWarning')}</span>}
                 </li>
               ))}
             </ul>
 
             <fieldset>
-              <legend className="text-caption text-ink-muted">冲突处理（仅对冲突项目生效）</legend>
+              <legend className="text-caption text-ink-muted">{t('settings.dataBackup.strategyLegend')}</legend>
               <div className="mt-1 space-y-1">
                 {STRATEGY_OPTIONS.map((opt) => (
                   <label key={opt.value} className="flex min-h-9 items-start gap-2 text-body-sm text-ink">
@@ -420,8 +437,8 @@ export default function DataBackup() {
                       className="mt-1 size-4 accent-accent"
                     />
                     <span>
-                      <span className="font-medium">{opt.label}</span>
-                      <span className="text-ink-muted"> — {opt.hint}</span>
+                      <span className="font-medium">{t(opt.labelKey)}</span>
+                      <span className="text-ink-muted"> — {t(opt.hintKey)}</span>
                     </span>
                   </label>
                 ))}
@@ -436,7 +453,7 @@ export default function DataBackup() {
                 onChange={(e) => setRestoreSettings(e.target.checked)}
                 className="size-4 accent-accent"
               />
-              同时恢复应用设置（主题 / AI 模式 / 预算）
+              {t('settings.dataBackup.restoreSettings')}
             </label>
 
             {error && (
@@ -447,10 +464,10 @@ export default function DataBackup() {
 
             <div className="flex gap-2">
               <Button onClick={() => void handleConfirmImport()} disabled={importing}>
-                {importing ? '导入中…' : '确认导入'}
+                {importing ? t('settings.dataBackup.importing') : t('settings.dataBackup.confirmImport')}
               </Button>
               <Button variant="ghost" onClick={() => setPending(null)} disabled={importing}>
-                取消
+                {t('common.cancel')}
               </Button>
             </div>
           </div>

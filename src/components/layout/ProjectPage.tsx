@@ -4,6 +4,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { projectsRepo } from '@/db/repositories'
 import { ErrorState, PageSkeleton, Skeleton } from '@/components/common/states'
 import { PROJECT_SECTIONS, SECTION_LABELS, projectPath, resolveSection, type ProjectSection } from '@/app/nav'
+import { useT } from '@/lib/i18n'
 
 const Overview = lazy(() => import('@/pages/project/Overview'))
 const Assumptions = lazy(() => import('@/pages/project/Assumptions'))
@@ -30,6 +31,7 @@ const tabClass = ({ isActive }: { isActive: boolean }) =>
  * unknown :section falls back to overview content in place — no redirect.
  */
 export default function ProjectPage() {
+  const t = useT()
   const { projectId, section } = useParams()
   const data = useLiveQuery(async () => {
     const project = projectId ? await projectsRepo.get(projectId) : undefined
@@ -49,7 +51,7 @@ export default function ProjectPage() {
   if (!data.project || !projectId) {
     return (
       <div className="space-y-4">
-        <ErrorState title="项目不存在" message="该项目可能已被删除或链接有误。" />
+        <ErrorState title={t('shell.projectNotFound')} message={t('shell.projectNotFoundDesc')} />
         <Link to="/" className="inline-flex min-h-11 items-center text-body-sm text-accent hover:text-accent-hover">
           ← 返回项目列表
         </Link>
@@ -66,7 +68,7 @@ export default function ProjectPage() {
         <Link
           to="/"
           className="flex min-h-11 items-center rounded-btn px-2 text-body-sm text-ink-muted hover:text-ink"
-          aria-label="返回项目列表"
+          aria-label={t('shell.backToProjects')}
         >
           ←
         </Link>
@@ -74,23 +76,25 @@ export default function ProjectPage() {
       </div>
 
       {/* Desktop rail */}
-      <nav aria-label="项目分区" className="mt-4 hidden gap-1 md:flex">
+      <nav aria-label={t('nav.sections')} className="mt-4 hidden gap-1 md:flex">
         {PROJECT_SECTIONS.map((s) => (
           <NavLink key={s} to={projectPath(projectId, s)} className={tabClass}>
-            {SECTION_LABELS[s]}
+            {t(SECTION_LABELS[s])}
           </NavLink>
         ))}
       </nav>
 
       <div className="mt-6">
-        <Suspense fallback={<PageSkeleton />}>
-          <Section projectId={projectId} />
-        </Suspense>
+        <div key={active} className="dc-page-enter">
+          <Suspense fallback={<PageSkeleton />}>
+            <Section projectId={projectId} />
+          </Suspense>
+        </div>
       </div>
 
       {/* Mobile bottom tab bar — 安卓优先 */}
       <nav
-        aria-label="项目分区"
+        aria-label={t('nav.sections')}
         className="fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-surface-1/95 backdrop-blur md:hidden"
       >
         <div className="mx-auto grid max-w-6xl grid-cols-5 pb-[max(env(safe-area-inset-bottom),0.375rem)] pt-1">
@@ -104,7 +108,7 @@ export default function ProjectPage() {
                 }`
               }
             >
-              {SECTION_LABELS[s]}
+              {t(SECTION_LABELS[s])}
             </NavLink>
           ))}
         </div>

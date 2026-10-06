@@ -8,7 +8,7 @@
  *   node scripts/prepare-release.mjs [targetDir]
  *   默认 targetDir = ../discovery-copilot-web（相对 WEB 根）
  */
-import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs'
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
 const ROOT = process.cwd()
@@ -25,12 +25,23 @@ const EXCLUDE = new Set([
 ])
 const EXCLUDE_FILE_RE = /\.(log|dcopilot|sqlitedb|tsbuildinfo)$/
 
-if (existsSync(TARGET)) {
-  rmSync(TARGET, { recursive: true, force: true })
+// 发布仓库的 .git 承载推送历史——重建前先移出，复制完成后再放回，
+// 否则 rmSync 会连同 .git 一起删掉，git 历史就没了。
+const GIT_DIR = join(TARGET, '.git')
+const GIT_BACKUP = join(TARGET, '..', APP_NAME + '.git-backup')
+let gitSaved = false
+if (existsSync(GIT_DIR)) {
+  rmSync(GIT_BACKUP, { recursive: true, force: true })
+  renameSync(GIT_DIR, GIT_BACKUP)
+  gitSaved = true
 }
-mkdirSync(TARGET, { recursive: true })
-
 let copied = 0
+try {
+  if (existsSync(TARGET)) {
+    rmSync(TARGET, { recursive: true, force: true })
+  }
+  mkdirSync(TARGET, { recursive: true })
+
 function copyDir(src, dest) {
   mkdirSync(dest, { recursive: true })
   for (const entry of readdirSync(src, { withFileTypes: true })) {
@@ -45,7 +56,13 @@ function copyDir(src, dest) {
     }
   }
 }
-copyDir(ROOT, TARGET)
+  copyDir(ROOT, TARGET)
+} finally {
+  if (gitSaved) {
+    rmSync(GIT_DIR, { recursive: true, force: true })
+    renameSync(GIT_BACKUP, GIT_DIR)
+  }
+}
 
 // ---- 校验：发布树必须零内部材料、零用户数据、零密钥形态 ----
 const problems = []

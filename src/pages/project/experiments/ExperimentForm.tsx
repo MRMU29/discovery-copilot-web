@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button'
 import { ASSUMPTION_TYPE_META } from '@/lib/assumption-meta'
 import type { Assumption, Experiment } from '@/schemas/entities'
 import { createExperiment, updateExperiment } from '@/services/experiments'
+import { useT } from '@/lib/i18n'
 
 interface ExperimentFormProps {
   /** Required when creating; editing passes `initial` instead. */
@@ -18,6 +19,7 @@ const inputClass =
 
 /** Create/edit form for one experiment. Status/result live on the card. */
 export function ExperimentForm({ projectId, initial, assumptions, onDone, onCancel }: ExperimentFormProps) {
+  const t = useT()
   const [hypothesis, setHypothesis] = useState(initial?.hypothesis ?? '')
   const [method, setMethod] = useState(initial?.method ?? '')
   const [successCriteria, setSuccessCriteria] = useState(initial?.successCriteria ?? '')
@@ -29,7 +31,7 @@ export function ExperimentForm({ projectId, initial, assumptions, onDone, onCanc
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
     if (!hypothesis.trim() || !method.trim()) {
-      setError('请填写实验假设与实验方法。')
+      setError(t('experiment.required'))
       return
     }
     setSaving(true)
@@ -58,7 +60,7 @@ export function ExperimentForm({ projectId, initial, assumptions, onDone, onCanc
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label htmlFor="experiment-hypothesis" className="text-caption text-ink-muted">
-          实验假设（可证伪，「若…则…」句式，含数字阈值更佳）
+          {t('experiment.hypothesisLabel')}
         </label>
         <textarea
           id="experiment-hypothesis"
@@ -66,14 +68,14 @@ export function ExperimentForm({ projectId, initial, assumptions, onDone, onCanc
           onChange={(e) => setHypothesis(e.target.value)}
           rows={3}
           maxLength={2000}
-          placeholder="例：若提供一键导入模板，则 60% 以上用户能在 5 分钟内完成首次导入"
+          placeholder={t('experiment.hypothesisPlaceholder')}
           className={inputClass}
         />
       </div>
 
       <div>
         <label htmlFor="experiment-method" className="text-caption text-ink-muted">
-          实验方法（写清对象、渠道、时长）
+          {t('experiment.methodFieldLabel')}
         </label>
         <textarea
           id="experiment-method"
@@ -81,14 +83,14 @@ export function ExperimentForm({ projectId, initial, assumptions, onDone, onCanc
           onChange={(e) => setMethod(e.target.value)}
           rows={3}
           maxLength={1000}
-          placeholder="例：假门测试：引导页放置「一键导入」入口，运行 7 天记录展示与点击"
+          placeholder={t('experiment.methodPlaceholder')}
           className={inputClass}
         />
       </div>
 
       <div>
         <label htmlFor="experiment-criteria" className="text-caption text-ink-muted">
-          成功阈值（可选，建议包含数字）
+          {t('experiment.criteriaFieldLabel')}
         </label>
         <textarea
           id="experiment-criteria"
@@ -96,14 +98,14 @@ export function ExperimentForm({ projectId, initial, assumptions, onDone, onCanc
           onChange={(e) => setSuccessCriteria(e.target.value)}
           rows={2}
           maxLength={2000}
-          placeholder="例：入口点击率 ≥ 25%"
+          placeholder={t('experiment.criteriaPlaceholder')}
           className={inputClass}
         />
       </div>
 
       <div>
         <label htmlFor="experiment-assumption" className="text-caption text-ink-muted">
-          关联假设（可选）
+          {t('experiment.linkAssumption')}
         </label>
         <select
           id="experiment-assumption"
@@ -111,10 +113,10 @@ export function ExperimentForm({ projectId, initial, assumptions, onDone, onCanc
           onChange={(e) => setAssumptionId(e.target.value)}
           className={`${inputClass} min-h-11`}
         >
-          <option value="">不关联</option>
+          <option value="">{t('experiment.linkNone')}</option>
           {assumptions.map((a) => (
             <option key={a.id} value={a.id}>
-              [{ASSUMPTION_TYPE_META[a.type].label}] {a.statement.length > 32 ? `${a.statement.slice(0, 32)}…` : a.statement}
+              [{t(ASSUMPTION_TYPE_META[a.type].labelKey)}] {a.statement.length > 32 ? `${a.statement.slice(0, 32)}…` : a.statement}
             </option>
           ))}
         </select>
@@ -128,10 +130,10 @@ export function ExperimentForm({ projectId, initial, assumptions, onDone, onCanc
 
       <div className="flex gap-2">
         <Button type="submit" disabled={saving || !hypothesis.trim() || !method.trim()}>
-          {saving ? '保存中…' : editing ? '保存修改' : '添加实验'}
+          {saving ? t('common.saving') : editing ? t('common.saveEdit') : t('experiment.add')}
         </Button>
         <Button variant="ghost" onClick={onCancel}>
-          取消
+          {t('common.cancel')}
         </Button>
       </div>
     </form>

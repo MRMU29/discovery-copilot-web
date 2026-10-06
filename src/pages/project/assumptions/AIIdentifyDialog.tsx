@@ -34,6 +34,7 @@ import {
 } from '@/services/assumption-ai'
 import { getOnboarding, markOnboardingDone } from '@/services/onboarding'
 import { getSettings } from '@/services/settings'
+import { useT } from '@/lib/i18n'
 
 type Stage = 'config' | 'running' | 'relay' | 'preview'
 type ProviderKind = 'openai-compatible' | 'gemini'
@@ -66,6 +67,7 @@ export function AIIdentifyDialog({
   onClose,
   onApplied,
 }: AIIdentifyDialogProps) {
+  const t = useT()
   const [stage, setStage] = useState<Stage>('config')
   const [providers, setProviders] = useState<ProviderConfigRow[]>([])
   const [selectedId, setSelectedId] = useState('')
@@ -152,7 +154,7 @@ export function AIIdentifyDialog({
   function ensureKey(): string | null {
     const key = apiKey.trim() || (selected ? getSessionKey(selected.id) : '')
     if (!key) {
-      setError('请先输入该 Provider 的 API Key（可在设置页保存到本会话，或仅在此处临时输入）。')
+      setError(t('ai.dialog.keyRequired'))
       return null
     }
     if (selected) setSessionKey(selected.id, key)
@@ -205,7 +207,7 @@ export function AIIdentifyDialog({
       setStage('preview')
     } catch (err) {
       if (err instanceof AIError && err.code === 'ABORTED') {
-        setError('已取消。')
+        setError(t('ai.dialog.cancelled'))
       } else if (err instanceof AIError && err.code === 'BUDGET') {
         setBudgetError(err.message)
       } else {
@@ -225,7 +227,7 @@ export function AIIdentifyDialog({
   async function handleApply() {
     const chosen = picks.filter((_, i) => checked[i])
     if (chosen.length === 0) {
-      setError('请至少勾选一条要应用的假设。')
+      setError(t('ai.dialog.pickAtLeastOneAssumption'))
       return
     }
     setApplying(true)
@@ -246,14 +248,15 @@ export function AIIdentifyDialog({
   return (
     <Dialog
       open
-      title="AI 识别关键假设"
+      title={t('ai.identify.title')}
       onClose={onClose}
       size={stage === 'relay' ? 'lg' : 'md'}
     >
       {stage === 'config' && (
         <div className="space-y-4">
           <p className="rounded-lg border border-hairline bg-surface-2 px-3 py-2 text-caption text-ink-secondary">
-            当前路径：{route === 'byok' ? '内置 AI（BYOK）——应用直接调用你配置的 Provider' : 'Prompt Relay——零配置，复制 Prompt 给外部 AI 助手'}
+            {t('ai.dialog.currentRoute')}
+            {route === 'byok' ? t('ai.dialog.routeByok') : t('ai.dialog.routeRelay')}
           </p>
 
           {route === 'byok' &&
@@ -281,25 +284,25 @@ export function AIIdentifyDialog({
           ) : (
             <form onSubmit={handleAddProvider} className="space-y-3 rounded-lg border border-hairline bg-surface-2 p-3">
               <p className="text-caption text-ink-muted">
-                首次使用需添加一个 AI Provider。API Key 不会保存在这里——每次会话单独输入。
+                {t('ai.dialog.newProviderNote')}
               </p>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
                   <label htmlFor="np-label" className="text-caption text-ink-muted">
-                    名称
+                    {t('settings.aiProvider.fieldLabel')}
                   </label>
                   <input
                     id="np-label"
                     value={npLabel}
                     onChange={(e) => setNpLabel(e.target.value)}
-                    placeholder="例：DeepSeek"
+                    placeholder={t('settings.aiProvider.fieldLabelPlaceholder')}
                     maxLength={60}
                     className={inputClass}
                   />
                 </div>
                 <div>
                   <label htmlFor="np-kind" className="text-caption text-ink-muted">
-                    类型
+                    {t('settings.aiProvider.fieldKind')}
                   </label>
                   <select
                     id="np-kind"
@@ -309,7 +312,7 @@ export function AIIdentifyDialog({
                   >
                     {(Object.keys(KIND_LABELS) as ProviderKind[]).map((kind) => (
                       <option key={kind} value={kind}>
-                        {KIND_LABELS[kind]}
+                        {t(kind === 'openai-compatible' ? 'settings.aiProvider.kindOpenai' : 'settings.aiProvider.kindGemini')}
                       </option>
                     ))}
                   </select>
@@ -317,35 +320,35 @@ export function AIIdentifyDialog({
               </div>
               <div>
                 <label htmlFor="np-base-url" className="text-caption text-ink-muted">
-                  Base URL
+                  {t('settings.aiProvider.fieldBaseUrl')}
                 </label>
                 <input
                   id="np-base-url"
                   value={npBaseUrl}
                   onChange={(e) => setNpBaseUrl(e.target.value)}
-                  placeholder="https://api.deepseek.com/v1"
+                  placeholder={t('settings.aiProvider.baseUrlPlaceholder')}
                   className={inputClass}
                 />
               </div>
               <div>
                 <label htmlFor="np-model" className="text-caption text-ink-muted">
-                  模型
+                  {t('settings.aiProvider.fieldModel')}
                 </label>
                 <input
                   id="np-model"
                   value={npModel}
                   onChange={(e) => setNpModel(e.target.value)}
-                  placeholder="deepseek-chat"
+                  placeholder={t('settings.aiProvider.modelPlaceholder')}
                   className={inputClass}
                 />
               </div>
               <div className="flex gap-2">
                 <Button type="submit" disabled={!npLabel.trim() || !npBaseUrl.trim() || !npModel.trim()}>
-                  保存并使用
+                  {t('ai.dialog.saveAndUse')}
                 </Button>
                 {providers.length > 0 && (
                   <Button variant="ghost" onClick={() => setShowNewProvider(false)}>
-                    取消
+                    {t('common.cancel')}
                   </Button>
                 )}
               </div>
@@ -356,7 +359,7 @@ export function AIIdentifyDialog({
             <>
               <div>
                 <label htmlFor="ai-api-key" className="text-caption text-ink-muted">
-                  API Key（仅本会话有效）
+                  {t('ai.dialog.keyLabel')}
                 </label>
                 <input
                   id="ai-api-key"
@@ -373,16 +376,16 @@ export function AIIdentifyDialog({
               </div>
               <div className="flex items-center gap-3">
                 <Button variant="secondary" onClick={handleTest} disabled={busy}>
-                  测试连接
+                  {t('settings.aiProvider.testConnection')}
                 </Button>
-                {testState === 'ok' && <span className="text-caption text-success">连接成功</span>}
-                {testState === 'fail' && <span className="text-caption text-danger">连接失败，见下方错误</span>}
+                {testState === 'ok' && <span className="text-caption text-success">{t('ai.dialog.testOk')}</span>}
+                {testState === 'fail' && <span className="text-caption text-danger">{t('ai.dialog.testFail')}</span>}
                 <button
                   type="button"
                   onClick={() => setShowNewProvider(true)}
                   className="ml-auto text-caption text-accent-hover underline-offset-2 hover:underline"
                 >
-                  添加新 Provider
+                  {t('ai.dialog.addNewProvider')}
                 </button>
               </div>
             </>
@@ -391,14 +394,14 @@ export function AIIdentifyDialog({
           <div>
             <div className="flex items-center justify-between gap-2">
               <label htmlFor="ai-context" className="text-caption text-ink-muted">
-                项目背景与想法（AI 依据此识别假设）
+                {t('ai.identify.contextLabel')}
               </label>
               <FieldHint
-                field="项目背景"
+                field={t('ai.identify.contextField')}
                 highlighted={hintsHighlighted}
                 onRead={() => void markOnboardingDone('fieldHints').catch(() => undefined)}
-                good="面向一二线城市、月宠物支出 500 元以上的养猫家庭（目标用户）；他们想喂鲜食但没时间做（问题）；希望每周 30 分钟内搞定一周喂食（期望结果）。"
-                bad="做一个改变宠物行业的伟大产品。"
+                good={t('ai.identify.contextGood')}
+                bad={t('ai.identify.contextBad')}
               />
             </div>
             <textarea
@@ -406,14 +409,14 @@ export function AIIdentifyDialog({
               value={context}
               onChange={(e) => setContext(e.target.value)}
               rows={6}
-              placeholder="产品要解决什么问题、给谁用、怎么用、有什么约束…（至少 10 字）"
+              placeholder={t('ai.identify.contextPlaceholder')}
               className={inputClass}
             />
           </div>
 
           {quality.level === 'warn' && (
             <div className="rounded-lg border border-warning/40 bg-warning/10 p-3">
-              <p className="text-caption font-medium text-warning">输入质量提示（本地检测，不阻断，仅建议补强）：</p>
+              <p className="text-caption font-medium text-warning">{t('ai.identify.qualityTitle')}</p>
               <ul className="mt-1 list-disc space-y-0.5 pl-5 text-caption text-ink-secondary">
                 {quality.issues.map((issue) => (
                   <li key={issue}>{issue}</li>
@@ -426,7 +429,7 @@ export function AIIdentifyDialog({
             <div role="alert" className="rounded-lg border border-warning/40 bg-warning/10 p-3">
               <p className="text-body-sm text-ink">{budgetError}</p>
               <Button className="mt-2" variant="secondary" onClick={() => void handleIdentify(true)}>
-                本次继续（预算内确认）
+                {t('ai.dialog.continueBudget')}
               </Button>
             </div>
           )}
@@ -443,15 +446,15 @@ export function AIIdentifyDialog({
                 onClick={() => void handleIdentify(false)}
                 disabled={busy || !contextReady || providers.length === 0 || showNewProvider}
               >
-                开始识别
+                {t('ai.identify.start')}
               </Button>
             ) : (
               <Button onClick={() => setStage('relay')} disabled={!contextReady}>
-                生成 Prompt
+                {t('ai.dialog.generatePrompt')}
               </Button>
             )}
             <Button variant="ghost" onClick={onClose}>
-              关闭
+              {t('common.close')}
             </Button>
           </div>
         </div>
@@ -463,16 +466,18 @@ export function AIIdentifyDialog({
             aria-hidden
             className="size-8 animate-spin rounded-full border-2 border-hairline-strong border-t-accent"
           />
-          <p className="text-body-sm text-ink-secondary">正在从八个风险类别识别关键假设…</p>
+          <p className="text-body-sm text-ink-secondary">{t('ai.identify.running')}</p>
           {estimate && (
             <p className="text-caption text-ink-faint">
-              预估输入 ~{estimate.inputTokens} tokens ·{' '}
-              {estimate.usd != null ? `约 $${estimate.usd.toFixed(4)}` : '计费未知（模型不在参考价表）'}
-              <span className="ml-1">（内置参考价，实际以 Provider 账单为准）</span>
+              {t('ai.dialog.estimateLine', {
+                tokens: estimate.inputTokens,
+                usd: estimate.usd != null ? t('ai.dialog.estimateUsd', { usd: estimate.usd.toFixed(4) }) : t('ai.dialog.estimateUnknown'),
+              })}
+              <span className="ml-1">{t('settings.aiProvider.usagePricingNote')}</span>
             </p>
           )}
           <Button variant="secondary" onClick={() => abortRef.current?.abort()}>
-            取消
+            {t('common.cancel')}
           </Button>
         </div>
       )}
@@ -494,7 +499,7 @@ export function AIIdentifyDialog({
       {stage === 'preview' && (
         <div className="space-y-4">
           <p className="text-caption text-ink-muted">
-            AI 建议先审核再入库：可修改陈述、类别与影响/风险分；信心一律留空，由你评估证据后填写。
+            {t('ai.identify.reviewHint')}
           </p>
           <ul className="space-y-3">
             {picks.map((pick, i) => (
@@ -508,41 +513,41 @@ export function AIIdentifyDialog({
                     }
                     className="size-4 accent-accent"
                   />
-                  应用这条建议
+                  {t('ai.identify.applyPick')}
                 </label>
                 <textarea
                   value={pick.statement}
                   onChange={(e) => editPick(i, { statement: e.target.value })}
                   rows={2}
                   maxLength={500}
-                  aria-label={`第 ${i + 1} 条假设陈述`}
+                  aria-label={t('ai.identify.itemStatement', { n: i + 1 })}
                   className={`${inputClass} mt-2`}
                 />
                 {pick.rationale && (
-                  <p className="mt-2 text-caption text-ink-faint">理由：{pick.rationale}</p>
+                  <p className="mt-2 text-caption text-ink-faint">{t('ai.identify.rationale')}{pick.rationale}</p>
                 )}
                 <div className="mt-2 flex flex-wrap items-center gap-2 text-caption">
                   <label className="flex items-center gap-1 text-ink-muted">
-                    类别
+                    {t('ai.identify.typeLabel')}
                     <select
                       value={pick.type}
                       onChange={(e) => editPick(i, { type: e.target.value as AssumptionType })}
-                      aria-label={`第 ${i + 1} 条风险类别`}
+                      aria-label={t('ai.identify.itemType', { n: i + 1 })}
                       className="min-h-9 rounded-btn border border-hairline-strong bg-surface-1 px-2 text-caption text-ink"
                     >
-                      {ASSUMPTION_TYPES.map((t) => (
-                        <option key={t} value={t}>
-                          {ASSUMPTION_TYPE_META[t].label}
+                      {ASSUMPTION_TYPES.map((ty) => (
+                        <option key={ty} value={ty}>
+                          {t(ASSUMPTION_TYPE_META[ty].labelKey)}
                         </option>
                       ))}
                     </select>
                   </label>
                   <label className="flex items-center gap-1 text-ink-muted">
-                    影响
+                    {t('ai.identify.impactLabel')}
                     <select
                       value={pick.suggestedImpact}
                       onChange={(e) => editPick(i, { suggestedImpact: Number(e.target.value) })}
-                      aria-label={`第 ${i + 1} 条影响分`}
+                      aria-label={t('ai.identify.itemImpact', { n: i + 1 })}
                       className="min-h-9 rounded-btn border border-hairline-strong bg-surface-1 px-2 text-caption text-ink"
                     >
                       {[1, 2, 3, 4, 5].map((n) => (
@@ -553,11 +558,11 @@ export function AIIdentifyDialog({
                     </select>
                   </label>
                   <label className="flex items-center gap-1 text-ink-muted">
-                    风险
+                    {t('ai.identify.riskLabel')}
                     <select
                       value={pick.suggestedRisk}
                       onChange={(e) => editPick(i, { suggestedRisk: Number(e.target.value) })}
-                      aria-label={`第 ${i + 1} 条风险分`}
+                      aria-label={t('ai.identify.itemRisk', { n: i + 1 })}
                       className="min-h-9 rounded-btn border border-hairline-strong bg-surface-1 px-2 text-caption text-ink"
                     >
                       {[1, 2, 3, 4, 5].map((n) => (
@@ -584,12 +589,12 @@ export function AIIdentifyDialog({
             onToggleAll={(next) => setChecked(picks.map(() => next))}
             applying={applying}
             regenerating={busy}
-            applyLabel="假设"
+            applyLabel={t('ai.identify.applyLabel')}
             onApply={() => void handleApply()}
             onReject={onClose}
             onRegenerate={() => void handleIdentify(false)}
             onBack={() => setStage('config')}
-            backLabel="返回修改背景"
+            backLabel={t('ai.identify.backLabel')}
           />
         </div>
       )}

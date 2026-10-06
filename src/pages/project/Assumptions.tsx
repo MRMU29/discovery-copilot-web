@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
 import { EmptyState, PageSkeleton } from '@/components/common/states'
+import { useT } from '@/lib/i18n'
 import { getProject } from '@/services/projects'
 import { listAssumptionsByProject } from '@/services/assumptions'
 import { AIIdentifyDialog } from './assumptions/AIIdentifyDialog'
@@ -14,6 +15,7 @@ import { MatrixTable, PriorityMatrix } from './assumptions/PriorityMatrix'
 type View = 'matrix' | 'table'
 
 export default function Assumptions({ projectId }: { projectId: string }) {
+  const t = useT()
   const assumptions = useLiveQuery(() => listAssumptionsByProject(projectId), [projectId])
   const project = useLiveQuery(async () => {
     try {
@@ -49,16 +51,15 @@ export default function Assumptions({ projectId }: { projectId: string }) {
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-headline text-ink">假设</h1>
+          <h1 className="text-headline text-ink">{t('assumptions.title')}</h1>
           <p className="mt-1 text-body-sm text-ink-muted">
-            录入、评分（Impact × Risk × (1 − Confidence)）并用矩阵定位最该验证的假设 · 共{' '}
-            {assumptions.length} 条
+            {t('assumptions.desc', { count: assumptions.length })}
           </p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={() => setAiOpen(true)}>AI 识别</Button>
+          <Button onClick={() => setAiOpen(true)}>{t('assumptions.aiCta')}</Button>
           <Button variant="secondary" onClick={() => setFormOpen(true)}>
-            录入假设
+            {t('assumptions.add')}
           </Button>
         </div>
       </header>
@@ -71,16 +72,16 @@ export default function Assumptions({ projectId }: { projectId: string }) {
 
       {assumptions.length === 0 ? (
         <EmptyState
-          title="还没有假设"
-          description="手动录入，或让 AI 从项目背景中识别八类风险假设——AI 建议经过你的审核才会入库。"
-          action={<Button onClick={() => setAiOpen(true)}>用 AI 识别假设</Button>}
+          title={t('assumptions.emptyTitle')}
+          description={t('assumptions.emptyDesc')}
+          action={<Button onClick={() => setAiOpen(true)}>{t('assumptions.emptyCta')}</Button>}
         />
       ) : (
         <>
           <section aria-label="Priority Matrix" className="rounded-lg border border-hairline bg-surface-1 p-4">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-subhead text-ink">Priority Matrix</h2>
-              <div className="flex rounded-btn border border-hairline-strong p-0.5" role="group" aria-label="视图切换">
+              <h2 className="text-subhead text-ink">{t('assumptions.matrixHeading')}</h2>
+              <div className="flex rounded-btn border border-hairline-strong p-0.5" role="group" aria-label={t('assumptions.viewToggle')}>
                 <button
                   type="button"
                   aria-pressed={view === 'matrix'}
@@ -89,7 +90,7 @@ export default function Assumptions({ projectId }: { projectId: string }) {
                     view === 'matrix' ? 'bg-accent text-white' : 'text-ink-secondary hover:text-ink'
                   }`}
                 >
-                  矩阵
+                  {t('assumptions.viewMatrix')}
                 </button>
                 <button
                   type="button"
@@ -99,7 +100,7 @@ export default function Assumptions({ projectId }: { projectId: string }) {
                     view === 'table' ? 'bg-accent text-white' : 'text-ink-secondary hover:text-ink'
                   }`}
                 >
-                  表格
+                  {t('assumptions.viewTable')}
                 </button>
               </div>
             </div>
@@ -110,7 +111,7 @@ export default function Assumptions({ projectId }: { projectId: string }) {
             )}
           </section>
 
-          <section aria-label="假设列表" className="space-y-3">
+          <section aria-label={t('assumptions.listAria')} className="space-y-3">
             <label className="flex items-center gap-2 text-caption text-ink-muted">
               <input
                 type="checkbox"
@@ -118,10 +119,10 @@ export default function Assumptions({ projectId }: { projectId: string }) {
                 onChange={(e) => setShowArchived(e.target.checked)}
                 className="size-4 accent-accent"
               />
-              显示已归档（不入矩阵）
+              {t('assumptions.showArchived')}
             </label>
             {visible.length === 0 ? (
-              <p className="text-body-sm text-ink-faint">没有可显示的假设。</p>
+              <p className="text-body-sm text-ink-faint">{t('assumptions.noneVisible')}</p>
             ) : (
               visible.map((a) => (
                 <AssumptionCard key={a.id} assumption={a} highlighted={highlightId === a.id} />
@@ -131,7 +132,7 @@ export default function Assumptions({ projectId }: { projectId: string }) {
         </>
       )}
 
-      <Dialog open={formOpen} title="录入假设" onClose={() => setFormOpen(false)}>
+      <Dialog open={formOpen} title={t('assumptions.formTitle')} onClose={() => setFormOpen(false)}>
         <AssumptionForm
           projectId={projectId}
           onDone={() => setFormOpen(false)}
@@ -146,7 +147,12 @@ export default function Assumptions({ projectId }: { projectId: string }) {
           projectDescription={project?.description}
           onClose={() => setAiOpen(false)}
           onApplied={(created, skipped) =>
-            setNotice(`已应用 ${created} 条 AI 建议假设${skipped > 0 ? `（容量不足，跳过 ${skipped} 条）` : ''}。`)
+            setNotice(
+              t('assumptions.appliedNotice', {
+                created,
+                skipped: skipped > 0 ? t('assumptions.appliedSkipped', { skipped }) : '',
+              }),
+            )
           }
         />
       )}

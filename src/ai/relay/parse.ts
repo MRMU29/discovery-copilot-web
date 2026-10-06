@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { translate } from '@/lib/i18n'
 
 /**
  * Prompt Relay 容错解析：外部 agent 粘贴回来的内容格式不可控（纯 JSON /
@@ -49,7 +50,7 @@ function repairEnvelope<T>(data: unknown, schema: z.ZodType<T>): unknown {
 
 export function parseRelayResult<T>(raw: string, schema: z.ZodType<T>): RelayParseResult<T> {
   if (!raw.trim()) {
-    return { ok: false, issues: ['粘贴内容为空。'], raw }
+    return { ok: false, issues: [translate('relay.parse.empty')], raw }
   }
 
   const candidate = stripFence(raw)
@@ -61,12 +62,12 @@ export function parseRelayResult<T>(raw: string, schema: z.ZodType<T>): RelayPar
     const start = candidate.indexOf('{')
     const end = candidate.lastIndexOf('}')
     if (start === -1 || end <= start) {
-      return { ok: false, issues: ['未能在粘贴内容中找到 JSON 对象。'], raw }
+      return { ok: false, issues: [translate('relay.parse.noJson')], raw }
     }
     try {
       parsed = JSON.parse(candidate.slice(start, end + 1))
     } catch {
-      return { ok: false, issues: ['未能在粘贴内容中找到 JSON 对象。'], raw }
+      return { ok: false, issues: [translate('relay.parse.noJson')], raw }
     }
   }
 
@@ -74,6 +75,8 @@ export function parseRelayResult<T>(raw: string, schema: z.ZodType<T>): RelayPar
   if (result.success) {
     return { ok: true, data: result.data }
   }
-  const issues = result.error.issues.map((issue) => `字段 ${issue.path.join('.') || '(根)'}：${issue.message}`)
+  const issues = result.error.issues.map((issue) =>
+    translate('common.fieldIssue', { field: issue.path.join('.') || '(根)', message: issue.message }),
+  )
   return { ok: false, issues, raw }
 }

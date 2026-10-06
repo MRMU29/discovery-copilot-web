@@ -6,6 +6,8 @@
  * know the cause (§6.2 边界).
  */
 
+import { translate } from '@/lib/i18n'
+
 export type AIErrorCode =
   | 'NOT_CONFIGURED' // no provider selected / no key in session
   | 'UNAUTHORIZED' // 401/403 — key missing or wrong
@@ -36,25 +38,24 @@ export class AIError extends Error {
   }
 }
 
-const USER_MESSAGES: Record<AIErrorCode, string> = {
-  NOT_CONFIGURED: '尚未配置 AI Provider 或未在会话中提供 API Key（设置 → AI Provider）。',
-  UNAUTHORIZED: 'API Key 无效或无权限，请在设置中检查 Key。',
-  RATE_LIMITED: '请求过于频繁（429），请稍后重试。',
-  TIMEOUT: '请求超时，请检查网络或稍后重试。',
-  NETWORK:
-    '网络请求失败。可能是网络不可用，或该服务不允许浏览器直连（CORS）——可在设置中改用兼容代理地址。',
-  PARSE: 'AI 返回内容无法解析为有效结果（已自动重试一次）。',
-  ABORTED: '请求已取消。',
-  BUDGET: '已达到预算阈值，请求被熔断。可在设置中调整预算或确认后继续。',
-  UNKNOWN: '发生未知错误。',
+const MESSAGE_KEYS: Record<AIErrorCode, string> = {
+  NOT_CONFIGURED: 'ai.error.NOT_CONFIGURED',
+  UNAUTHORIZED: 'ai.error.UNAUTHORIZED',
+  RATE_LIMITED: 'ai.error.RATE_LIMITED',
+  TIMEOUT: 'ai.error.TIMEOUT',
+  NETWORK: 'ai.error.NETWORK',
+  PARSE: 'ai.error.PARSE',
+  ABORTED: 'ai.error.ABORTED',
+  BUDGET: 'ai.error.BUDGET',
+  UNKNOWN: 'ai.error.UNKNOWN',
 }
 
 export function userMessage(code: AIErrorCode): string {
   // 设备离线时给比「可能是 CORS」更精准的引导（§8.3 可读错误）。
   if (code === 'NETWORK' && typeof navigator !== 'undefined' && navigator.onLine === false) {
-    return '当前设备处于离线状态，无法调用 AI 服务；本地功能与数据不受影响。恢复网络后重试。'
+    return translate('ai.error.offlineNetwork')
   }
-  return USER_MESSAGES[code]
+  return translate(MESSAGE_KEYS[code])
 }
 
 /**

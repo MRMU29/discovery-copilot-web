@@ -1,4 +1,4 @@
-import { ASSUMPTION_TYPE_META } from '@/lib/assumption-meta'
+import { zhHans } from '@/lib/i18n/dictionaries/zh-Hans'
 import {
   DESIGN_EXPERIMENTS_PROMPT,
   GENERATE_REPORT_PROMPT,
@@ -83,7 +83,7 @@ export function buildExperimentPrompt(input: ExperimentPromptInput): PromptBundl
   const a = input.assumption
   const lines = [
     `假设陈述：${a.statement}`,
-    `风险类别：${a.type}（${ASSUMPTION_TYPE_META[a.type as keyof typeof ASSUMPTION_TYPE_META]?.label ?? a.type}）`,
+    `风险类别：${a.type}（${(zhHans as Record<string, string>)[`assumption.type.${a.type}`] ?? a.type}）`,
     `影响 ${a.impact} / 风险 ${a.risk} / 信心 ${a.confidence === null ? '未评估' : `${Math.round(a.confidence * 100)}%`}`,
   ]
   const parts = []

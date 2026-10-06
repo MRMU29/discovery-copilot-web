@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react'
+import { useT } from '@/lib/i18n'
 
 interface DialogProps {
   open: boolean
@@ -15,6 +16,7 @@ interface DialogProps {
  * full focus trapping arrives with a real headless-UI dependency if ever needed.
  */
 export function Dialog({ open, title, onClose, size = 'md', children }: DialogProps) {
+  const t = useT()
   useEffect(() => {
     if (!open) return
     const onKey = (event: KeyboardEvent) => {
@@ -45,7 +47,7 @@ export function Dialog({ open, title, onClose, size = 'md', children }: DialogPr
           <button
             type="button"
             onClick={onClose}
-            aria-label="关闭"
+            aria-label={t('common.close')}
             className="flex size-9 items-center justify-center rounded-btn text-xl leading-none text-ink-muted hover:bg-surface-2 hover:text-ink"
           >
             ×

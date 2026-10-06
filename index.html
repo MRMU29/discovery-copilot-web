@@ -7,8 +7,109 @@
     <meta name="theme-color" content="#010102" />
     <link rel="icon" type="image/jpeg" href="%BASE_URL%brand-icon.jpg" />
     <title>Discovery Copilot</title>
+    <style>
+      /*
+       * 启动页：HTML 首帧即 100% 全覆盖（不依赖 JS），logo 由 1/2 大小放大
+       * 亮起 → 双色名称 → 标语浮现，1s 后整层淡出。令牌取自 tokens.css
+       * （其 :root[data-theme] 由 theme-init 在任何样式应用前设置）。
+       * 动画以 forwards 结束于 opacity:0 + pointer-events:none，即使 JS
+       * 失败启动页也会自行消失，不拦截应用；JS 禁用时由 <noscript> 隐藏。
+       */
+      #dc-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        background-color: var(--color-canvas, #010102);
+        background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+        background-size: 26px 26px;
+        animation: dc-splash-out 0.25s ease-in 1s forwards;
+      }
+      :root[data-theme='light'] #dc-splash {
+        background-image: radial-gradient(rgba(15, 15, 15, 0.05) 1px, transparent 1px);
+      }
+      #dc-splash img {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        animation: dc-splash-logo 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      }
+      #dc-splash .dc-splash-name {
+        margin: 0;
+        font-family: var(--font-sans, 'Inter', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif);
+        font-size: 28px;
+        font-weight: 600;
+        letter-spacing: -0.6px;
+        line-height: 1.2;
+        color: var(--color-ink, #f7f8f8);
+        animation: dc-splash-rise 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) 0.35s both;
+      }
+      #dc-splash .dc-splash-name span {
+        color: var(--color-accent, #5e6ad2);
+      }
+      #dc-splash .dc-splash-tagline {
+        margin: 0;
+        font-family: var(--font-sans, 'Inter', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif);
+        font-size: 14px;
+        line-height: 1.5;
+        color: var(--color-ink-muted, #8a8f98);
+        animation: dc-splash-fade 0.35s ease-out 0.55s both;
+      }
+      @keyframes dc-splash-logo {
+        from {
+          opacity: 0;
+          transform: scale(0.5);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      @keyframes dc-splash-rise {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      @keyframes dc-splash-fade {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      @keyframes dc-splash-out {
+        to {
+          opacity: 0;
+          visibility: hidden;
+          pointer-events: none;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #dc-splash img,
+        #dc-splash .dc-splash-name,
+        #dc-splash .dc-splash-tagline {
+          animation: none;
+        }
+      }
+    </style>
   </head>
   <body>
+    <div id="dc-splash" aria-hidden="true">
+      <img src="%BASE_URL%brand-icon.jpg" alt="" />
+      <p class="dc-splash-name">Discovery <span>Copilot</span></p>
+      <p class="dc-splash-tagline">无账号的本地优先产品发现工作台</p>
+    </div>
+    <noscript><style>#dc-splash { display: none; }</style></noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

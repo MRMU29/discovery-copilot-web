@@ -8,6 +8,7 @@ import {
 } from '@/db/repositories'
 import { nowIso } from '@/lib/clock'
 import { DomainError } from '@/lib/errors'
+import { translate } from '@/lib/i18n'
 import { fileNameSlug } from '@/lib/report-export'
 import { CAPS } from '@/lib/limits'
 import {
@@ -82,7 +83,7 @@ function migrateFile(raw: Record<string, unknown>): { file: Record<string, unkno
   if (Number.isInteger(declared) && declared > DCOPILT_FORMAT_VERSION) {
     return {
       issues: [
-        `文件格式版本 ${declared} 高于当前应用支持的 ${DCOPILT_FORMAT_VERSION}——请先升级应用再导入。`,
+        translate('backup.versionTooNew', { declared, supported: DCOPILT_FORMAT_VERSION }),
       ],
     }
   }
@@ -121,7 +122,7 @@ export async function buildDcopilotFile(scope: 'all' | string): Promise<Dcopilot
   const allProjects = await projectsRepo.all()
   const projects = scope === 'all' ? allProjects : allProjects.filter((p) => p.id === scope)
   if (scope !== 'all' && projects.length === 0) {
-    throw new DomainError('NOT_FOUND', `项目不存在或已在回收站: ${scope}`)
+    throw new DomainError('NOT_FOUND', translate('backup.projectNotFound', { id: scope }))
   }
   const ids = new Set(projects.map((p) => p.id))
   const [assumptions, experiments, ostNodes, reports, settings] = await Promise.all([
@@ -163,33 +164,36 @@ export function parseDcopilotFile(
 ): DcopilotParseResult {
   const maxBytes = options?.maxBytes ?? DCOPILT_MAX_BYTES
   if (text.length > maxBytes) {
-    return { ok: false, issues: [`文件超过 ${Math.round(maxBytes / 1024 / 1024)} MB 导入上限（§5.4），已拒绝。`] }
+    return {
+      ok: false,
+      issues: [translate('backup.tooLarge', { limit: Math.round(maxBytes / 1024 / 1024) })],
+    }
   }
   let raw: unknown
   try {
     raw = JSON.parse(text)
   } catch {
-    return { ok: false, issues: ['文件不是合法 JSON——可能已损坏或导出中断，请重新导出。'] }
+    return { ok: false, issues: [translate('backup.badJson')] }
   }
   if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
-    return { ok: false, issues: ['文件结构不是预期的 .dcopilot 对象。'] }
+    return { ok: false, issues: [translate('backup.badShape')] }
   }
   const record = raw as Record<string, unknown>
   if (record.format !== DCOPILT_FORMAT) {
-    return { ok: false, issues: ['format 不是 discovery-copilot——这不是本应用的备份文件。'] }
+    return { ok: false, issues: [translate('backup.badFormat')] }
   }
   const migrated = migrateFile(record)
   if ('issues' in migrated) return { ok: false, issues: migrated.issues }
 
   const parsed = dcopilotFileSchema.safeParse(migrated.file)
   if (!parsed.success) {
-    const issues = parsed.error.issues.slice(0, 8).map(
-      (issue) => `字段 ${issue.path.join('.') || '(根)'}：${issue.message}`,
+    const issues = parsed.error.issues.slice(0, 8).map((issue) =>
+      translate('common.fieldIssue', { field: issue.path.join('.') || '(根)', message: issue.message }),
     )
     if (parsed.error.issues.length > 8) {
-      issues.push(`……以及另外 ${parsed.error.issues.length - 8} 个校验问题`)
+      issues.push(translate('backup.moreIssues', { count: parsed.error.issues.length - 8 }))
     }
-    return { ok: false, issues: ['文件未通过 Schema 校验（§7.3），已拒绝导入：', ...issues] }
+    return { ok: false, issues: [translate('backup.schemaRejected'), ...issues] }
   }
   const file = parsed.data
 
@@ -205,7 +209,10 @@ export function parseDcopilotFile(
     const seen = new Set<string>()
     for (const row of rows) {
       if (seen.has(row.id)) {
-        return { ok: false, issues: [`文件损坏：${label} 内存在重复 id（${row.id}），导入已终止。`] }
+        return {
+          ok: false,
+          issues: [translate('backup.duplicateId', { table: label, id: row.id })],
+        }
       }
       seen.add(row.id)
     }
@@ -213,7 +220,7 @@ export function parseDcopilotFile(
 
   const integrityIssues = validateIntegrity(file)
   if (integrityIssues.length > 0) {
-    return { ok: false, issues: ['文件内引用关系断裂，已拒绝导入：', ...integrityIssues.slice(0, 8)] }
+    return { ok: false, issues: [translate('backup.integrityRejected'), ...integrityIssues.slice(0, 8)] }
   }
   return { ok: true, file }
 }
@@ -227,33 +234,39 @@ function validateIntegrity(file: DcopilotFile): string[] {
   const nodeById = new Map(file.ostNodes.map((n) => [n.id, n] as const))
 
   for (const row of file.assumptions) {
-    if (!projectIds.has(row.projectId)) issues.push(`假设「${row.statement.slice(0, 16)}…」引用的项目不在文件内。`)
+    if (!projectIds.has(row.projectId))
+      issues.push(translate('backup.assumptionMissingProject', { title: row.statement.slice(0, 16) }))
   }
   for (const row of file.experiments) {
-    if (!projectIds.has(row.projectId)) issues.push(`实验「${row.hypothesis.slice(0, 16)}…」引用的项目不在文件内。`)
+    if (!projectIds.has(row.projectId))
+      issues.push(translate('backup.experimentMissingProject', { title: row.hypothesis.slice(0, 16) }))
     if (row.assumptionId) {
       const target = assumptionById.get(row.assumptionId)
-      if (!target) issues.push(`实验「${row.hypothesis.slice(0, 16)}…」引用的假设不在文件内。`)
-      else if (target.projectId !== row.projectId) issues.push(`实验「${row.hypothesis.slice(0, 16)}…」引用了其他项目的假设。`)
+      if (!target)
+        issues.push(translate('backup.experimentMissingAssumption', { title: row.hypothesis.slice(0, 16) }))
+      else if (target.projectId !== row.projectId)
+        issues.push(translate('backup.experimentCrossProjectAssumption', { title: row.hypothesis.slice(0, 16) }))
     }
   }
   for (const row of file.ostNodes) {
-    const label = `OST 节点「${row.title.slice(0, 16)}」`
-    if (!projectIds.has(row.projectId)) issues.push(`${label}引用的项目不在文件内。`)
+    const title = row.title.slice(0, 16)
+    if (!projectIds.has(row.projectId)) issues.push(translate('backup.ostMissingProject', { title }))
     if (row.parentId) {
       const parent = nodeById.get(row.parentId)
-      if (!parent) issues.push(`${label}的父节点不在文件内。`)
-      else if (parent.projectId !== row.projectId) issues.push(`${label}的父节点属于其他项目。`)
+      if (!parent) issues.push(translate('backup.ostMissingParent', { title }))
+      else if (parent.projectId !== row.projectId)
+        issues.push(translate('backup.ostParentCrossProject', { title }))
     }
     if (row.linkedAssumptionId && !assumptionById.get(row.linkedAssumptionId)) {
-      issues.push(`${label}关联的假设不在文件内。`)
+      issues.push(translate('backup.ostMissingAssumption', { title }))
     }
     if (row.linkedExperimentId && !experimentIds.has(row.linkedExperimentId)) {
-      issues.push(`${label}关联的实验不在文件内。`)
+      issues.push(translate('backup.ostMissingExperiment', { title }))
     }
   }
   for (const row of file.reports) {
-    if (!projectIds.has(row.projectId)) issues.push(`报告「${row.title.slice(0, 16)}…」引用的项目不在文件内。`)
+    if (!projectIds.has(row.projectId))
+      issues.push(translate('backup.reportMissingProject', { title: row.title.slice(0, 16) }))
   }
   return issues
 }
@@ -369,7 +382,7 @@ export async function applyImport(file: DcopilotFile, options: ImportOptions): P
   const added = summary.counts.new + summary.items.filter((i) => i.status === 'conflict' && options.conflictStrategy === 'copy').length
   const localCount = await projectsRepo.countAll()
   if (localCount + added > CAPS.projects) {
-    throw new DomainError('CAPACITY_LIMIT', `导入后项目总数将超过上限 ${CAPS.projects}，请减少导入范围。`)
+    throw new DomainError('CAPACITY_LIMIT', translate('backup.capacity', { limit: CAPS.projects }))
   }
 
   const result: ImportResult = {

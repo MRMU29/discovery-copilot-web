@@ -1,4 +1,5 @@
 import type { Assumption, Experiment, OstNode } from '@/schemas/entities'
+import { translate } from '@/lib/i18n'
 
 export type OstNodeType = OstNode['type']
 
@@ -23,11 +24,11 @@ export function requiredParentType(type: OstNodeType): OstNodeType | null {
   }
 }
 
-export const OST_TYPE_META: Record<OstNodeType, { label: string; badgeClass: string }> = {
-  outcome: { label: '目标结果', badgeClass: 'bg-tint-purple text-surface-1' },
-  opportunity: { label: '机会痛点', badgeClass: 'bg-tint-blue text-surface-1' },
-  solution: { label: '解决方案', badgeClass: 'bg-tint-green text-surface-1' },
-  experiment: { label: '验证实验', badgeClass: 'bg-tint-orange text-surface-1' },
+export const OST_TYPE_META: Record<OstNodeType, { labelKey: string; badgeClass: string }> = {
+  outcome: { labelKey: 'ost.type.outcome', badgeClass: 'bg-tint-purple text-surface-1' },
+  opportunity: { labelKey: 'ost.type.opportunity', badgeClass: 'bg-tint-blue text-surface-1' },
+  solution: { labelKey: 'ost.type.solution', badgeClass: 'bg-tint-green text-surface-1' },
+  experiment: { labelKey: 'ost.type.experiment', badgeClass: 'bg-tint-orange text-surface-1' },
 }
 
 export interface VisibleRect {
@@ -102,14 +103,14 @@ export function ostTableRows(
     .map((node) => ({
       id: node.id,
       type: node.type,
-      typeLabel: OST_TYPE_META[node.type].label,
+      typeLabel: OST_TYPE_META[node.type].labelKey,
       title: node.title,
-      parentTitle: node.parentId ? (byId.get(node.parentId)?.title ?? '（父节点缺失）') : '—',
+      parentTitle: node.parentId ? (byId.get(node.parentId)?.title ?? translate('ost.meta.missingParent')) : '—',
       assumptionTitle: node.linkedAssumptionId
-        ? (assumptionById.get(node.linkedAssumptionId)?.statement ?? '（假设缺失）')
+        ? (assumptionById.get(node.linkedAssumptionId)?.statement ?? translate('ost.meta.missingAssumption'))
         : '—',
       experimentTitle: node.linkedExperimentId
-        ? (experimentById.get(node.linkedExperimentId)?.hypothesis ?? '（实验缺失）')
+        ? (experimentById.get(node.linkedExperimentId)?.hypothesis ?? translate('ost.meta.missingExperiment'))
         : '—',
       x: Math.round(node.position.x),
       y: Math.round(node.position.y),

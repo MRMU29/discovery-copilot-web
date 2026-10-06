@@ -9,12 +9,14 @@ import { listAssumptionsByProject } from '@/services/assumptions'
 import { listExperimentsByProject } from '@/services/experiments'
 import { deleteOstNode, listOstNodesByProject, moveOstNode } from '@/services/ost'
 import { descendantIds, ostTableRows } from './ost/ost-meta'
+import { useT } from '@/lib/i18n'
 import { OstCanvas } from './ost/OstCanvas'
 import { OstNodeForm } from './ost/OstNodeForm'
 
 type View = 'tree' | 'table'
 
 export default function Ost({ projectId }: { projectId: string }) {
+  const t = useT()
   const nodes = useLiveQuery(() => listOstNodesByProject(projectId), [projectId])
   const assumptions = useLiveQuery(() => listAssumptionsByProject(projectId), [projectId])
   const experiments = useLiveQuery(() => listExperimentsByProject(projectId), [projectId])
@@ -45,7 +47,7 @@ export default function Ost({ projectId }: { projectId: string }) {
   function handleCut(id: string) {
     const turningOff = cuttingId === id
     setCuttingId(turningOff ? null : id)
-    setNotice(turningOff ? null : '已剪切——Tab 选中一个合法父节点后按 V 粘贴，或再按一次 X 取消。')
+    setNotice(turningOff ? null : t('ost.cutNotice'))
   }
 
   async function handlePasteInto(targetId: string) {
@@ -58,7 +60,7 @@ export default function Ost({ projectId }: { projectId: string }) {
     setError(null)
     try {
       await moveOstNode(cutNode.id, { parentId: targetId })
-      setNotice(`已把「${cutNode.title.slice(0, 16)}…」挂到新父节点下。`)
+      setNotice(t('ost.pasted', { title: cutNode.title.slice(0, 16) }))
       setCuttingId(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
@@ -69,11 +71,11 @@ export default function Ost({ projectId }: { projectId: string }) {
     if (!nodes) return
     const doomed = descendantIds(nodes, node.id)
     const count = doomed.size + 1
-    if (!window.confirm(`删除该节点及其子树（共 ${count} 个节点）？`)) return
+    if (!window.confirm(t('ost.deleteConfirm', { count }))) return
     setError(null)
     try {
       const deleted = await deleteOstNode(node.id)
-      setNotice(`已删除 ${deleted} 个节点。`)
+      setNotice(t('ost.deletedNotice', { count: deleted }))
       if (cuttingId && (cuttingId === node.id || doomed.has(cuttingId))) setCuttingId(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
@@ -95,17 +97,17 @@ export default function Ost({ projectId }: { projectId: string }) {
       <div className="space-y-6">
         <header className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h1 className="text-headline text-ink">机会解决方案树</h1>
-            <p className="mt-1 text-body-sm text-ink-muted">从目标结果到验证实验的逻辑链 · 共 0 节点</p>
+            <h1 className="text-headline text-ink">{t('ost.title')}</h1>
+            <p className="mt-1 text-body-sm text-ink-muted">{t('ost.desc', { count: 0 })}</p>
           </div>
-          <Button onClick={openCreate}>新建节点</Button>
+          <Button onClick={openCreate}>{t('ost.addNode')}</Button>
         </header>
         <EmptyState
-          title="还没有 OST 节点"
-          description="生成机会解决方案树，梳理从结果到实验的逻辑：目标结果 → 机会痛点 → 解决方案 → 验证实验。"
-          action={<Button onClick={openCreate}>创建第一个节点</Button>}
+          title={t('ost.emptyTitle')}
+          description={t('ost.emptyDesc')}
+          action={<Button onClick={openCreate}>{t('ost.emptyCta')}</Button>}
         />
-        <Dialog open={formOpen} title="新建 OST 节点" onClose={() => setFormOpen(false)}>
+        <Dialog open={formOpen} title={t('ost.formCreateTitle')} onClose={() => setFormOpen(false)}>
           <OstNodeForm
             key="create"
             projectId={projectId}
@@ -126,14 +128,14 @@ export default function Ost({ projectId }: { projectId: string }) {
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-headline text-ink">机会解决方案树</h1>
+          <h1 className="text-headline text-ink">{t('ost.title')}</h1>
           <p className="mt-1 text-body-sm text-ink-muted">
-            从目标结果到验证实验的逻辑链 · 共 {nodes.length} 节点
+            {t('ost.desc', { count: nodes.length })}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button onClick={openCreate}>新建节点</Button>
-          <div className="flex rounded-btn border border-hairline-strong p-0.5" role="group" aria-label="视图切换">
+          <Button onClick={openCreate}>{t('ost.addNode')}</Button>
+          <div className="flex rounded-btn border border-hairline-strong p-0.5" role="group" aria-label={t('ost.viewToggle')}>
             {(['tree', 'table'] as View[]).map((v) => (
               <button
                 key={v}
@@ -144,7 +146,7 @@ export default function Ost({ projectId }: { projectId: string }) {
                   view === v ? 'bg-accent text-white' : 'text-ink-secondary hover:text-ink'
                 }`}
               >
-                {v === 'tree' ? '树' : '表格'}
+                {v === 'tree' ? t('ost.viewTree') : t('ost.viewTable')}
               </button>
             ))}
           </div>
@@ -166,7 +168,7 @@ export default function Ost({ projectId }: { projectId: string }) {
         <>
           {cuttingId && (
             <p className="text-caption text-accent" role="status">
-              剪切模式：Tab 到目标节点按 V 粘贴（仅可粘贴到对应类型父节点下）。
+              {t('ost.cutMode')}
             </p>
           )}
           <OstCanvas
@@ -181,27 +183,27 @@ export default function Ost({ projectId }: { projectId: string }) {
             onPosition={(id, x, y) => void handlePosition(id, x, y)}
           />
           <p className="text-caption text-ink-faint">
-            键盘等价操作：Tab 聚焦节点 → 方向键微调位置 / X 剪切 / V 粘贴换父 / Enter 编辑；所有操作也有对应按钮。
+            {t('ost.keyboardHint')}
           </p>
         </>
       ) : (
-        <section aria-label="OST 表格视图" className="overflow-x-auto rounded-lg border border-hairline bg-surface-1">
+        <section aria-label={t('ost.tableAria')} className="overflow-x-auto rounded-lg border border-hairline bg-surface-1">
           <table className="w-full min-w-[760px] text-left text-caption">
             <thead className="border-b border-hairline text-ink-muted">
               <tr>
-                <th scope="col" className="px-3 py-2 font-medium">类型</th>
-                <th scope="col" className="px-3 py-2 font-medium">标题</th>
-                <th scope="col" className="px-3 py-2 font-medium">父节点</th>
-                <th scope="col" className="px-3 py-2 font-medium">关联假设</th>
-                <th scope="col" className="px-3 py-2 font-medium">关联实验</th>
-                <th scope="col" className="px-3 py-2 font-medium">位置</th>
-                <th scope="col" className="px-3 py-2 font-medium">操作</th>
+                <th scope="col" className="px-3 py-2 font-medium">{t('ost.th.type')}</th>
+                <th scope="col" className="px-3 py-2 font-medium">{t('ost.th.title')}</th>
+                <th scope="col" className="px-3 py-2 font-medium">{t('ost.th.parent')}</th>
+                <th scope="col" className="px-3 py-2 font-medium">{t('ost.th.assumption')}</th>
+                <th scope="col" className="px-3 py-2 font-medium">{t('ost.th.experiment')}</th>
+                <th scope="col" className="px-3 py-2 font-medium">{t('ost.th.position')}</th>
+                <th scope="col" className="px-3 py-2 font-medium">{t('ost.th.actions')}</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((row) => (
                 <tr key={row.id} className="border-b border-hairline last:border-0 text-ink-secondary">
-                  <td className="px-3 py-2">{row.typeLabel}</td>
+                  <td className="px-3 py-2">{t(row.typeLabel)}</td>
                   <td className="px-3 py-2 text-ink">{row.title}</td>
                   <td className="px-3 py-2">{row.parentTitle}</td>
                   <td className="max-w-48 truncate px-3 py-2" title={row.assumptionTitle}>
@@ -222,7 +224,7 @@ export default function Ost({ projectId }: { projectId: string }) {
                       }}
                       className="min-h-7 rounded-btn px-1.5 text-caption text-accent hover:text-accent-hover"
                     >
-                      编辑
+                      {t('common.edit')}
                     </button>
                   </td>
                 </tr>
@@ -234,7 +236,7 @@ export default function Ost({ projectId }: { projectId: string }) {
 
       <Dialog
         open={formOpen}
-        title={editing ? '编辑节点' : '新建 OST 节点'}
+        title={editing ? t('ost.formEditTitle') : t('ost.formCreateTitle')}
         onClose={() => setFormOpen(false)}
       >
         <OstNodeForm

@@ -159,3 +159,31 @@ export function ReportGlyphIcon(props: IconProps) {
     </Svg>
   )
 }
+
+/** 链接入口箭头——设置内文档/政策条目跳转。 */
+export function ChevronRightIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="m9 5 7 7-7 7" />
+    </Svg>
+  )
+}
+
+/** 太阳——顶栏主题切换（当前浅色时显示，点击切到深色）。 */
+export function SunIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.28 5.28l1.42 1.42M17.3 17.3l1.42 1.42M5.28 18.72l1.42-1.42M17.3 6.7l1.42-1.42" />
+    </Svg>
+  )
+}
+
+/** 月亮——顶栏主题切换（当前深色时显示，点击切到浅色）。 */
+export function MoonIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" />
+    </Svg>
+  )
+}

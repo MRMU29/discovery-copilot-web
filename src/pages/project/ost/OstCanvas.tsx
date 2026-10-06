@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { DndContext, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
 import type { Assumption, Experiment, OstNode } from '@/schemas/entities'
 import { NODE_HEIGHT, NODE_WIDTH, visibleNodes, type VisibleRect } from './ost-meta'
+import { useT } from '@/lib/i18n'
 import { OstNodeCard } from './OstNodeCard'
 
 const CANVAS_WIDTH = 2400
@@ -49,6 +50,7 @@ export function OstCanvas({
   onDelete,
   onPosition,
 }: OstCanvasProps) {
+  const t = useT()
   const containerRef = useRef<HTMLDivElement | null>(null)
   const [rect, setRect] = useState<ContainerRect | null>(null)
   const [zoom, setZoom] = useState(1)
@@ -155,7 +157,7 @@ export function OstCanvas({
           ref={containerRef}
           onScroll={handleScroll}
           className="h-[min(72dvh,640px)] overflow-auto rounded-lg border border-hairline bg-surface-2"
-          aria-label="OST 画布（可滚动缩放；节点可拖拽或用键盘方向键移动）"
+          aria-label={t('ost.canvasAria')}
         >
           <div style={{ width: CANVAS_WIDTH * zoom, height: CANVAS_HEIGHT * zoom }}>
             <div
@@ -216,11 +218,11 @@ export function OstCanvas({
       <div
         className="absolute bottom-3 right-3 flex items-center gap-1 rounded-btn border border-hairline bg-surface-1/95 p-1 shadow-card backdrop-blur"
         role="group"
-        aria-label="画布缩放"
+        aria-label={t('ost.zoomAria')}
       >
         <button
           type="button"
-          aria-label="缩小"
+          aria-label={t('ost.zoomOut')}
           onClick={() => setZoom((z) => clampZoom(z - 0.1))}
           className="flex size-9 items-center justify-center rounded-btn text-body text-ink-secondary hover:bg-surface-2 hover:text-ink"
         >
@@ -229,7 +231,7 @@ export function OstCanvas({
         <span className="min-w-12 text-center text-caption text-ink-muted">{Math.round(zoom * 100)}%</span>
         <button
           type="button"
-          aria-label="放大"
+          aria-label={t('ost.zoomIn')}
           onClick={() => setZoom((z) => clampZoom(z + 0.1))}
           className="flex size-9 items-center justify-center rounded-btn text-body text-ink-secondary hover:bg-surface-2 hover:text-ink"
         >
@@ -240,7 +242,7 @@ export function OstCanvas({
           onClick={() => setZoom(1)}
           className="min-h-9 rounded-btn px-2 text-caption text-ink-faint hover:text-ink"
         >
-          重置
+          {t('ost.reset')}
         </button>
       </div>
     </div>

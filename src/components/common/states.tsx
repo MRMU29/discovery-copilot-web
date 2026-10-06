@@ -1,12 +1,14 @@
 /** Async-state primitives: loading / empty / error — every panel ships all three (plan §8.3). */
+import { useT } from '@/lib/i18n'
 
 export function Skeleton({ className = '' }: { className?: string }) {
   return <div className={`animate-pulse rounded-md bg-surface-3 ${className}`} aria-hidden="true" />
 }
 
 export function PageSkeleton() {
+  const t = useT()
   return (
-    <div className="space-y-4" role="status" aria-label="加载中">
+    <div className="space-y-4" role="status" aria-label={t('common.loading')}>
       <Skeleton className="h-8 w-56" />
       <Skeleton className="h-4 w-full max-w-md" />
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -40,13 +42,15 @@ interface ErrorStateProps {
   onRetry?: () => void
 }
 
-export function ErrorState({ title = '出错了', message, onRetry }: ErrorStateProps) {
+export function ErrorState({ title, message, onRetry }: ErrorStateProps) {
+  const t = useT()
+  const heading = title ?? t('common.errorTitle')
   return (
     <div
       role="alert"
       className="flex flex-col items-center justify-center gap-2 rounded-lg border border-danger/40 bg-surface-1 px-6 py-12 text-center"
     >
-      <p className="text-card-title text-ink">{title}</p>
+      <p className="text-card-title text-ink">{heading}</p>
       <p className="max-w-md text-body-sm text-ink-muted">{message}</p>
       {onRetry && (
         <button
@@ -54,7 +58,7 @@ export function ErrorState({ title = '出错了', message, onRetry }: ErrorState
           onClick={onRetry}
           className="mt-3 min-h-11 rounded-btn bg-accent px-4 py-2.5 text-button text-white"
         >
-          重试
+          {t('common.retry')}
         </button>
       )}
     </div>

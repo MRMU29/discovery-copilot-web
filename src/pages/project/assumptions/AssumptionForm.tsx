@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { ASSUMPTION_TYPE_META, type AssumptionType } from '@/lib/assumption-meta'
 import { ASSUMPTION_TYPES, type Assumption } from '@/schemas/entities'
+import { useT } from '@/lib/i18n'
 import { createAssumption, updateAssumption } from '@/services/assumptions'
 
 const SCALE = [1, 2, 3, 4, 5] as const
@@ -52,6 +53,7 @@ function ScaleField({
 
 /** Create/edit form for one assumption. Score changes write a ScoreEvent (service layer). */
 export function AssumptionForm({ projectId, initial, onDone, onCancel }: AssumptionFormProps) {
+  const t = useT()
   const [statement, setStatement] = useState(initial?.statement ?? '')
   const [type, setType] = useState<AssumptionType>(initial?.type ?? 'value')
   const [impact, setImpact] = useState(initial?.impact ?? 3)
@@ -68,7 +70,7 @@ export function AssumptionForm({ projectId, initial, onDone, onCancel }: Assumpt
     event.preventDefault()
     const trimmed = statement.trim()
     if (!trimmed) {
-      setError('请填写假设陈述。')
+      setError(t('assumption.statementRequired'))
       return
     }
     setSaving(true)
@@ -100,7 +102,7 @@ export function AssumptionForm({ projectId, initial, onDone, onCancel }: Assumpt
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label htmlFor="assumption-statement" className="text-caption text-ink-muted">
-          假设陈述（一句话，具体且可证伪）
+          {t('assumption.statementLabel')}
         </label>
         <textarea
           id="assumption-statement"
@@ -108,14 +110,14 @@ export function AssumptionForm({ projectId, initial, onDone, onCancel }: Assumpt
           onChange={(e) => setStatement(e.target.value)}
           rows={3}
           maxLength={2000}
-          placeholder="例：目标用户愿意为自动整理笔记每月支付 10 元"
+          placeholder={t('assumption.statementPlaceholder')}
           className="mt-1 w-full rounded-btn border border-hairline-strong bg-surface-1 px-3 py-2 text-body text-ink placeholder:text-ink-faint focus:border-accent-focus focus:outline-none"
         />
       </div>
 
       <div>
         <label htmlFor="assumption-type" className="text-caption text-ink-muted">
-          风险类别
+          {t('assumption.typeLabel')}
         </label>
         <select
           id="assumption-type"
@@ -123,19 +125,19 @@ export function AssumptionForm({ projectId, initial, onDone, onCancel }: Assumpt
           onChange={(e) => setType(e.target.value as AssumptionType)}
           className="mt-1 min-h-11 w-full rounded-btn border border-hairline-strong bg-surface-1 px-3 text-body text-ink focus:border-accent-focus focus:outline-none"
         >
-          {ASSUMPTION_TYPES.map((t) => (
-            <option key={t} value={t}>
-              {ASSUMPTION_TYPE_META[t].label}
+          {ASSUMPTION_TYPES.map((ty) => (
+            <option key={ty} value={ty}>
+              {t(ASSUMPTION_TYPE_META[ty].labelKey)}
             </option>
           ))}
         </select>
       </div>
 
-      <ScaleField label="影响 Impact（1–5）" value={impact} onChange={setImpact} hint="价值越大、波及用户越多，分越高" />
-      <ScaleField label="风险 Risk（1–5）" value={risk} onChange={setRisk} hint="判断错误时代价越大，分越高" />
+      <ScaleField label={t('assumption.impactField')} value={impact} onChange={setImpact} hint={t('assumption.impactHint')} />
+      <ScaleField label={t('assumption.riskField')} value={risk} onChange={setRisk} hint={t('assumption.riskHint')} />
 
       <fieldset>
-        <legend className="text-caption text-ink-muted">信心 Confidence（0–100%）</legend>
+        <legend className="text-caption text-ink-muted">{t('assumption.confidenceField')}</legend>
         <label className="mt-1 flex min-h-11 items-center gap-2 text-body-sm text-ink">
           <input
             type="checkbox"
@@ -143,7 +145,7 @@ export function AssumptionForm({ projectId, initial, onDone, onCancel }: Assumpt
             onChange={(e) => setConfidenceSet(e.target.checked)}
             className="size-4 accent-accent"
           />
-          已评估证据（不勾选 = 证据未评估，按 0 计入优先分）
+          {t('assumption.confidenceEvaluated')}
         </label>
         {confidenceSet && (
           <div className="mt-1 flex items-center gap-3">
@@ -154,7 +156,7 @@ export function AssumptionForm({ projectId, initial, onDone, onCancel }: Assumpt
               step={5}
               value={confidencePercent}
               onChange={(e) => setConfidencePercent(Number(e.target.value))}
-              aria-label="信心百分比"
+              aria-label={t('assumption.confidenceAria')}
               className="h-11 flex-1 accent-accent"
             />
             <span className="w-12 text-right text-body-sm text-ink">{confidencePercent}%</span>
@@ -170,10 +172,10 @@ export function AssumptionForm({ projectId, initial, onDone, onCancel }: Assumpt
 
       <div className="flex gap-2">
         <Button type="submit" disabled={saving || !statement.trim()}>
-          {saving ? '保存中…' : editing ? '保存修改' : '添加假设'}
+          {saving ? t('common.saving') : editing ? t('common.saveEdit') : t('assumption.add')}
         </Button>
         <Button variant="ghost" onClick={onCancel}>
-          取消
+          {t('common.cancel')}
         </Button>
       </div>
     </form>

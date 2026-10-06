@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import {
   PROJECT_SECTIONS,
   SECTION_LABELS,
+  SETTINGS_LABELS,
+  SETTINGS_NAV,
   SETTINGS_PATHS,
   projectPath,
   resolveSection,
@@ -33,8 +35,19 @@ describe('route contract', () => {
 
   it('settings paths stay flat and shareable', () => {
     expect(SETTINGS_PATHS.aiProvider).toBe('/settings/ai-provider')
+    expect(SETTINGS_PATHS.appearance).toBe('/settings/appearance')
     expect(SETTINGS_PATHS.dataBackup).toBe('/settings/data-backup')
     expect(SETTINGS_PATHS.privacy).toBe('/settings/privacy')
     expect(SETTINGS_PATHS.about).toBe('/settings/about')
+  })
+
+  it('side rail excludes the privacy policy (reached via About → 产品与文档)', () => {
+    expect(SETTINGS_NAV).toEqual(['aiProvider', 'appearance', 'dataBackup', 'about'])
+    expect(SETTINGS_NAV).not.toContain('privacy')
+    // 每个侧栏键都有路由与 i18n 键
+    for (const key of SETTINGS_NAV) {
+      expect(SETTINGS_PATHS[key]).toMatch(/^\/settings\//)
+      expect(SETTINGS_LABELS[key]).toMatch(/^nav\.section\./)
+    }
   })
 })

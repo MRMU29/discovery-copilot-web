@@ -27,6 +27,7 @@ import {
 } from '@/services/experiment-ai'
 import { getOnboarding, markOnboardingDone } from '@/services/onboarding'
 import { getSettings } from '@/services/settings'
+import { useT } from '@/lib/i18n'
 
 type Stage = 'config' | 'running' | 'relay' | 'preview'
 
@@ -53,6 +54,7 @@ export function AIExperimentDialog({
   onClose,
   onApplied,
 }: AIExperimentDialogProps) {
+  const t = useT()
   const [stage, setStage] = useState<Stage>('config')
   const [providers, setProviders] = useState<ProviderConfigRow[]>([])
   const [selectedId, setSelectedId] = useState('')
@@ -94,7 +96,7 @@ export function AIExperimentDialog({
   function ensureKey(): string | null {
     const key = apiKey.trim() || (selected ? getSessionKey(selected.id) : '')
     if (!key) {
-      setError('请先输入该 Provider 的 API Key（可在设置页保存到本会话，或仅在此处临时输入）。')
+      setError(t('ai.dialog.keyRequired'))
       return null
     }
     if (selected) setSessionKey(selected.id, key)
@@ -141,7 +143,7 @@ export function AIExperimentDialog({
       setStage('preview')
     } catch (err) {
       if (err instanceof AIError && err.code === 'ABORTED') {
-        setError('已取消。')
+        setError(t('ai.dialog.cancelled'))
       } else if (err instanceof AIError && err.code === 'BUDGET') {
         setBudgetError(err.message)
       } else {
@@ -167,7 +169,7 @@ export function AIExperimentDialog({
     if (!assumption) return
     const chosen = picks.filter((_, i) => checked[i])
     if (chosen.length === 0) {
-      setError('请至少勾选一条要应用的实验。')
+      setError(t('ai.dialog.pickAtLeastOneExperiment'))
       return
     }
     setApplying(true)
@@ -186,7 +188,7 @@ export function AIExperimentDialog({
   const assumptionBlock = assumption ? (
     <p className="rounded-lg border border-hairline bg-surface-2 p-3 text-caption text-ink-secondary">
       <span className={`mr-1 inline-block rounded-full px-2 py-0.5 text-caption ${ASSUMPTION_TYPE_META[assumption.type].badgeClass}`}>
-        {ASSUMPTION_TYPE_META[assumption.type].label}
+        {t(ASSUMPTION_TYPE_META[assumption.type].labelKey)}
       </span>
       {assumption.statement}
     </p>
@@ -195,19 +197,20 @@ export function AIExperimentDialog({
   return (
     <Dialog
       open
-      title="AI 设计验证实验"
+      title={t('ai.experiment.title')}
       onClose={onClose}
       size={stage === 'relay' ? 'lg' : 'md'}
     >
       {stage === 'config' && (
         <div className="space-y-4">
           <p className="rounded-lg border border-hairline bg-surface-2 px-3 py-2 text-caption text-ink-secondary">
-            当前路径：{route === 'byok' ? '内置 AI（BYOK）——应用直接调用你配置的 Provider' : 'Prompt Relay——零配置，复制 Prompt 给外部 AI 助手'}
+            {t('ai.dialog.currentRoute')}
+            {route === 'byok' ? t('ai.dialog.routeByok') : t('ai.dialog.routeRelay')}
           </p>
 
           <div>
             <label htmlFor="ai-exp-assumption" className="text-caption text-ink-muted">
-              要验证的假设（必选）
+              {t('ai.experiment.assumptionLabel')}
             </label>
             <select
               id="ai-exp-assumption"
@@ -215,10 +218,10 @@ export function AIExperimentDialog({
               onChange={(e) => setAssumptionId(e.target.value)}
               className={`${inputClass} min-h-11`}
             >
-              <option value="">请选择假设…</option>
+              <option value="">{t('ai.experiment.assumptionPlaceholder')}</option>
               {assumptions.map((a) => (
                 <option key={a.id} value={a.id}>
-                  [{ASSUMPTION_TYPE_META[a.type].label}]{' '}
+                  [{t(ASSUMPTION_TYPE_META[a.type].labelKey)}]{' '}
                   {a.statement.length > 32 ? `${a.statement.slice(0, 32)}…` : a.statement}
                 </option>
               ))}
@@ -226,7 +229,7 @@ export function AIExperimentDialog({
             {assumptionBlock}
             {assumptions.length === 0 && (
               <p className="mt-1 text-caption text-warning">
-                本项目还没有假设——先在「假设」页录入或用 AI 识别，再回来设计实验。
+                {t('ai.experiment.noAssumptions')}
               </p>
             )}
           </div>
@@ -235,7 +238,7 @@ export function AIExperimentDialog({
             <>
               <div>
                 <label htmlFor="ai-exp-provider" className="text-caption text-ink-muted">
-                  AI Provider
+                  {t('settings.aiProvider.title')}
                 </label>
                 <select
                   id="ai-exp-provider"
@@ -252,7 +255,7 @@ export function AIExperimentDialog({
               </div>
               <div>
                 <label htmlFor="ai-exp-key" className="text-caption text-ink-muted">
-                  API Key（仅本会话有效）
+                  {t('ai.dialog.keyLabel')}
                 </label>
                 <input
                   id="ai-exp-key"
@@ -270,14 +273,14 @@ export function AIExperimentDialog({
           <div>
             <div className="flex items-center justify-between gap-2">
               <label htmlFor="ai-exp-context" className="text-caption text-ink-muted">
-                补充背景（可选：目标用户、渠道、已有限制…）
+                {t('ai.experiment.contextLabel')}
               </label>
               <FieldHint
-                field="补充背景"
+                field={t('ai.experiment.contextField')}
                 highlighted={hintsHighlighted}
                 onRead={() => void markOnboardingDone('fieldHints').catch(() => undefined)}
-                good="只有网页端；没有投广告预算；希望一周内得到结论。"
-                bad="随便。"
+                good={t('ai.experiment.contextGood')}
+                bad={t('ai.experiment.contextBad')}
               />
             </div>
             <textarea
@@ -286,7 +289,7 @@ export function AIExperimentDialog({
               onChange={(e) => setContext(e.target.value)}
               rows={4}
               maxLength={4000}
-              placeholder="例：目标用户是小团队财务；只有网页端；希望一周内得到结论"
+              placeholder={t('ai.experiment.contextPlaceholder')}
               className={inputClass}
             />
           </div>
@@ -295,7 +298,7 @@ export function AIExperimentDialog({
             <div role="alert" className="rounded-lg border border-warning/40 bg-warning/10 p-3">
               <p className="text-body-sm text-ink">{budgetError}</p>
               <Button className="mt-2" variant="secondary" onClick={() => void handleSuggest(true)}>
-                本次继续（预算内确认）
+                {t('ai.dialog.continueBudget')}
               </Button>
             </div>
           )}
@@ -312,7 +315,7 @@ export function AIExperimentDialog({
                 onClick={() => void handleSuggest(false)}
                 disabled={!assumption || providers.length === 0}
               >
-                AI 设计实验
+                {t('ai.experiment.cta')}
               </Button>
             ) : (
               <Button disabled={!assumption} onClick={() => setStage('relay')}>
@@ -320,7 +323,7 @@ export function AIExperimentDialog({
               </Button>
             )}
             <Button variant="ghost" onClick={onClose}>
-              关闭
+              {t('common.close')}
             </Button>
           </div>
         </div>
@@ -332,16 +335,18 @@ export function AIExperimentDialog({
             aria-hidden
             className="size-8 animate-spin rounded-full border-2 border-hairline-strong border-t-accent"
           />
-          <p className="text-body-sm text-ink-secondary">正在为选中假设设计低成本验证实验…</p>
+          <p className="text-body-sm text-ink-secondary">{t('ai.experiment.running')}</p>
           {estimate && (
             <p className="text-caption text-ink-faint">
-              预估输入 ~{estimate.inputTokens} tokens ·{' '}
-              {estimate.usd != null ? `约 $${estimate.usd.toFixed(4)}` : '计费未知（模型不在参考价表）'}
-              <span className="ml-1">（内置参考价，实际以 Provider 账单为准）</span>
+              {t('ai.dialog.estimateLine', {
+                tokens: estimate.inputTokens,
+                usd: estimate.usd != null ? t('ai.dialog.estimateUsd', { usd: estimate.usd.toFixed(4) }) : t('ai.dialog.estimateUnknown'),
+              })}
+              <span className="ml-1">{t('settings.aiProvider.usagePricingNote')}</span>
             </p>
           )}
           <Button variant="secondary" onClick={() => abortRef.current?.abort()}>
-            取消
+            {t('common.cancel')}
           </Button>
         </div>
       )}
@@ -369,7 +374,7 @@ export function AIExperimentDialog({
       {stage === 'preview' && (
         <div className="space-y-4">
           <p className="text-caption text-ink-muted">
-            AI 建议先审核再入库：可修改假设、方法与成功阈值；应用后写入实验列表并关联所选假设。
+            {t('ai.experiment.reviewHint')}
           </p>
           <ul className="space-y-3">
             {picks.map((pick, i) => (
@@ -383,14 +388,14 @@ export function AIExperimentDialog({
                     }
                     className="size-4 accent-accent"
                   />
-                  应用这条实验
+                  {t('ai.experiment.applyPick')}
                 </label>
                 <textarea
                   value={pick.hypothesis}
                   onChange={(e) => editPick(i, { hypothesis: e.target.value })}
                   rows={2}
                   maxLength={2000}
-                  aria-label={`第 ${i + 1} 条实验假设`}
+                  aria-label={t('ai.experiment.itemHypothesis', { n: i + 1 })}
                   className={`${inputClass} mt-2`}
                 />
                 <textarea
@@ -398,7 +403,7 @@ export function AIExperimentDialog({
                   onChange={(e) => editPick(i, { method: e.target.value })}
                   rows={2}
                   maxLength={1000}
-                  aria-label={`第 ${i + 1} 条实验方法`}
+                  aria-label={t('ai.experiment.itemMethod', { n: i + 1 })}
                   className={`${inputClass} mt-2`}
                 />
                 <textarea
@@ -406,7 +411,7 @@ export function AIExperimentDialog({
                   onChange={(e) => editPick(i, { successCriteria: e.target.value })}
                   rows={2}
                   maxLength={2000}
-                  aria-label={`第 ${i + 1} 条成功阈值`}
+                  aria-label={t('ai.experiment.itemCriteria', { n: i + 1 })}
                   className={`${inputClass} mt-2`}
                 />
               </li>
@@ -425,12 +430,12 @@ export function AIExperimentDialog({
             onToggleAll={(next) => setChecked(picks.map(() => next))}
             applying={applying}
             regenerating={false}
-            applyLabel="实验"
+            applyLabel={t('ai.experiment.applyLabel')}
             onApply={() => void handleApply()}
             onReject={onClose}
             onRegenerate={() => void handleSuggest(false)}
             onBack={() => setStage('config')}
-            backLabel="返回修改"
+            backLabel={t('ai.experiment.backLabel')}
           />
         </div>
       )}

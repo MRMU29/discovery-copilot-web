@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
 import { EmptyState, PageSkeleton } from '@/components/common/states'
+import { useT } from '@/lib/i18n'
 import type { Experiment } from '@/schemas/entities'
 import { listAssumptionsByProject } from '@/services/assumptions'
 import { getProject } from '@/services/projects'
@@ -12,6 +13,7 @@ import { ExperimentCard } from './experiments/ExperimentCard'
 import { ExperimentForm } from './experiments/ExperimentForm'
 
 export default function Experiments({ projectId }: { projectId: string }) {
+  const t = useT()
   const experiments = useLiveQuery(() => listExperimentsByProject(projectId), [projectId])
   const assumptions = useLiveQuery(() => listAssumptionsByProject(projectId), [projectId])
   const project = useLiveQuery(async () => {
@@ -37,15 +39,15 @@ export default function Experiments({ projectId }: { projectId: string }) {
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-headline text-ink">实验</h1>
+          <h1 className="text-headline text-ink">{t('experiments.title')}</h1>
           <p className="mt-1 text-body-sm text-ink-muted">
-            为关键假设设计低成本验证实验（测行为、最小投入、明确成功阈值） · 共 {experiments.length} 条
+            {t('experiments.desc', { count: experiments.length })}
           </p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={() => setAiOpen(true)}>AI 设计实验</Button>
+          <Button onClick={() => setAiOpen(true)}>{t('experiments.aiCta')}</Button>
           <Button variant="secondary" onClick={() => setFormOpen(true)}>
-            新建实验
+            {t('experiments.add')}
           </Button>
         </div>
       </header>
@@ -58,12 +60,12 @@ export default function Experiments({ projectId }: { projectId: string }) {
 
       {experiments.length === 0 ? (
         <EmptyState
-          title="还没有实验"
-          description="为高优先级假设设计一个低成本验证实验——测行为、最小投入、明确成功阈值；AI 建议先审核再入库。"
-          action={<Button onClick={() => setAiOpen(true)}>用 AI 设计实验</Button>}
+          title={t('experiments.emptyTitle')}
+          description={t('experiments.emptyDesc')}
+          action={<Button onClick={() => setAiOpen(true)}>{t('experiments.emptyCta')}</Button>}
         />
       ) : (
-        <section aria-label="实验列表" className="space-y-3">
+        <section aria-label={t('experiments.listAria')} className="space-y-3">
           {experiments.map((e) => (
             <ExperimentCard
               key={e.id}
@@ -75,7 +77,7 @@ export default function Experiments({ projectId }: { projectId: string }) {
         </section>
       )}
 
-      <Dialog open={formOpen} title="新建实验" onClose={() => setFormOpen(false)}>
+      <Dialog open={formOpen} title={t('experiments.formTitle')} onClose={() => setFormOpen(false)}>
         <ExperimentForm
           projectId={projectId}
           assumptions={assumptions}
@@ -91,7 +93,12 @@ export default function Experiments({ projectId }: { projectId: string }) {
           assumptions={assumptions}
           onClose={() => setAiOpen(false)}
           onApplied={(created, skipped) =>
-            setNotice(`已应用 ${created} 条 AI 建议实验${skipped > 0 ? `（容量不足，跳过 ${skipped} 条）` : ''}。`)
+            setNotice(
+              t('experiments.appliedNotice', {
+                created,
+                skipped: skipped > 0 ? t('experiments.appliedSkipped', { skipped }) : '',
+              }),
+            )
           }
         />
       )}
