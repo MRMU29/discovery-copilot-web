@@ -11,19 +11,14 @@
  *
  * Usage:
  *   node scripts/probe/provider-cors.mjs                # write JSON matrix
- *   node scripts/probe/provider-cors.mjs --insecure     # ALSO accept MITM/self-signed certs
- *                                                       # (corporate-proxy diagnostic only;
- *                                                       #  results are then labelled untrusted)
+ * Behind a corporate proxy or MITM device, export NODE_EXTRA_CA_CERTS pointing
+ * at your CA bundle before launching node. TLS validation stays enabled.
  * Output: docs/research/provider-cors.json (raw) — the human report is
  * docs/research/provider-cors.md, authored from this JSON.
  */
 import { writeFileSync, mkdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
-
-if (process.argv.includes('--insecure')) {
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
-}
 
 const ORIGIN = 'https://discovery-copilot.local'
 const TIMEOUT_MS = 15_000
@@ -67,7 +62,6 @@ async function attempt(url, init) {
   }
 }
 
-const insecure = process.argv.includes('--insecure')
 const results = []
 for (const p of PROVIDERS) {
   const preflight = await attempt(p.endpoint, {
@@ -87,8 +81,8 @@ for (const p of PROVIDERS) {
   const preflightOk = preflight.kind === 'response' && originAllowed(preflight['access-control-allow-origin'])
   const verdict =
     post.kind === 'error'
-      ? insecure && /CERT|TLS/i.test(post.error ?? '')
-        ? 'unknown — TLS intercepted (see error); rerun outside the proxy or verify manually'
+      ? /CERT|TLS/i.test(post.error ?? '')
+        ? 'unknown — TLS intercepted (see error); trust your proxy CA via NODE_EXTRA_CA_CERTS'
         : 'unreachable from this machine — check network/proxy'
       : postReadable
         ? preflightOk
@@ -105,7 +99,6 @@ for (const p of PROVIDERS) {
 const payload = {
   generatedAt: new Date().toISOString(),
   origin: ORIGIN,
-  insecureMode: insecure,
   results,
 }
 const outDir = join(dirname(fileURLToPath(import.meta.url)), '../../../docs/research')

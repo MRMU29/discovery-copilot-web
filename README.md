@@ -1,22 +1,48 @@
-[English](./README.en.md) | 简体中文
+<div align="center">
+
+<img src="public/brand-icon.jpg" alt="Discovery Copilot 品牌图标" width="112" height="112" />
 
 # Discovery Copilot (Web)
 
-无需账号、本地优先（IndexedDB）、BYOK、以 `.dcopilot` 文件跨设备迁移的产品发现工作台。  
+**本地优先，数据自己掌握。**
+
+无需账号 · IndexedDB 本地存储 · BYOK · `.dcopilot` 文件跨设备迁移的产品发现工作台
+
+[![License](https://img.shields.io/badge/license-MIT-227b70?style=for-the-badge)](LICENSE)
+[![Node](https://img.shields.io/badge/Node.js-22%2B-43853d?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![pnpm](https://img.shields.io/badge/pnpm-12-227b70?style=for-the-badge&logo=pnpm&logoColor=white)](https://pnpm.io/)
+[![Stars](https://img.shields.io/github/stars/MRMU29/discovery-copilot-web?style=for-the-badge&color=d77b66)](https://github.com/MRMU29/discovery-copilot-web/stargazers)
+
+[在线体验](https://discovery-copilot-web.pages.dev) · [开发](#开发) · [功能一览](#功能一览) · [安全模型](#安全模型) · [问题反馈](https://github.com/MRMU29/discovery-copilot-web/issues)
+
+</div>
+
+[English](./README.en.md) | 简体中文
+
+**把假设、实验与报告串成一条可离线完成的产品发现流程；数据只留在你自己的浏览器里。**
+
 线上地址：<https://discovery-copilot-web.pages.dev>
+
+## 目录
+
+| 开始使用 | 能力 | 开发与来源 |
+| :--- | :--- | :--- |
+| [开发](#开发)<br />[部署](#部署)<br />[测试](#测试) | [功能一览](#功能一览)<br />[技术栈](#技术栈)<br />[安全模型](#安全模型) | [开发方式](#开发方式)<br />[隐私与数据留存](#隐私与数据留存) |
 
 ## 功能一览
 
-- **项目管理**：创建 / 编辑 / 删除（回收站保留 30 天）/ 示例项目一键加载
-- **关键假设**：八类风险假设、Impact × Risk × (1 − Confidence) 优先级、Recharts 优先级矩阵（含表格等价视图）
-- **实验计划**：从假设生成 → 审核 → 保存 → 状态与结果回填
-- **机会解决方案树（OST）**：拖拽 + 双指缩放 + 键盘等价操作 + 表格等价视图 + 视口裁剪
-- **AI Copilot**：BYOK 直连（OpenAI 兼容 / Gemini）与 Prompt Relay（零配置复制粘贴）双路径；识别 / 实验 / 报告三类任务；审核式工作流（预览 / 应用 / 拒绝 / 重新生成 / 取消）
-- **成本保护**：请求前 Token/费用预估、预算熔断（单次 + 月度）、按日用量视图
-- **发现报告**：AI 生成 + 手动撰写，区分 AI 生成与用户确认内容；HTML（保真推荐）/ PNG（尽力而为）导出
-- **备份迁移**：`.dcopilot` 导出（全部 / 单项目）、导入（六类场景校验、冲突三选、失败回滚）、覆盖前自动快照（保留 3 份）
-- **外观与语言**：浅色 / 深色 / 跟随系统三档主题（首帧无闪烁）、启动页动画、8 种界面语言（简中 / 繁中 / 英 / 日 / 韩 / 俄 / 德 / 法，随 `.dcopilot` 迁移）
-- **隐私与可观测性**：数据本地存储、诊断包脱敏导出
+| 你想完成的工作 | 工作台提供的能力 |
+| --- | --- |
+| 管理产品项目 | 创建 / 编辑 / 删除（回收站保留 30 天）/ 示例项目一键加载 |
+| 梳理关键假设 | 八类风险假设、Impact × Risk × (1 − Confidence) 优先级、Recharts 优先级矩阵（含表格等价视图） |
+| 规划实验 | 从假设生成 → 审核 → 保存 → 状态与结果回填 |
+| 画机会解决方案树（OST） | 拖拽 + 双指缩放 + 键盘等价操作 + 表格等价视图 + 视口裁剪 |
+| 用 AI 辅助发现 | BYOK 直连（OpenAI 兼容 / Gemini）与 Prompt Relay（零配置复制粘贴）双路径；识别 / 实验 / 报告三类任务；审核式工作流（预览 / 应用 / 拒绝 / 重新生成 / 取消） |
+| 控制 AI 成本 | 请求前 Token/费用预估、预算熔断（单次 + 月度）、按日用量视图 |
+| 产出发现报告 | AI 生成 + 手动撰写，区分 AI 生成与用户确认内容；HTML（保真推荐）/ PNG（尽力而为）导出 |
+| 备份与迁移 | `.dcopilot` 导出（全部 / 单项目）、导入（六类场景校验、冲突三选、失败回滚）、覆盖前自动快照（保留 3 份） |
+| 调整外观与语言 | 浅色 / 深色 / 跟随系统三档主题（首帧无闪烁）、启动页动画、8 种界面语言（简中 / 繁中 / 英 / 日 / 韩 / 俄 / 德 / 法，随 `.dcopilot` 迁移） |
+| 保护隐私与可观测性 | 数据本地存储、诊断包脱敏导出 |
 
 ## 技术栈
 
@@ -49,12 +75,6 @@ pnpm probe:provider-cors   # Provider 浏览器直连 CORS 矩阵（无 Key）
 | GPT-5.6-Luna（Codex）                   | 项目计划统筹                   |
 
 协作方式为「命令式开发」：人类逐条下达命令，AI 完成后按五段（文件树/关键代码/运行调试/验收结果/待确认问题）汇报并等待下一条。
-
-## 开源素材来源
-
-- 应用图标与品牌图：项目自有素材（`public/brand-icon.jpg`）
-- 界面图标：自绘内联 SVG（`src/components/ui/icons.tsx`），未使用第三方图标库素材
-- 全部运行时依赖为开源库，清单与版本以 `package.json` / `pnpm-lock.yaml` 为准
 
 ## 部署
 
@@ -137,3 +157,13 @@ GitHub 仓库端同步开启：Secret Scanning、Push Protection、Dependabot al
 ## 许可
 
 [MIT](./LICENSE)
+
+---
+
+<div align="center">
+
+[报告问题](https://github.com/MRMU29/discovery-copilot-web/issues) · [源码](https://github.com/MRMU29/discovery-copilot-web) · [在线体验](https://discovery-copilot-web.pages.dev)
+
+<sub>Discovery Copilot · 本地优先，数据自己掌握</sub>
+
+</div>
