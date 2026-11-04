@@ -1,22 +1,45 @@
-English | [简体中文](./README.md)
+<div align="center">
 
 # Discovery Copilot (Web)
 
+**Local-first. Your data stays yours.**
+
 An account-free, local-first (IndexedDB), BYOK product discovery workspace that migrates across devices via `.dcopilot` files.
+
+[![License](https://img.shields.io/badge/license-MIT-227b70?style=for-the-badge)](LICENSE)
+[![Node](https://img.shields.io/badge/Node.js-22%2B-43853d?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![pnpm](https://img.shields.io/badge/pnpm-12-227b70?style=for-the-badge&logo=pnpm&logoColor=white)](https://pnpm.io/)
+
+[Live demo](https://discovery-copilot-web.pages.dev) · [Development](#development) · [Features](#features) · [Security model](#security-model) · [Issues](https://github.com/MRMU29/discovery-copilot-web/issues)
+
+</div>
+
+English | [简体中文](./README.md)
+
+**Turn assumptions, experiments and reports into one offline-first discovery flow — the data never leaves your browser.**
+
 Live: <https://discovery-copilot-web.pages.dev>
+
+## Contents
+
+| Getting started | Capabilities | Development & sources |
+| :--- | :--- | :--- |
+| [Development](#development)<br />[Deployment](#deployment)<br />[Tests](#tests) | [Features](#features)<br />[Tech stack](#tech-stack)<br />[Security model](#security-model) | [How it is built](#how-it-is-built)<br />[Privacy & data retention](#privacy--data-retention) |
 
 ## Features
 
-- **Projects**: create / edit / delete (30-day recycle bin) / one-click sample project
-- **Key assumptions**: eight risk categories, Impact × Risk × (1 − Confidence) prioritization, Recharts priority matrix (with an equivalent table view)
-- **Experiments**: generate from assumptions → review → save → status & result write-back
-- **Opportunity solution tree (OST)**: drag & drop + pinch zoom + keyboard equivalents + table view + viewport culling
-- **AI Copilot**: BYOK direct calls (OpenAI-compatible / Gemini) and Prompt Relay (zero-setup copy & paste); identify / experiment / report tasks; review-first workflow (preview / apply / reject / regenerate / cancel)
-- **Cost guardrails**: pre-request token & cost estimates, budget circuit breakers (per-request + monthly), daily usage view
-- **Discovery reports**: AI-generated or hand-written, AI vs. user-confirmed content distinguished; HTML (faithful, recommended) / PNG (best-effort) export
-- **Backup & migration**: `.dcopilot` export (all / single project), import (six-scenario validation, conflict strategies, rollback on failure), automatic pre-overwrite snapshots (3 kept)
-- **Appearance & language**: light / dark / follow-system themes (no first-frame flash), launch-screen animation, 8 interface languages (zh-Hans / zh-Hant / en / ja / ko / ru / de / fr, migrating with `.dcopilot`)
-- **Privacy & observability**: data stays local, de-identified diagnostics export
+| What you want to do | What the workspace provides |
+| --- | --- |
+| Manage projects | Create / edit / delete (30-day recycle bin) / one-click sample project |
+| Work through key assumptions | Eight risk categories, Impact × Risk × (1 − Confidence) prioritization, Recharts priority matrix (with an equivalent table view) |
+| Plan experiments | Generate from assumptions → review → save → status & result write-back |
+| Draw an opportunity solution tree (OST) | Drag & drop + pinch zoom + keyboard equivalents + table view + viewport culling |
+| Use AI assistance | BYOK direct calls (OpenAI-compatible / Gemini) and Prompt Relay (zero-setup copy & paste); identify / experiment / report tasks; review-first workflow (preview / apply / reject / regenerate / cancel) |
+| Keep AI costs in check | Pre-request token & cost estimates, budget circuit breakers (per-request + monthly), daily usage view |
+| Produce discovery reports | AI-generated or hand-written, AI vs. user-confirmed content distinguished; HTML (faithful, recommended) / PNG (best-effort) export |
+| Back up and migrate | `.dcopilot` export (all / single project), import (six-scenario validation, conflict strategies, rollback on failure), automatic pre-overwrite snapshots (3 kept) |
+| Tune appearance & language | Light / dark / follow-system themes (no first-frame flash), launch-screen animation, 8 interface languages (zh-Hans / zh-Hant / en / ja / ko / ru / de / fr, migrating with `.dcopilot`) |
+| Protect privacy & observability | Data stays local, de-identified diagnostics export |
 
 ## Tech stack
 
@@ -49,12 +72,6 @@ One human owner (requirements, architecture decisions, per-command acceptance) w
 | GPT-5.6-Luna (Codex) | Project planning |
 
 "Command-driven development": the human issues one command at a time; the AI completes it, reports in five sections (file tree / key code / run & debug / acceptance results / open questions), and waits for the next command.
-
-## Asset provenance
-
-- App icon & brand imagery: original project artwork (`public/brand-icon.jpg`)
-- Interface icons: hand-drawn inline SVGs (`src/components/ui/icons.tsx`), no third-party icon assets
-- All runtime dependencies are open-source libraries; see `package.json` / `pnpm-lock.yaml`
 
 ## Deployment
 
@@ -137,3 +154,13 @@ On the GitHub side: Secret Scanning, Push Protection, Dependabot alerts and `.gi
 ## License
 
 [MIT](./LICENSE)
+
+---
+
+<div align="center">
+
+[Report an issue](https://github.com/MRMU29/discovery-copilot-web/issues) · [Source](https://github.com/MRMU29/discovery-copilot-web) · [Live demo](https://discovery-copilot-web.pages.dev)
+
+<sub>Discovery Copilot · Local-first. Your data stays yours.</sub>
+
+</div>

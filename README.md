@@ -1,7 +1,5 @@
 <div align="center">
 
-<img src="public/brand-icon.jpg" alt="Discovery Copilot 品牌图标" width="112" height="112" />
-
 # Discovery Copilot (Web)
 
 **本地优先，数据自己掌握。**
@@ -11,7 +9,6 @@
 [![License](https://img.shields.io/badge/license-MIT-227b70?style=for-the-badge)](LICENSE)
 [![Node](https://img.shields.io/badge/Node.js-22%2B-43853d?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-12-227b70?style=for-the-badge&logo=pnpm&logoColor=white)](https://pnpm.io/)
-[![Stars](https://img.shields.io/github/stars/MRMU29/discovery-copilot-web?style=for-the-badge&color=d77b66)](https://github.com/MRMU29/discovery-copilot-web/stargazers)
 
 [在线体验](https://discovery-copilot-web.pages.dev) · [开发](#开发) · [功能一览](#功能一览) · [安全模型](#安全模型) · [问题反馈](https://github.com/MRMU29/discovery-copilot-web/issues)
 
