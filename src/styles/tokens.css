@@ -301,7 +301,10 @@ body {
 }
 
 .dc-page-enter {
-  animation: dc-rise-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  /* backwards, not both: a retained `transform: none` frame still computes to
+     matrix(1,0,0,1,0,0) and would make every `position: fixed` descendant
+     (Dialog, mobile tab bar) position against this container instead of the viewport. */
+  animation: dc-rise-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
 }
 
 @media (prefers-reduced-motion: reduce) {
