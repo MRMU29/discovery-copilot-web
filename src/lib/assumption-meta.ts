@@ -9,14 +9,14 @@ export type AssumptionStatus = Assumption['status']
  * reused for the 8 categories; the visible label keeps them distinguishable.
  */
 export const ASSUMPTION_TYPE_META: Record<AssumptionType, { labelKey: string; badgeClass: string }> = {
-  value: { labelKey: 'assumption.type.value', badgeClass: 'bg-tint-blue text-surface-1' },
-  usability: { labelKey: 'assumption.type.usability', badgeClass: 'bg-tint-green text-surface-1' },
-  feasibility: { labelKey: 'assumption.type.feasibility', badgeClass: 'bg-tint-purple text-surface-1' },
-  viability: { labelKey: 'assumption.type.viability', badgeClass: 'bg-tint-yellow text-surface-1' },
-  'go-to-market': { labelKey: 'assumption.type.goToMarket', badgeClass: 'bg-tint-orange text-surface-1' },
-  strategy: { labelKey: 'assumption.type.strategy', badgeClass: 'bg-tint-pink text-surface-1' },
-  team: { labelKey: 'assumption.type.team', badgeClass: 'bg-tint-blue text-surface-1' },
-  legal: { labelKey: 'assumption.type.legal', badgeClass: 'bg-tint-yellow text-surface-1' },
+  value: { labelKey: 'assumption.type.value', badgeClass: 'bg-tint-blue text-reading-ink' },
+  usability: { labelKey: 'assumption.type.usability', badgeClass: 'bg-tint-green text-reading-ink' },
+  feasibility: { labelKey: 'assumption.type.feasibility', badgeClass: 'bg-tint-purple text-reading-ink' },
+  viability: { labelKey: 'assumption.type.viability', badgeClass: 'bg-tint-yellow text-reading-ink' },
+  'go-to-market': { labelKey: 'assumption.type.goToMarket', badgeClass: 'bg-tint-orange text-reading-ink' },
+  strategy: { labelKey: 'assumption.type.strategy', badgeClass: 'bg-tint-pink text-reading-ink' },
+  team: { labelKey: 'assumption.type.team', badgeClass: 'bg-tint-blue text-reading-ink' },
+  legal: { labelKey: 'assumption.type.legal', badgeClass: 'bg-tint-yellow text-reading-ink' },
 }
 
 export const STATUS_META: Record<AssumptionStatus, { labelKey: string; badgeClass: string }> = {

@@ -170,7 +170,7 @@ export const de: Dict = {
   'settings.aiProvider.fieldModel': 'Modell',
   'settings.aiProvider.modelPlaceholder': 'deepseek-chat',
   'settings.aiProvider.noKeyNote':
-    'Hier werden nur Verbindungsdaten gespeichert — kein API Key. Gib den Key im Provider-Karteneintrag oder im KI-Dialog ein, wenn du in einer Sitzung zum ersten Mal KI nutzt — halte den Key des Anbieters bereit.',
+    'Hier kannst du einen API Key eingeben, aber er bleibt nur im Sitzungsspeicher; du kannst ihn auch später auf der Provider-Karte setzen. Beim Schließen verschwindet er und wird nie in die Datenbank oder .dcopilot geschrieben.',
   'settings.aiProvider.emptyTitle': 'Noch keine Provider',
   'settings.aiProvider.emptyDesc':
     'Der Relay-Modus braucht keinerlei Einrichtung; nur BYOK / Hybrid benötigt hier einen Provider.',
@@ -181,6 +181,8 @@ export const de: Dict = {
   'settings.aiProvider.keyLabel': 'API Key (je Sitzung neu eingeben; nur im Sitzungsspeicher, beim Schließen der Seite weg)',
   'settings.aiProvider.keySavedPlaceholder': 'Gespeichert (diese Sitzung) — tippen zum Ersetzen',
   'settings.aiProvider.saveKey': 'Für diese Sitzung speichern',
+  'settings.aiProvider.customEndpointConfirm': 'Dein API Key wird an den benutzerdefinierten Host {host} gesendet. Fahre nur fort, wenn du diesem Dienst vertraust, sonst kann der Key abfließen. Fortfahren?',
+  'settings.aiProvider.addKeyLabel': 'API Key (optional, nur diese Sitzung)',
   'settings.aiProvider.testConnection': 'Verbindung testen',
   'settings.aiProvider.testing': 'Wird getestet…',
   'settings.aiProvider.testOk': 'Verbindung erfolgreich.',
@@ -245,14 +247,14 @@ export const de: Dict = {
   'settings.dataBackup.snapshotDeleted': 'Schnappschuss gelöscht.',
   'settings.dataBackup.dangerHeading': 'Gefahrenzone',
   'settings.dataBackup.dangerDesc':
-    'Alle Projektdaten löschen (Projekte / Annahmen / Experimente / OST / Berichte / Bewertungsprotokoll). KI-Modus, Provider-Konfiguration und Onboarding-Zustand bleiben erhalten; das kann nicht rückgängig gemacht werden.',
+    'Löscht alle Projektdaten (Projekte / Annahmen / Experimente / OST / Berichte / Bewertungsprotokoll) und lokale Schnappschüsse. KI-Modus, Provider-Konfigurationen und Onboarding-Status bleiben erhalten; nicht widerrufbar.',
   'settings.dataBackup.clearData': 'Projektdaten löschen…',
   'settings.dataBackup.clearing': 'Wird gelöscht…',
   'settings.dataBackup.clearConfirm1':
-    'Alle Projektdaten löschen (Projekte/Annahmen/Experimente/OST/Berichte)? Das kann nicht rückgängig gemacht werden — vorher ein .dcopilot-Backup exportieren.',
+    'Alle Projektdaten (Projekte/Annahmen/Experimente/OST/Berichte) und lokale Schnappschüsse löschen? Nicht widerrufbar — vorher ein .dcopilot-Backup exportieren.',
   'settings.dataBackup.clearConfirm2':
-    'Nochmal bestätigen: Wirklich alle Projektdaten löschen? KI-Modus, Provider-Konfiguration und Onboarding-Zustand bleiben erhalten.',
-  'settings.dataBackup.clearDone': 'Alle Projektdaten gelöscht; App-Einstellungen und Provider-Konfiguration bleiben erhalten.',
+    'Erneut bestätigen: wirklich alle Projektdaten und lokalen Schnappschüsse löschen? KI-Modus, Provider-Konfigurationen und Onboarding-Status bleiben erhalten.',
+  'settings.dataBackup.clearDone': 'Alle Projektdaten und lokalen Schnappschüsse wurden gelöscht; App-Einstellungen und Provider-Konfigurationen bleiben erhalten.',
   'settings.dataBackup.importConfirmTitle': 'Import bestätigen',
   'settings.dataBackup.summaryTitle': 'Datenübersicht',
   'settings.dataBackup.summaryProjects': '{count} Projekte ({created} neu · {conflict} Konflikt · {duplicate} identisch)',
@@ -423,7 +425,7 @@ export const de: Dict = {
   'settings.privacy.controlTitle': '4. Du kontrollierst deine Daten jederzeit',
   'settings.privacy.controlExport': 'Export: Projekte über „Daten & Backup“ als .dcopilot-Datei mitnehmen (ohne Keys).',
   'settings.privacy.controlClear':
-    'Löschen: „Projektdaten löschen“ entfernt nur Arbeitsdaten; „App zurücksetzen“ löscht alle lokalen Daten und gibt den Speicherplatz zurück.',
+    'Löschen: „Projektdaten löschen" entfernt Geschäftsdaten und lokale Schnappschüsse; „App zurücksetzen" löscht alle lokalen Daten und gibt den Speicher frei.',
   'settings.privacy.controlWarning':
     'Achtung: Websitedaten löschen oder den Browser deinstallieren löscht lokale Projekte unwiederbringlich — regelmäßig Backups exportieren.',
   'settings.privacy.changesTitle': '5. Richtlinienänderungen und Kontakt',
@@ -474,6 +476,10 @@ export const de: Dict = {
   'backup.ostParentCrossProject': 'Der Elternknoten von OST-Knoten „{title}“ gehört zu einem anderen Projekt.',
   'backup.ostMissingAssumption': 'OST-Knoten „{title}“ verknüpft eine Annahme, die in der Datei fehlt.',
   'backup.ostMissingExperiment': 'OST-Knoten „{title}“ verknüpft ein Experiment, das in der Datei fehlt.',
+  'backup.ostOutcomeMustBeRoot': 'OST-Knoten „{title}" hat eine ungültige Typkette: outcome muss die Wurzel sein.',
+  'backup.ostRequiredParent': 'OST-Knoten „{title}" hat eine ungültige Typkette: {type} benötigt einen Elternknoten.',
+  'backup.ostWrongParentType': 'OST-Knoten „{title}" hat eine ungültige Typkette: das Elternteil von {type} muss {parentType} sein.',
+  'backup.ostParentCycle': 'OST-Knoten „{title}" hat einen Zyklus in der Elternkette.',
   'backup.reportMissingProject': 'Bericht „{title}…“ verweist auf ein Projekt, das in der Datei fehlt.',
   'backup.capacity': 'Der Import würde das Projektlimit von {limit} überschreiten — verkleinere den Umfang.',
   'overview.stat.assumptions': 'Schlüsselannahmen',

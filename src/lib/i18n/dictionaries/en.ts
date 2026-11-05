@@ -169,7 +169,7 @@ export const en: Dict = {
   'settings.aiProvider.fieldModel': 'Model',
   'settings.aiProvider.modelPlaceholder': 'deepseek-chat',
   'settings.aiProvider.noKeyNote':
-    'Only connection details are stored here — no API Key. Enter the Key in the provider card or the AI dialog the first time you use AI each session — have your Key ready from the provider.',
+    'You can enter an API Key here, but it is kept in session memory only; you can also set it later on the provider card. It disappears when the page closes and is never written to the database or exported with .dcopilot.',
   'settings.aiProvider.emptyTitle': 'No providers yet',
   'settings.aiProvider.emptyDesc':
     'Relay mode needs no configuration at all; only BYOK / Hybrid mode requires adding a Provider here.',
@@ -179,6 +179,8 @@ export const en: Dict = {
   'settings.aiProvider.keyLabel': 'API Key (re-entered each session; kept in session memory only, gone when the page closes)',
   'settings.aiProvider.keySavedPlaceholder': 'Saved (this session) — type to replace',
   'settings.aiProvider.saveKey': 'Save for this session',
+  'settings.aiProvider.customEndpointConfirm': 'Your API Key will be sent to the custom host {host}. Only continue if you trust this service, otherwise the Key may leak. Continue?',
+  'settings.aiProvider.addKeyLabel': 'API Key (optional, session only)',
   'settings.aiProvider.testConnection': 'Test connection',
   'settings.aiProvider.testing': 'Testing…',
   'settings.aiProvider.testOk': 'Connection succeeded.',
@@ -242,14 +244,14 @@ export const en: Dict = {
   'settings.dataBackup.snapshotDeleted': 'Snapshot deleted.',
   'settings.dataBackup.dangerHeading': 'Danger zone',
   'settings.dataBackup.dangerDesc':
-    'Clear all project data (projects / assumptions / experiments / OST / reports / score audit). AI mode, Provider configuration and onboarding state are kept; this cannot be undone.',
+    'Deletes all project data (projects / assumptions / experiments / OST / reports / score audit) and local snapshots. AI mode, provider configs and onboarding state are kept; this cannot be undone.',
   'settings.dataBackup.clearData': 'Clear project data…',
   'settings.dataBackup.clearing': 'Clearing…',
   'settings.dataBackup.clearConfirm1':
-    'Clear all project data (projects/assumptions/experiments/OST/reports)? This cannot be undone — export a .dcopilot backup first.',
+    'Delete all project data (projects/assumptions/experiments/OST/reports) and local snapshots? This cannot be undone — export a .dcopilot backup first.',
   'settings.dataBackup.clearConfirm2':
-    'Confirm again: really clear all project data? AI mode, Provider configuration and onboarding state will be kept.',
-  'settings.dataBackup.clearDone': 'All project data cleared; app settings and Provider configuration are kept.',
+    'Confirm again: really delete all project data and local snapshots? AI mode, provider configs and onboarding state are kept.',
+  'settings.dataBackup.clearDone': 'All project data and local snapshots were deleted; app settings and provider configs are kept.',
   'settings.dataBackup.importConfirmTitle': 'Confirm import',
   'settings.dataBackup.summaryTitle': 'Data summary',
   'settings.dataBackup.summaryProjects': '{count} projects ({created} new · {conflict} conflict · {duplicate} identical)',
@@ -421,7 +423,7 @@ export const en: Dict = {
   'settings.privacy.controlTitle': '4. You control your data at any time',
   'settings.privacy.controlExport': 'Export: bundle projects into a .dcopilot file via "Data & Backup" (no Key inside).',
   'settings.privacy.controlClear':
-    'Clear: "Clear project data" removes business data only; "Reset app" deletes all local data and returns the storage space.',
+    'Clearing: "Clear project data" deletes business data and local snapshots; "Reset app" deletes all local data and returns the storage space.',
   'settings.privacy.controlWarning':
     'Note: clearing site data or uninstalling the browser deletes local projects irrecoverably — export backups regularly.',
   'settings.privacy.changesTitle': '5. Policy changes and contact',
@@ -472,6 +474,10 @@ export const en: Dict = {
   'backup.ostParentCrossProject': 'OST node "{title}" has a parent node belonging to another project.',
   'backup.ostMissingAssumption': 'OST node "{title}" links to an assumption not present in the file.',
   'backup.ostMissingExperiment': 'OST node "{title}" links to an experiment not present in the file.',
+  'backup.ostOutcomeMustBeRoot': 'OST node "{title}" has an invalid type chain: outcome must be the root.',
+  'backup.ostRequiredParent': 'OST node "{title}" has an invalid type chain: {type} requires a parent.',
+  'backup.ostWrongParentType': 'OST node "{title}" has an invalid type chain: a {type} parent must be a {parentType}.',
+  'backup.ostParentCycle': 'OST node "{title}" has a cycle in its parent chain.',
   'backup.reportMissingProject': 'Report "{title}…" references a project not present in the file.',
   'backup.capacity': 'The import would exceed the project limit of {limit} — reduce the import scope.',
   'overview.stat.assumptions': 'Key assumptions',

@@ -18,22 +18,30 @@ coverage/
 *.key
 *.p12
 *.pfx
+*.p8
+*.asc
 secrets.*
+credentials.*
 
 # Local user data & app export files
 *.dcopilot
 *.sqlite
 *.sqlite3
 *.sqlitedb
+*.local
 
 # Logs
 *.log
 npm-debug.log*
 pnpm-debug.log*
+*.bak
+*.tmp
+*.swp
 
 # Caches
 .cache/
 .eslintcache
+.history/
 
 # Test artifacts
 playwright-report/
@@ -42,6 +50,7 @@ test-results/
 # Deployment platform temp files
 .vercel/
 .wrangler/
+.netlify/
 
 # IDE
 .idea/

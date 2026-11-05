@@ -21,8 +21,8 @@ const SECTION_COMPONENTS: Record<ProjectSection, React.LazyExoticComponent<React
 }
 
 const tabClass = ({ isActive }: { isActive: boolean }) =>
-  `flex min-h-11 items-center rounded-btn px-3 text-body-sm transition-colors ${
-    isActive ? 'bg-accent/15 text-ink' : 'text-ink-muted hover:bg-surface-2 hover:text-ink'
+  `flex min-h-11 items-center rounded-btn px-4 text-body-sm transition-colors ${
+    isActive ? 'bg-accent-soft font-semibold text-accent' : 'text-ink-muted hover:bg-surface-2 hover:text-ink'
   }`
 
 /**
@@ -52,8 +52,8 @@ export default function ProjectPage() {
     return (
       <div className="space-y-4">
         <ErrorState title={t('shell.projectNotFound')} message={t('shell.projectNotFoundDesc')} />
-        <Link to="/" className="inline-flex min-h-11 items-center text-body-sm text-accent hover:text-accent-hover">
-          ← 返回项目列表
+        <Link to="/" className="inline-flex min-h-11 items-center text-body-sm font-semibold text-accent hover:text-accent-hover">
+          ← {t('shell.backToProjects')}
         </Link>
       </div>
     )
@@ -64,19 +64,19 @@ export default function ProjectPage() {
 
   return (
     <div className="pb-24 md:pb-8">
-      <div className="flex items-center gap-3">
+      <div className="flex min-w-0 items-center gap-3">
         <Link
           to="/"
-          className="flex min-h-11 items-center rounded-btn px-2 text-body-sm text-ink-muted hover:text-ink"
+          className="flex min-h-11 shrink-0 items-center rounded-btn px-2 text-body-sm text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink"
           aria-label={t('shell.backToProjects')}
         >
           ←
         </Link>
-        <h1 className="text-headline text-ink">{data.project.name}</h1>
+        <h1 className="min-w-0 text-subhead text-ink sm:text-headline">{data.project.name}</h1>
       </div>
 
       {/* Desktop rail */}
-      <nav aria-label={t('nav.sections')} className="mt-4 hidden gap-1 md:flex">
+      <nav aria-label={t('nav.sections')} className="mt-5 hidden gap-1 border-b border-hairline pb-3 md:flex">
         {PROJECT_SECTIONS.map((s) => (
           <NavLink key={s} to={projectPath(projectId, s)} className={tabClass}>
             {t(SECTION_LABELS[s])}
@@ -84,7 +84,7 @@ export default function ProjectPage() {
         ))}
       </nav>
 
-      <div className="mt-6">
+      <div className="mt-6 sm:mt-8">
         <div key={active} className="dc-page-enter">
           <Suspense fallback={<PageSkeleton />}>
             <Section projectId={projectId} />
@@ -92,10 +92,10 @@ export default function ProjectPage() {
         </div>
       </div>
 
-      {/* Mobile bottom tab bar — 安卓优先 */}
+      {/* Mobile bottom tab bar — 安卓优先；长标签在窄屏可断行，不裁内容 */}
       <nav
         aria-label={t('nav.sections')}
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-surface-1/95 backdrop-blur md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-surface-1 shadow-pop md:hidden"
       >
         <div className="mx-auto grid max-w-6xl grid-cols-5 pb-[max(env(safe-area-inset-bottom),0.375rem)] pt-1">
           {PROJECT_SECTIONS.map((s) => (
@@ -103,8 +103,8 @@ export default function ProjectPage() {
               key={s}
               to={projectPath(projectId, s)}
               className={({ isActive }) =>
-                `flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] ${
-                  isActive ? 'text-accent' : 'text-ink-muted'
+                `flex min-h-14 min-w-0 flex-col items-center justify-center gap-0.5 px-1 text-center text-caption leading-tight ${
+                  isActive ? 'font-semibold text-accent' : 'text-ink-muted'
                 }`
               }
             >

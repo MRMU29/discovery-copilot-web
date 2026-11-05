@@ -6,9 +6,9 @@ import { createRoot } from 'react-dom/client'
 import '@/styles/tokens.css'
 import App from '@/app/App'
 
-// GitHub Pages SPA fallback (see public/404.html): a deep link first lands
-// on the 404 page, which stashes the original path; restore it before the
-// router initializes. No-op on every other host.
+// SPA deep-link fallback: if a host's redirect layer stashes the original
+// path in sessionStorage before serving index.html, restore it before the
+// router initializes. No-op when nothing stashed a path.
 try {
   const redirectTarget = sessionStorage.getItem('dc-redirect')
   if (redirectTarget) {
@@ -16,7 +16,7 @@ try {
     history.replaceState(null, '', redirectTarget)
   }
 } catch {
-  // sessionStorage unavailable (private mode) — deep links just 404 on GH Pages
+  // sessionStorage unavailable (private mode) — nothing to restore
 }
 
 // 启动页生命周期：静态启动页（index.html）在首帧即全覆盖并自行播放 CSS

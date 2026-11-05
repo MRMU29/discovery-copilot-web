@@ -1,8 +1,9 @@
 /**
  * Session-only key store (§6.3): keys live in module memory and die with the
- * page. The optional "remember key" feature is deliberately NOT implemented
- * yet — when it lands it must be user-opt-in and stored separately from
- * project data, never in Dexie, never in .dcopilot.
+ * page. Persisting a key (localStorage / IndexedDB / .dcopilot) is deliberately
+ * NOT supported — a long-lived plaintext credential is not worth the
+ * convenience of not re-typing it. Keys never enter Dexie, backups,
+ * diagnostics, URLs or logs.
  */
 
 const keys = new Map<string, string>()

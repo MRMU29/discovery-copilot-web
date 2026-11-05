@@ -169,7 +169,7 @@ export const ja: Dict = {
   'settings.aiProvider.fieldModel': 'モデル',
   'settings.aiProvider.modelPlaceholder': 'deepseek-chat',
   'settings.aiProvider.noKeyNote':
-    'ここには接続設定だけを保存し、API Key は含みません。各セッションで最初に AI を使うとき、Provider カードまたは AI ダイアログで Key を再入力してください——事前にプロバイダーの Key を用意しておいてください。',
+    'ここで API Key を入力できますが、保存先は現在のセッションメモリのみです。後から Provider カードでも設定できます。ページを閉じると消え、データベースや .dcopilot に書き込まれることはありません。',
   'settings.aiProvider.emptyTitle': 'Provider がまだありません',
   'settings.aiProvider.emptyDesc':
     'Relay モードは設定なしで全 AI 機能を使えます。BYOK / ハイブリッドモードでのみ、ここで Provider を追加します。',
@@ -179,6 +179,8 @@ export const ja: Dict = {
   'settings.aiProvider.keyLabel': 'API Key（各セッションで再入力。セッションメモリのみに保持され、ページを閉じると消えます）',
   'settings.aiProvider.keySavedPlaceholder': '保存済み（このセッション）——入力で置き換え',
   'settings.aiProvider.saveKey': 'このセッションに保存',
+  'settings.aiProvider.customEndpointConfirm': 'API Key をカスタムホスト {host} に送信します。信頼できるサービスか確認してください。信頼できない場合、Key が漏洩する可能性があります。続けますか？',
+  'settings.aiProvider.addKeyLabel': 'API Key（任意、このセッションのみ）',
   'settings.aiProvider.testConnection': '接続テスト',
   'settings.aiProvider.testing': 'テスト中…',
   'settings.aiProvider.testOk': '接続に成功しました。',
@@ -243,14 +245,14 @@ export const ja: Dict = {
   'settings.dataBackup.snapshotDeleted': 'スナップショットを削除しました。',
   'settings.dataBackup.dangerHeading': '危険な操作',
   'settings.dataBackup.dangerDesc':
-    '全プロジェクトデータを削除します（プロジェクト / 仮説 / 実験 / OST / レポート / スコア監査）。AI モード・Provider 設定・オンボーディング状態は保持されます。この操作は取り消せません。',
+    'すべてのプロジェクトデータ（プロジェクト / 仮説 / 実験 / OST / レポート / スコア監査）とローカルスナップショットを削除します。AI モード、Provider 設定、オンボーディング状態は保持されます。この操作は元に戻せません。',
   'settings.dataBackup.clearData': 'プロジェクトデータを削除…',
   'settings.dataBackup.clearing': '削除中…',
   'settings.dataBackup.clearConfirm1':
-    '全プロジェクトデータ（プロジェクト/仮説/実験/OST/レポート）を削除しますか？取り消せません。先に .dcopilot バックアップの書き出しをおすすめします。',
+    'すべてのプロジェクトデータ（プロジェクト/仮説/実験/OST/レポート）とローカルスナップショットを削除しますか？元に戻せません。先に .dcopilot を書き出してください。',
   'settings.dataBackup.clearConfirm2':
-    '再度確認：本当に全プロジェクトデータを削除しますか？AI モード・Provider 設定・オンボーディング状態は保持されます。',
-  'settings.dataBackup.clearDone': '全プロジェクトデータを削除しました。アプリ設定と Provider 設定は保持されています。',
+    '再確認：本当にすべてのプロジェクトデータとローカルスナップショットを削除しますか？AI モード、Provider 設定、オンボーディング状態は保持されます。',
+  'settings.dataBackup.clearDone': 'すべてのプロジェクトデータとローカルスナップショットを削除しました。アプリ設定と Provider 設定は保持されています。',
   'settings.dataBackup.importConfirmTitle': 'インポート確認',
   'settings.dataBackup.summaryTitle': 'データ概要',
   'settings.dataBackup.summaryProjects': 'プロジェクト {count} 件（新規 {created} · 競合 {conflict} · 一致 {duplicate}）',
@@ -421,7 +423,7 @@ export const ja: Dict = {
   'settings.privacy.controlTitle': '4. データはいつでも自分で管理できる',
   'settings.privacy.controlExport': '書き出し：「データとバックアップ」から .dcopilot ファイルとして持ち運べます（Key は含まない）。',
   'settings.privacy.controlClear':
-    '削除：「プロジェクトデータを削除」は業務データのみ削除。「アプリを初期化」は全ローカルデータを削除しストレージ容量を返却します。',
+    'クリア：「プロジェクトデータをクリア」は業務データとローカルスナップショットを削除します；「アプリを初期化」はすべてのローカルデータを削除し領域を返します。',
   'settings.privacy.controlWarning':
     '注意：サイトデータの削除やブラウザーのアンインストールはローカルプロジェクトを回復不能に削除します——定期的にバックアップを書き出してください。',
   'settings.privacy.changesTitle': '5. ポリシーの変更と連絡',
@@ -472,6 +474,10 @@ export const ja: Dict = {
   'backup.ostParentCrossProject': 'OST ノード「{title}」の親ノードが他プロジェクトに属しています。',
   'backup.ostMissingAssumption': 'OST ノード「{title}」が関連付ける仮説がファイル内にありません。',
   'backup.ostMissingExperiment': 'OST ノード「{title}」が関連付ける実験がファイル内にありません。',
+  'backup.ostOutcomeMustBeRoot': 'OST ノード「{title}」の型チェーンが不正です：outcome はルートでなければなりません。',
+  'backup.ostRequiredParent': 'OST ノード「{title}」の型チェーンが不正です：{type} には親ノードが必要です。',
+  'backup.ostWrongParentType': 'OST ノード「{title}」の型チェーンが不正です：{type} の親は {parentType} でなければなりません。',
+  'backup.ostParentCycle': 'OST ノード「{title}」の親チェーンに循環があります。',
   'backup.reportMissingProject': 'レポート「{title}…」が参照するプロジェクトがファイル内にありません。',
   'backup.capacity': 'インポート後のプロジェクト総数が上限 {limit} を超えるため、範囲を減らしてください。',
   'overview.stat.assumptions': '重要な仮説',

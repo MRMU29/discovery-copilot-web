@@ -10,9 +10,11 @@ export async function recordAiRequest(input: Omit<AiRequest, 'id'>): Promise<voi
   await db.ai_requests.add(aiRequestSchema.parse(input))
 }
 
-/** Current-natural-month usage (§6.4 用量视图/月度熔断口径), local-only. */
+/** Current-UTC-month usage (§6.4 用量视图/月度熔断口径), local-only. */
 export async function getMonthUsage(now: Date = new Date()): Promise<{ totalUsd: number; requestCount: number }> {
-  const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  // createdAt 由 nowIso() 写成 UTC ISO 串；月度前缀必须同样按 UTC 取，
+  // 否则 UTC+8 的月初/月末会把本地月份错配到 UTC 日期前缀上。
+  const ym = now.toISOString().slice(0, 7)
   const rows = await db.ai_requests.filter((r) => r.createdAt.startsWith(ym)).toArray()
   return {
     totalUsd: round6(rows.reduce((sum, r) => sum + (r.estimatedUsd ?? 0), 0)),

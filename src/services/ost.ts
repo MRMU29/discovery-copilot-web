@@ -14,7 +14,7 @@ type OstMovePatch = Partial<
 export type OstNodeType = (typeof OST_NODE_TYPES)[number]
 
 /** §5.3 chain: outcome ← opportunity ← solution ← experiment. Roots are outcome-only. */
-const REQUIRED_PARENT: Record<Exclude<OstNodeType, 'outcome'>, OstNodeType> = {
+export const REQUIRED_PARENT: Record<Exclude<OstNodeType, 'outcome'>, OstNodeType> = {
   opportunity: 'outcome',
   solution: 'opportunity',
   experiment: 'solution',

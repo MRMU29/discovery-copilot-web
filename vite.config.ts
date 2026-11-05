@@ -9,14 +9,12 @@ const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 
 }
 
 export default defineConfig({
-  // GitHub Pages project site serves under /discovery-copilot-web/ — the
-  // deploy workflow sets PAGES_BASE_PATH; local dev/preview stays at '/'.
   base: process.env.PAGES_BASE_PATH ?? '/',
   plugins: [
     react(),
     tailwindcss(),
     {
-      // CSP meta tag for hosts that cannot set response headers (GH Pages).
+      // CSP meta tag for hosts where response headers cannot be set.
       // Build-only: dev needs inline react-refresh scripts and an HMR socket.
       name: 'csp-meta',
       apply: 'build',

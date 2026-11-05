@@ -52,7 +52,7 @@ export function AssumptionCard({
   return (
     <article
       id={`assumption-${assumption.id}`}
-      className={`rounded-lg border bg-surface-1 p-4 transition-shadow ${
+      className={`rounded-lg border bg-surface-1 p-4 shadow-card transition-all ${
         highlighted ? 'border-accent ring-1 ring-accent' : 'border-hairline'
       }`}
     >

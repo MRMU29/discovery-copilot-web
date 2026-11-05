@@ -179,11 +179,52 @@ export function SunIcon(props: IconProps) {
   )
 }
 
-/** 月亮——顶栏主题切换（当前深色时显示，点击切到浅色）。 */
+/** 月亮——主题切换（当前深色时显示，点击切到浅色）。 */
 export function MoonIcon(props: IconProps) {
   return (
     <Svg {...props}>
       <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" />
+    </Svg>
+  )
+}
+
+/** 方块网格——全局侧栏「项目」入口。 */
+export function GridIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="3.5" y="3.5" width="7" height="7" rx="1.5" />
+      <rect x="13.5" y="3.5" width="7" height="7" rx="1.5" />
+      <rect x="3.5" y="13.5" width="7" height="7" rx="1.5" />
+      <rect x="13.5" y="13.5" width="7" height="7" rx="1.5" />
+    </Svg>
+  )
+}
+
+/** 滑块——全局侧栏「设置」入口。 */
+export function SettingsIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M4 7h10M18 7h2M4 17h2M10 17h10" />
+      <circle cx="16" cy="7" r="2" />
+      <circle cx="8" cy="17" r="2" />
+    </Svg>
+  )
+}
+
+/** 汉堡——移动端顶栏打开导航抽屉。 */
+export function MenuIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M4 7h16M4 12h16M4 17h16" />
+    </Svg>
+  )
+}
+
+/** 叉号——抽屉 / 对话框关闭。 */
+export function CloseIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M6 6l12 12M18 6 6 18" />
     </Svg>
   )
 }

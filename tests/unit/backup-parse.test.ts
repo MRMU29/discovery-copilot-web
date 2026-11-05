@@ -189,3 +189,42 @@ describe('parseDcopilotFile', () => {
     if (!result.ok) expect(result.issues.join()).toContain('其他项目的假设')
   })
 })
+
+describe('parseDcopilotFile — OST 类型链与父链环 (§5.3)', () => {
+  it('rejects a parent/type chain violation (solution 直接挂 outcome)', () => {
+    const bad = {
+      ...validFile,
+      ostNodes: [
+        ostNode, // n1: outcome 根
+        { ...ostNode, id: 'n2', type: 'solution', parentId: 'n1' }, // 父应为 opportunity
+      ],
+    }
+    const result = parseDcopilotFile(JSON.stringify(bad))
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.issues.join()).toContain('类型链')
+  })
+
+  it('rejects a parent cycle (n1 ↔ n2)', () => {
+    const bad = {
+      ...validFile,
+      ostNodes: [
+        { ...ostNode, id: 'n1', type: 'opportunity', parentId: 'n2' },
+        { ...ostNode, id: 'n2', type: 'opportunity', parentId: 'n1' },
+      ],
+    }
+    const result = parseDcopilotFile(JSON.stringify(bad))
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.issues.join()).toContain('环')
+  })
+
+  it('accepts a valid outcome → opportunity → solution → experiment chain', () => {
+    const chain = [
+      ostNode,
+      { ...ostNode, id: 'n2', type: 'opportunity', parentId: 'n1' },
+      { ...ostNode, id: 'n3', type: 'solution', parentId: 'n2' },
+      { ...ostNode, id: 'n4', type: 'experiment', parentId: 'n3' },
+    ]
+    const result = parseDcopilotFile(JSON.stringify({ ...validFile, ostNodes: chain }))
+    expect(result.ok).toBe(true)
+  })
+})

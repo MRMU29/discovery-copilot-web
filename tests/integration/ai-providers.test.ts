@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { deleteSessionKey, hasSessionKey, setSessionKey } from '@/ai/session'
-import { resetDb } from '@/db/db'
+import { db, resetDb } from '@/db/db'
 import { DomainError } from '@/lib/errors'
 import {
   createProvider,
@@ -39,6 +39,27 @@ describe('ai-providers service (command 5)', () => {
 
   it('rejects a non-URL baseUrl', async () => {
     await expect(createProvider({ ...baseInput, baseUrl: 'not a url' })).rejects.toThrowError()
+  })
+
+  it('rejects plaintext http endpoints (BYOK keys must not travel in the clear)', async () => {
+    await expect(createProvider({ ...baseInput, baseUrl: 'http://attacker.example/v1' })).rejects.toThrowError()
+  })
+
+  it('allows loopback http for the local mock server', async () => {
+    const row = await createProvider({ ...baseInput, baseUrl: 'http://127.0.0.1:8787/v1' })
+    expect(row.baseUrl).toBe('http://127.0.0.1:8787/v1')
+  })
+
+  it('keeps legacy http endpoint rows readable after the https write rule', async () => {
+    await db.ai_providers.put({
+      id: 'legacy',
+      label: 'Legacy',
+      kind: 'openai-compatible',
+      baseUrl: 'http://old.example/v1',
+      model: 'legacy-model',
+      createdAt: '2026-01-01T00:00:00.000Z',
+    })
+    await expect(listProviders()).resolves.toHaveLength(1)
   })
 
   it('delete clears the default pointer and the session key', async () => {

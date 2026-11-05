@@ -25,10 +25,10 @@ export function requiredParentType(type: OstNodeType): OstNodeType | null {
 }
 
 export const OST_TYPE_META: Record<OstNodeType, { labelKey: string; badgeClass: string }> = {
-  outcome: { labelKey: 'ost.type.outcome', badgeClass: 'bg-tint-purple text-surface-1' },
-  opportunity: { labelKey: 'ost.type.opportunity', badgeClass: 'bg-tint-blue text-surface-1' },
-  solution: { labelKey: 'ost.type.solution', badgeClass: 'bg-tint-green text-surface-1' },
-  experiment: { labelKey: 'ost.type.experiment', badgeClass: 'bg-tint-orange text-surface-1' },
+  outcome: { labelKey: 'ost.type.outcome', badgeClass: 'bg-tint-purple text-reading-ink' },
+  opportunity: { labelKey: 'ost.type.opportunity', badgeClass: 'bg-tint-blue text-reading-ink' },
+  solution: { labelKey: 'ost.type.solution', badgeClass: 'bg-tint-green text-reading-ink' },
+  experiment: { labelKey: 'ost.type.experiment', badgeClass: 'bg-tint-orange text-reading-ink' },
 }
 
 export interface VisibleRect {

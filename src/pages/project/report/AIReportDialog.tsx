@@ -1,3 +1,4 @@
+import { confirmCustomEndpoint } from '@/lib/endpoint-guard'
 import { useEffect, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import {
@@ -138,6 +139,7 @@ export function AIReportDialog({ projectId, projectName, targetReport, onClose, 
 
   async function handleAddProvider(event: React.FormEvent) {
     event.preventDefault()
+    if (!confirmCustomEndpoint(npBaseUrl.trim())) return
     setError(null)
     try {
       const row = await createProvider({

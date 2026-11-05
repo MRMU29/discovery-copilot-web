@@ -10,6 +10,7 @@ import { listActiveProjects } from '@/services/projects'
 import { createProvider, deleteProvider, listProviders, setDefaultProvider } from '@/services/ai-providers'
 import { getSettings, updateSettings } from '@/services/settings'
 import { useT } from '@/lib/i18n'
+import { confirmCustomEndpoint } from '@/lib/endpoint-guard'
 
 type ProviderKind = ProviderConfigRow['kind']
 
@@ -135,6 +136,8 @@ export default function AiProvider() {
   const [keyDrafts, setKeyDrafts] = useState<Record<string, string>>({})
   const [keySaved, setKeySaved] = useState<Record<string, boolean>>({})
   const [keyTesting, setKeyTesting] = useState<Record<string, 'ok' | 'fail' | 'busy' | undefined>>({})
+  /** 添加表单的 Key 草稿，创建 Provider 时一并保存到当前会话内存。 */
+  const [newKey, setNewKey] = useState('')
   /** 预算输入草稿：用户输入过的字段以草稿为准；'' = 不限（null），onBlur 提交。 */
   const [budgetDrafts, setBudgetDrafts] = useState<Record<string, string>>({})
   const perRequestValue = budgetDrafts.perRequest ?? (settings?.perRequestBudgetUsd != null ? String(settings.perRequestBudgetUsd) : '')
@@ -183,14 +186,21 @@ export default function AiProvider() {
 
   async function handleAdd(event: React.FormEvent) {
     event.preventDefault()
+    if (!confirmCustomEndpoint(baseUrl.trim())) return
     setError(null)
     try {
       const row = await createProvider({ label: label.trim(), kind, baseUrl: baseUrl.trim(), model: model.trim() })
       if (!providers || providers.length === 0) await setDefaultProvider(row.id)
+      const key = newKey.trim()
+      if (key) {
+        setSessionKey(row.id, key)
+        setKeySaved((prev) => ({ ...prev, [row.id]: true }))
+      }
       setShowAdd(false)
       setLabel('')
       setBaseUrl('')
       setModel('')
+      setNewKey('')
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     }
@@ -215,6 +225,7 @@ export default function AiProvider() {
     setError(null)
     setSessionKey(id, value)
     setKeySaved((prev) => ({ ...prev, [id]: true }))
+    setKeyDrafts((prev) => ({ ...prev, [id]: '' }))
   }
 
   async function handleTestKey(row: ProviderConfigRow) {
@@ -223,6 +234,7 @@ export default function AiProvider() {
       setError(t('settings.aiProvider.keyTestNeedError'))
       return
     }
+    if (!confirmCustomEndpoint(row.baseUrl)) return
     setError(null)
     setKeyTesting((prev) => ({ ...prev, [row.id]: 'busy' }))
     try {
@@ -417,6 +429,20 @@ export default function AiProvider() {
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
                 placeholder="deepseek-chat"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label htmlFor="provider-key-new" className="text-caption text-ink-muted">
+                {t('settings.aiProvider.addKeyLabel')}
+              </label>
+              <input
+                id="provider-key-new"
+                type="password"
+                value={newKey}
+                onChange={(e) => setNewKey(e.target.value)}
+                placeholder="sk-…"
+                autoComplete="off"
                 className={inputClass}
               />
             </div>

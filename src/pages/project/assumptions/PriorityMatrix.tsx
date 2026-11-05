@@ -146,15 +146,17 @@ export function PriorityMatrix({
       <span className="pointer-events-none absolute right-4 top-1 text-caption text-ink-faint">
         {t(QUADRANT_META.experiment.labelKey)}
       </span>
-      <span className="pointer-events-none absolute bottom-12 left-10 text-caption text-ink-faint">
+      {/* 用 top 锚定在图表内（而非依赖图例高度的 bottom）：窄屏图例换行后
+          底部象限标签仍留在下半象限，不与轴说明文字重叠。 */}
+      <span className="pointer-events-none absolute left-10 top-[250px] text-caption text-ink-faint">
         {t(QUADRANT_META.defer.labelKey)}
       </span>
-      <span className="pointer-events-none absolute bottom-12 right-4 text-caption text-ink-faint">
+      <span className="pointer-events-none absolute right-4 top-[250px] text-caption text-ink-faint">
         {t(QUADRANT_META.implement.labelKey)}
       </span>
 
-      <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-caption text-ink-faint">
-        <span>{t('matrix.axisHint')}</span>
+      <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-caption leading-relaxed text-ink-faint">
+        <span className="w-full">{t('matrix.axisHint')}</span>
         <span className="flex items-center gap-1">
           <span aria-hidden className="inline-block size-2.5 rounded-full bg-accent" />
           {t('matrix.legendOpen')}

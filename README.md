@@ -6,25 +6,39 @@
 
 无需账号 · IndexedDB 本地存储 · BYOK · `.dcopilot` 文件跨设备迁移的产品发现工作台
 
+[![Version](https://img.shields.io/badge/version-v0.2.0-2b4ea8?style=for-the-badge)](./package.json)
 [![License](https://img.shields.io/badge/license-MIT-227b70?style=for-the-badge)](LICENSE)
 [![Node](https://img.shields.io/badge/Node.js-22%2B-43853d?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-12-227b70?style=for-the-badge&logo=pnpm&logoColor=white)](https://pnpm.io/)
 
-[在线体验](https://discovery-copilot-web.pages.dev) · [开发](#开发) · [功能一览](#功能一览) · [安全模型](#安全模型) · [问题反馈](https://github.com/MRMU29/discovery-copilot-web/issues)
+[在线体验](https://discovery-copilot-web.pages.dev) · [快速上手](#快速上手) · [功能一览](#功能一览) · [安全模型](#安全模型) · [问题反馈](https://github.com/MRMU29/discovery-copilot-web/issues)
 
 </div>
 
 [English](./README.en.md) | 简体中文
 
-**把假设、实验与报告串成一条可离线完成的产品发现流程；数据只留在你自己的浏览器里。**
+**把假设、实验与报告串成一条完整的产品发现流程；数据只留在你自己的浏览器里。**
 
 线上地址：<https://discovery-copilot-web.pages.dev>
 
 ## 目录
 
-| 开始使用 | 能力 | 开发与来源 |
+| 开始使用 | 能力 | 开发与参考 |
 | :--- | :--- | :--- |
-| [开发](#开发)<br />[部署](#部署)<br />[测试](#测试) | [功能一览](#功能一览)<br />[技术栈](#技术栈)<br />[安全模型](#安全模型) | [开发方式](#开发方式)<br />[隐私与数据留存](#隐私与数据留存) |
+| [快速上手](#快速上手)<br />[手机端](#手机端)<br />[开发](#开发) | [功能一览](#功能一览)<br />[技术栈](#技术栈)<br />[安全模型](#安全模型) | [部署](#部署)<br />[测试](#测试)<br />[隐私与数据留存](#隐私与数据留存)<br />[许可证与致谢](#许可证与致谢) |
+
+## 快速上手
+
+打开 <https://discovery-copilot-web.pages.dev>（或按后面的「开发」自行构建），无需注册。
+
+1. **跳过或跟随引导** —— 首次进入会说明工作区的几个关键区域。
+2. **加载示例项目** —— 首页点「加载示例项目」，或直接新建项目，先有一个可操作的对象。
+3. **写假设、看优先级** —— 在「假设」页按八类风险记录，优先级由 Impact × Risk × (1 − Confidence) 自动算出；矩阵看不清可切换表格等价视图。
+4. **规划实验、画 OST** —— 从假设生成实验并审核保存；在「机会解决方案树」里把机会、方案、实验连起来，支持拖拽、键盘等价操作与表格视图。
+5. **生成报告** —— 手动撰写或让 AI 起草，AI 生成与用户确认的内容会明确区分；分享优先用 HTML 导出。
+6. **备份** —— 「设置 → 数据备份」导出 `.dcopilot`，这是唯一的跨设备迁移方式；覆盖式导入前会自动生成本地快照。
+
+要用 AI 功能，先在「设置 → AI Provider」添加服务商并填写自己的 API Key。**Key 只保存在当前会话内存，关闭页面即消失**，刷新或重开需重新输入；也可以完全不用 AI，走 Prompt Relay 手动复制粘贴提示词。手机浏览器同样可用，界面会自动折叠为单栏。
 
 ## 功能一览
 
@@ -34,16 +48,28 @@
 | 梳理关键假设 | 八类风险假设、Impact × Risk × (1 − Confidence) 优先级、Recharts 优先级矩阵（含表格等价视图） |
 | 规划实验 | 从假设生成 → 审核 → 保存 → 状态与结果回填 |
 | 画机会解决方案树（OST） | 拖拽 + 双指缩放 + 键盘等价操作 + 表格等价视图 + 视口裁剪 |
-| 用 AI 辅助发现 | BYOK 直连（OpenAI 兼容 / Gemini）与 Prompt Relay（零配置复制粘贴）双路径；识别 / 实验 / 报告三类任务；审核式工作流（预览 / 应用 / 拒绝 / 重新生成 / 取消） |
-| 控制 AI 成本 | 请求前 Token/费用预估、预算熔断（单次 + 月度）、按日用量视图 |
+| 用 AI 辅助发现 | 三种模式：BYOK 直连（OpenAI 兼容 / Gemini）、Prompt Relay（零配置复制粘贴）、Hybrid（混合）；识别 / 实验 / 报告三类任务；审核式工作流（预览 / 应用 / 拒绝 / 重新生成 / 取消） |
+| 控制 AI 成本 | 请求前 Token/费用预估、预算熔断（单次 + 月度）、按日用量视图；未知定价模型不预估、不熔断 |
 | 产出发现报告 | AI 生成 + 手动撰写，区分 AI 生成与用户确认内容；HTML（保真推荐）/ PNG（尽力而为）导出 |
 | 备份与迁移 | `.dcopilot` 导出（全部 / 单项目）、导入（六类场景校验、冲突三选、失败回滚）、覆盖前自动快照（保留 3 份） |
 | 调整外观与语言 | 浅色 / 深色 / 跟随系统三档主题（首帧无闪烁）、启动页动画、8 种界面语言（简中 / 繁中 / 英 / 日 / 韩 / 俄 / 德 / 法，随 `.dcopilot` 迁移） |
 | 保护隐私与可观测性 | 数据本地存储、诊断包脱敏导出 |
 
+## 手机端
+
+窄屏（375 / 390 / 768）自动切换为单栏：抽屉式导航、≥44px 触控目标、底部安全区、可滚动模态；优先级矩阵与 OST 画布提供表格或卡片等价视图，无横向溢出。以下为 375 / 390 宽度实测截图：
+
+| 工作台 | 项目总览 |
+| :---: | :---: |
+| ![手机端工作台](./screenshots/mobile-dashboard.png) | ![手机端项目总览](./screenshots/mobile-project.png) |
+
+| 设置页 | 假设 / OST |
+| :---: | :---: |
+| ![手机端设置](./screenshots/mobile-settings.png) | ![手机端假设视图](./screenshots/mobile-assumptions.png) |
+
 ## 技术栈
 
-React 18 + TypeScript + Vite · Tailwind CSS 4（设计令牌单一来源 `src/styles/tokens.css`）· Dexie + IndexedDB · React Router · Zustand（仅 UI 状态）· dnd-kit · Recharts · Zod · marked + DOMPurify · html-to-image · Vitest + fake-indexeddb
+React 18 + TypeScript + Vite · Tailwind CSS 4（设计令牌单一来源 `src/styles/tokens.css`）· Dexie + IndexedDB · React Router · dnd-kit · Recharts · Zod · marked + DOMPurify · html-to-image · Vitest + fake-indexeddb
 
 ## 开发
 
@@ -59,19 +85,6 @@ pnpm probe:provider-cors   # Provider 浏览器直连 CORS 矩阵（无 Key）
 ```
 
 - 令牌预览页：`/dev/tokens`；PNG 导出保真探针：`/dev/export-probe`（仅 dev 模式）
-
-## 开发方式
-
-本项目由一名人类负责人（需求、架构裁决、验收）与 AI Agent 编排协作完成：
-
-| 角色                                    | 承担                       |
-| ------------------------------------- | ------------------------ |
-| MRMU29                                | 产品决策、架构裁决、逐命令验收          |
-| GLM-5.3-Flash（ZCode）                  | 命令式开发编码实现与部署             |
-| DeepSeek V4.1-Flash（DeepSeek Harness） | 代码审查与测试                  |
-| GPT-5.6-Luna（Codex）                   | 项目计划统筹                   |
-
-协作方式为「命令式开发」：人类逐条下达命令，AI 完成后按五段（文件树/关键代码/运行调试/验收结果/待确认问题）汇报并等待下一条。
 
 ## 部署
 
@@ -102,7 +115,7 @@ location / {
 
 ## 安全模型
 
-- **API Key 仅保存在当前会话内存**（页面关闭即消失）：从不写入 IndexedDB 或 localStorage、不随 `.dcopilot` 导出、不出现在 URL 与日志；应用不提供"记住 Key"。新设备导入备份后需重新配置 Key。
+- **API Key 仅保存在当前会话内存**（页面关闭即消失）：从不写入 IndexedDB 或 localStorage、不随 `.dcopilot` 导出、不出现在 URL、日志或诊断包；应用不提供"记住 Key"功能。添加 Provider 时填写的 Key 同样只保存到当前会话。新设备导入备份后需重新配置 Key。
 - 备份文件（`.dcopilot`）与诊断包均不含 Secret；诊断包只含脱敏元数据（版本、浏览器环境、存储概况、最近 50 条 AI 请求元数据），导出前可预览全部内容。
 - AI 输出（含报告 Markdown）在应用内渲染与导出文件中均经 DOMPurify 消毒（限协议、防 XSS）。
 - 应用内含完整的《隐私政策》与《用户协议》（含免责声明），见「设置 → 关于 → 产品与文档」。
@@ -113,6 +126,8 @@ location / {
 - 调用 AI 时，相关输入会发送至**你配置的** AI 服务，处理方式取决于该服务的隐私政策；Prompt Relay 模式下内容由你自己交给外部 AI，不经过本应用任何服务器。
 - 应用无账号、无遥测、无服务端、无 Cookie 追踪；静态页面由托管平台分发。
 - 「设置 → 关于 → 初始化应用」可删除全部本地数据并归还存储空间。
+- API Key 仅保存在当前会话内存，关闭页面即消失；从不写入 IndexedDB / localStorage，也不随 `.dcopilot` 或诊断包导出。导出采用严格白名单，`settings` 字段结构性拒绝 secret-shaped 键。
+- 「设置 → 数据备份 → 清除项目数据」会一并删除本地快照（快照存的是全量 `.dcopilot`，不清就能从备份页一键还原）；「清除全部会话 Key」只清内存中的 Key，Provider 配置保留。
 
 ## 发布前安全检查
 
@@ -122,15 +137,24 @@ location / {
 pnpm security:check
 ```
 
-脚本（`scripts/security-check.mjs`）检查三项并任一命中即失败退出：
+发布前手工清单（三条命令）：
 
-1. `git ls-files` 中不得出现敏感路径（`.env*`、`*.pem`、`*.key`、`*.dcopilot` 等）
-2. 全部文本源码不得包含真实密钥形态（OpenAI/GitHub/AWS/Google/Anthropic Key 的长度校验模式）
-3. 发布仓库中不得混入内部文档（AGENTS/HANDOFF/验收记录等）
+```bash
+git status --short                                        # 工作区应干净，无未跟踪敏感文件
+git ls-files | grep -Ei '\.env|\.pem|\.key|\.dcopilot'   # 应无输出
+pnpm security:check                                       # 下面四项 + 敏感关键词扫描
+```
+
+脚本（`scripts/security-check.mjs`）逐项检查，任一命中即失败退出：
+
+1. `git status --porcelain`：未跟踪文件不得命中敏感路径（`.env*`、`*.pem`、`*.key` 等）
+2. `git ls-files`：被跟踪文件不得出现敏感路径
+3. 全部文本源码不得包含真实密钥形态（OpenAI/GitHub/AWS/Google/Anthropic Key 长度校验、PEM 私钥头，以及 `apiKey` / `secret` / `token` 等赋值式敏感关键词）
+4. 发布仓库中不得混入内部文档（AGENTS/HANDOFF/验收记录等）
 
 本地构建前还有一道 `scripts/prepare-release.mjs`：重建发布目录时自动校验发布树零内部材料、零用户数据、零密钥形态，任一命中即中止。
 
-GitHub 仓库端同步开启：Secret Scanning、Push Protection、Dependabot alerts 与 `.github/dependabot.yml`（npm / GitHub Actions 周检）。`.env.example` 仅为命名约定示例——应用运行时不需要环境变量。
+GitHub 仓库端：本仓库已配置 `.github/dependabot.yml`（npm / GitHub Actions 周检）。**Secret Scanning、Push Protection 与 Dependabot alerts 属于仓库设置，公开 API 无法读取（仅管理员可见），请在 GitHub → Settings → Code security 中自行确认已开启**，本 README 不对其状态作保证。`.env.example` 仅为命名约定示例——应用运行时不需要环境变量。
 
 ## 浏览器兼容基线
 
@@ -146,14 +170,20 @@ GitHub 仓库端同步开启：Secret Scanning、Push Protection、Dependabot al
 4. 容量边界（§5.4）：本地 ≤ 50 项目、单项目 ≤ 200 假设 / 300 OST 节点 / 100 实验 / 20 报告；单次导入文件 ≤ 20 MB。
 5. BYOK 浏览器直连依赖 Provider 的 CORS 策略——不支持直连的服务请配置兼容代理（`pnpm probe:provider-cors` 可无 Key 探测）。
 6. 无自动同步：**本地数据即唯一副本**，请定期导出 `.dcopilot` 备份（删除项目 30 天内可从回收站恢复）。
+7. 无 Service Worker / 离线清单：首次访问需联网加载静态资源；断网后仅当浏览器仍缓存资源时可继续使用，不保证完整离线。
+8. 计费未知的模型不做费用预估与预算熔断（设计使然），仅对已知定价模型生效。
 
 ## 测试
 
-单元 + 集成共 229 例（Vitest，fake-indexeddb 覆盖 IndexedDB 事务与迁移），导入「合法 / 非法 / 损坏 / 旧版本 / 冲突 / 回滚」六类场景均有专测；覆盖率门槛 schemas/db/ai 行覆盖 ≥ 80%。
+单元 + 集成测试（Vitest，fake-indexeddb 覆盖 IndexedDB 事务与迁移；以 `pnpm test` 输出为准），导入「合法 / 非法 / 损坏 / 旧版本 / 冲突 / 回滚」六类场景均有专测；覆盖率门槛 schemas/db/ai 行覆盖 ≥ 80%。
 
-## 许可
+## 许可证与致谢
 
-[MIT](./LICENSE)
+本项目采用 [MIT](./LICENSE) 许可，Copyright (c) 2026 MRMU29。
+
+**致谢**
+
+- React、Vite、Tailwind CSS、Dexie、React Router、dnd-kit、Recharts、Zod、marked、DOMPurify、html-to-image、Vitest 等上游项目，按各自许可证经 npm 依赖使用（见 `package.json`）。
 
 ---
 

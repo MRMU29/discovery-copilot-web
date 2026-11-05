@@ -319,3 +319,12 @@ describe('snapshots (§7.6)', () => {
     expect(result.duplicates).toBe(1)
   })
 })
+
+describe('parseDcopilotFile — formatVersion 非负下界', () => {
+  it('rejects a negative formatVersion (防止绕过从 0 开始的单步迁移链)', () => {
+    const negative = { ...newProjectFile(), formatVersion: -1 }
+    const result = parseDcopilotFile(JSON.stringify(negative))
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.issues.join()).toContain('formatVersion')
+  })
+})

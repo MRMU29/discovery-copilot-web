@@ -22,7 +22,8 @@ interface WelcomeDialogProps {
 
 /**
  * 新手指引第一层：首次进入的 3 屏欢迎引导。任何出口（跳过/开始/随便看看）
- * 都标记 welcome 完成——非强制，之后可在设置页重新查看。
+ * 都标记 welcome 完成——非强制，之后可在设置页重新查看。窄屏按钮组纵向
+ * 铺满 44px 触控区、不溢出；宽屏恢复横排。
  */
 export function WelcomeDialog({ onClose }: WelcomeDialogProps) {
   const t = useT()
@@ -44,13 +45,13 @@ export function WelcomeDialog({ onClose }: WelcomeDialogProps) {
       <div className="space-y-5">
         {step === 0 && (
           <>
-            <div className="flex items-center gap-4">
+            <div className="flex items-start gap-3 sm:items-center sm:gap-4">
               <img
                 src={BRAND_ICON_URL}
                 alt=""
-                className="h-14 w-14 shrink-0 rounded-xl border border-hairline shadow-card"
+                className="h-12 w-12 shrink-0 rounded-xl border border-hairline shadow-card sm:h-14 sm:w-14"
               />
-              <p className="text-body text-ink">{t('welcome.intro')}</p>
+              <p className="min-w-0 text-body text-ink">{t('welcome.intro')}</p>
             </div>
             <div>
               <p className="text-caption text-ink-muted">{t('welcome.flowCaption')}</p>
@@ -79,7 +80,7 @@ export function WelcomeDialog({ onClose }: WelcomeDialogProps) {
                 <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent/15 text-accent">
                   <s.icon size={18} />
                 </span>
-                <div>
+                <div className="min-w-0">
                   <p className="text-body-sm font-medium text-ink">{t('welcome.relayStep', { n: i + 1, title: t(s.titleKey) })}</p>
                   <p className="mt-0.5 text-caption text-ink-muted">{t(s.bodyKey)}</p>
                 </div>
@@ -104,27 +105,27 @@ export function WelcomeDialog({ onClose }: WelcomeDialogProps) {
           </>
         )}
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
           {step > 0 && (
-            <Button variant="ghost" onClick={() => setStep((s) => s - 1)}>
+            <Button variant="ghost" className="w-full sm:w-auto" onClick={() => setStep((s) => s - 1)}>
               {t('welcome.prev')}
             </Button>
           )}
           {step < 2 ? (
             <>
-              <Button onClick={() => setStep((s) => s + 1)}>{t('welcome.next')}</Button>
+              <Button className="w-full sm:w-auto" onClick={() => setStep((s) => s + 1)}>{t('welcome.next')}</Button>
               <button
                 type="button"
                 onClick={finish}
-                className="ml-auto min-h-11 rounded-btn px-3 text-caption text-ink-faint hover:text-ink"
+                className="min-h-11 w-full rounded-btn px-3 text-center text-caption text-ink-faint hover:text-ink sm:ml-auto sm:w-auto"
               >
                 {t('welcome.skip')}
               </button>
             </>
           ) : (
             <>
-              <Button onClick={finish}>{t('welcome.start')}</Button>
-              <Button variant="secondary" onClick={finish}>
+              <Button className="w-full sm:w-auto" onClick={finish}>{t('welcome.start')}</Button>
+              <Button variant="secondary" className="w-full sm:w-auto" onClick={finish}>
                 {t('welcome.explore')}
               </Button>
             </>

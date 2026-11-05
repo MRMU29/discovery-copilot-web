@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { AIError, classifyAIError, userMessage } from '@/ai/errors'
+import { requestJson } from '@/ai/providers/http'
 
 function abortWithReason(name: string): DOMException {
   const err = new DOMException('aborted', 'AbortError')
@@ -37,6 +38,25 @@ describe('AI error taxonomy (§6.2)', () => {
   it('passes AIError through untouched', () => {
     const original = new AIError('BUDGET', '熔断')
     expect(classifyAIError(original)).toBe(original)
+  })
+
+  it('never surfaces a remote error body (it may echo the API Key)', async () => {
+    const fetchImpl = (async () =>
+      new Response('key=SECRET_KEY_MUST_NOT_LEAK', { status: 500 })) as unknown as typeof fetch
+    let caught: unknown
+    try {
+      await requestJson({
+        url: 'https://api.test/v1/models',
+        headers: {},
+        timeoutMs: 1000,
+        fetchImpl,
+      })
+    } catch (err) {
+      caught = err
+    }
+    expect(caught).toBeInstanceOf(AIError)
+    expect((caught as AIError).message).toBe('HTTP 500')
+    expect((caught as AIError).message).not.toContain('SECRET_KEY_MUST_NOT_LEAK')
   })
 
   it('falls back to UNKNOWN and always exposes a readable Chinese message', () => {

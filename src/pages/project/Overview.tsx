@@ -26,17 +26,26 @@ export default function Overview({ projectId }: { projectId: string }) {
     { label: t('overview.stat.reports'), value: counts.reports, href: projectPath(projectId, 'report') },
   ]
 
+  const primaryCta = (href: string, label: string) => (
+    <Link
+      to={href}
+      className="inline-flex min-h-11 max-w-full items-center justify-center break-words rounded-btn bg-accent px-4 py-2.5 text-center text-button text-white shadow-xs hover:bg-accent-hover"
+    >
+      {label}
+    </Link>
+  )
+
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <div className="space-y-6 sm:space-y-8">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {stats.map((s) => (
           <Link
             key={s.label}
             to={s.href}
-            className="rounded-lg border border-hairline bg-surface-1 p-4 transition-colors hover:border-hairline-strong"
+            className="rounded-lg border border-hairline bg-surface-1 p-4 shadow-card transition-all hover:-translate-y-0.5 hover:border-hairline-strong hover:shadow-pop sm:p-5"
           >
-            <p className="text-caption text-ink-muted">{s.label}</p>
-            <p className="mt-1 text-display-md text-ink">{s.value}</p>
+            <p className="text-eyebrow text-ink-muted">{s.label}</p>
+            <p className="mt-2 text-headline tabular-nums text-ink sm:text-display-md">{s.value}</p>
           </Link>
         ))}
       </div>
@@ -45,40 +54,19 @@ export default function Overview({ projectId }: { projectId: string }) {
         <EmptyState
           title={t('overview.start.title')}
           description={t('overview.start.desc')}
-          action={
-            <Link
-              to={projectPath(projectId, 'assumptions')}
-              className="inline-flex min-h-11 items-center rounded-btn bg-accent px-4 py-2.5 text-button text-white"
-            >
-              {t('overview.start.cta')}
-            </Link>
-          }
+          action={primaryCta(projectPath(projectId, 'assumptions'), t('overview.start.cta'))}
         />
       ) : counts.experiments === 0 ? (
         <EmptyState
           title={t('overview.exp.title')}
           description={t('overview.exp.desc')}
-          action={
-            <Link
-              to={projectPath(projectId, 'experiments')}
-              className="inline-flex min-h-11 items-center rounded-btn bg-accent px-4 py-2.5 text-button text-white"
-            >
-              {t('overview.exp.cta')}
-            </Link>
-          }
+          action={primaryCta(projectPath(projectId, 'experiments'), t('overview.exp.cta'))}
         />
       ) : counts.ost === 0 ? (
         <EmptyState
           title={t('overview.ost.title')}
           description={t('overview.ost.desc')}
-          action={
-            <Link
-              to={projectPath(projectId, 'ost')}
-              className="inline-flex min-h-11 items-center rounded-btn bg-accent px-4 py-2.5 text-button text-white"
-            >
-              {t('overview.ost.cta')}
-            </Link>
-          }
+          action={primaryCta(projectPath(projectId, 'ost'), t('overview.ost.cta'))}
         />
       ) : (
         <EmptyState
@@ -86,15 +74,10 @@ export default function Overview({ projectId }: { projectId: string }) {
           description={t('overview.done.desc')}
           action={
             <div className="flex flex-wrap justify-center gap-2">
-              <Link
-                to={projectPath(projectId, 'report')}
-                className="inline-flex min-h-11 items-center rounded-btn bg-accent px-4 py-2.5 text-button text-white"
-              >
-                {t('overview.done.ctaReport')}
-              </Link>
+              {primaryCta(projectPath(projectId, 'report'), t('overview.done.ctaReport'))}
               <Link
                 to={projectPath(projectId, 'experiments')}
-                className="inline-flex min-h-11 items-center rounded-btn border border-hairline-strong bg-surface-2 px-4 py-2.5 text-button text-ink hover:bg-surface-3"
+                className="inline-flex min-h-11 max-w-full items-center justify-center break-words rounded-btn border border-hairline bg-surface-1 px-4 py-2.5 text-center text-button text-ink shadow-xs hover:border-hairline-strong hover:bg-surface-2"
               >
                 {t('overview.done.ctaExperiments')}
               </Link>

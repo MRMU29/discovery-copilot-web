@@ -169,7 +169,7 @@ export const ru: Dict = {
   'settings.aiProvider.fieldModel': 'Модель',
   'settings.aiProvider.modelPlaceholder': 'deepseek-chat',
   'settings.aiProvider.noKeyNote':
-    'Здесь хранятся только параметры подключения — без API Key. Вводите Key в карточке провайдера или в диалоге ИИ при первом обращении к ИИ в каждой сессии — приготовьте Key от провайдера заранее.',
+    'Здесь можно ввести API Key, но он хранится только в памяти сессии; его также можно задать позже в карточке Provider. При закрытии страницы ключ исчезает и никогда не попадает в базу или .dcopilot.',
   'settings.aiProvider.emptyTitle': 'Провайдеров пока нет',
   'settings.aiProvider.emptyDesc':
     'Режиму Relay не нужна никакая настройка; только режимы BYOK / гибрид требуют добавить провайдера здесь.',
@@ -179,6 +179,8 @@ export const ru: Dict = {
   'settings.aiProvider.keyLabel': 'API Key (вводится заново каждую сессию; только в памяти сессии, исчезает при закрытии страницы)',
   'settings.aiProvider.keySavedPlaceholder': 'Сохранён (в этой сессии) — введите, чтобы заменить',
   'settings.aiProvider.saveKey': 'Сохранить на эту сессию',
+  'settings.aiProvider.customEndpointConfirm': 'Ваш API Key будет отправлен на пользовательский хост {host}. Продолжайте, только если доверяете этому сервису, иначе ключ может утечь. Продолжить?',
+  'settings.aiProvider.addKeyLabel': 'API Key (необязательно, только эта сессия)',
   'settings.aiProvider.testConnection': 'Проверить соединение',
   'settings.aiProvider.testing': 'Проверка…',
   'settings.aiProvider.testOk': 'Соединение успешно.',
@@ -243,14 +245,14 @@ export const ru: Dict = {
   'settings.dataBackup.snapshotDeleted': 'Снимок удалён.',
   'settings.dataBackup.dangerHeading': 'Опасная зона',
   'settings.dataBackup.dangerDesc':
-    'Очистить все данные проектов (проекты / гипотезы / эксперименты / OST / отчёты / аудит оценок). Режим ИИ, настройки провайдеров и состояние онбординга сохранятся; действие необратимо.',
+    'Удаляет все данные проектов (проекты / гипотезы / эксперименты / OST / отчёты / журнал оценок) и локальные снимки. Режим ИИ, конфигурации Provider и состояние онбординга сохраняются; отменить нельзя.',
   'settings.dataBackup.clearData': 'Очистить данные проектов…',
   'settings.dataBackup.clearing': 'Очистка…',
   'settings.dataBackup.clearConfirm1':
-    'Очистить все данные проектов (проекты/гипотезы/эксперименты/OST/отчёты)? Действие необратимо — сначала экспортируйте резервную копию .dcopilot.',
+    'Удалить все данные проектов (проекты/гипотезы/эксперименты/OST/отчёты) и локальные снимки? Отменить нельзя — сначала экспортируйте .dcopilot.',
   'settings.dataBackup.clearConfirm2':
-    'Подтвердите ещё раз: действительно очистить все данные проектов? Режим ИИ, настройки провайдеров и состояние онбординга сохранятся.',
-  'settings.dataBackup.clearDone': 'Все данные проектов очищены; настройки приложения и провайдеров сохранены.',
+    'Подтвердите ещё раз: действительно удалить все данные проектов и локальные снимки? Режим ИИ, конфигурации Provider и онбординг сохранятся.',
+  'settings.dataBackup.clearDone': 'Все данные проектов и локальные снимки удалены; настройки приложения и конфигурации Provider сохранены.',
   'settings.dataBackup.importConfirmTitle': 'Подтверждение импорта',
   'settings.dataBackup.summaryTitle': 'Сводка данных',
   'settings.dataBackup.summaryProjects': 'Проектов: {count} (новых {created} · конфликтов {conflict} · идентичных {duplicate})',
@@ -421,7 +423,7 @@ export const ru: Dict = {
   'settings.privacy.controlTitle': '4. Вы управляете данными в любой момент',
   'settings.privacy.controlExport': 'Экспорт: упакуйте проекты в файл .dcopilot через «Данные и резервные копии» (без ключей).',
   'settings.privacy.controlClear':
-    'Очистка: «Очистить данные проектов» удаляет только рабочие данные; «Сброс приложения» удаляет все локальные данные и возвращает занимаемое место.',
+    'Очистка: «Очистить данные проекта» удаляет рабочие данные и локальные снимки; «Сбросить приложение» удаляет все локальные данные и освобождает место.',
   'settings.privacy.controlWarning':
     'Внимание: очистка данных сайта или удаление браузера безвозвратно удаляет локальные проекты — регулярно экспортируйте резервные копии.',
   'settings.privacy.changesTitle': '5. Изменения политики и контакты',
@@ -472,6 +474,10 @@ export const ru: Dict = {
   'backup.ostParentCrossProject': 'Родительский узел OST-узла «{title}» принадлежит другому проекту.',
   'backup.ostMissingAssumption': 'Узел OST «{title}» ссылается на гипотезу, отсутствующую в файле.',
   'backup.ostMissingExperiment': 'Узел OST «{title}» ссылается на эксперимент, отсутствующий в файле.',
+  'backup.ostOutcomeMustBeRoot': 'Узел OST «{title}» имеет неверную цепочку типов: outcome должен быть корнем.',
+  'backup.ostRequiredParent': 'Узел OST «{title}» имеет неверную цепочку типов: для {type} нужен родительский узел.',
+  'backup.ostWrongParentType': 'Узел OST «{title}» имеет неверную цепочку типов: родителем {type} должен быть {parentType}.',
+  'backup.ostParentCycle': 'В цепочке родителей узла OST «{title}» обнаружен цикл.',
   'backup.reportMissingProject': 'Отчёт «{title}…» ссылается на проект, отсутствующий в файле.',
   'backup.capacity': 'После импорта число проектов превысит лимит {limit} — уменьшите объём импорта.',
   'overview.stat.assumptions': 'Ключевые гипотезы',

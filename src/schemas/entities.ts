@@ -167,6 +167,7 @@ export type Snapshot = z.infer<typeof snapshotSchema>
  * src/ai/types.ts; this schema is the single source of truth for the
  * persisted `ai_providers` rows. Keys never live here (§6.3: session only).
  */
+/** Read/normalize path: structural validation only, so legacy http rows stay loadable. */
 export const providerConfigSchema = z.strictObject({
   id: z.string(),
   label: z.string().min(1).max(60),
@@ -174,6 +175,17 @@ export const providerConfigSchema = z.strictObject({
   baseUrl: z.url(),
   model: z.string().min(1).max(120),
   createdAt: z.string(),
+})
+
+/** Write path only: new endpoints must be https (loopback mock is the exception). */
+export const providerConfigWriteSchema = providerConfigSchema.extend({
+  baseUrl: z.url().refine(
+    (value) => {
+      const url = new URL(value)
+      return url.protocol === 'https:' || ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)
+    },
+    { message: 'Provider 端点必须使用 https（仅本地回环地址允许 http）' },
+  ),
 })
 
 export type ProviderConfigRow = z.infer<typeof providerConfigSchema>

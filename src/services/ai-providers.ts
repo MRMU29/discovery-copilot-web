@@ -3,7 +3,7 @@ import { deleteSessionKey } from '@/ai/session'
 import { db } from '@/db/db'
 import { nowIso } from '@/lib/clock'
 import { DomainError } from '@/lib/errors'
-import { providerConfigSchema, settingsRowSchema, type ProviderConfigRow } from '@/schemas/entities'
+import { providerConfigSchema, providerConfigWriteSchema, settingsRowSchema, type ProviderConfigRow } from '@/schemas/entities'
 import { getSettings, updateSettings } from './settings'
 
 /**
@@ -12,7 +12,7 @@ import { getSettings, updateSettings } from './settings'
  * only owns the non-secret rows and the defaultProviderId pointer.
  */
 
-type ProviderInput = Omit<z.input<typeof providerConfigSchema>, 'id' | 'createdAt'>
+type ProviderInput = Omit<z.input<typeof providerConfigWriteSchema>, 'id' | 'createdAt'>
 
 function normalize(row: ProviderConfigRow): ProviderConfigRow {
   try {
@@ -29,7 +29,7 @@ export async function listProviders(): Promise<ProviderConfigRow[]> {
 }
 
 export async function createProvider(input: ProviderInput): Promise<ProviderConfigRow> {
-  const row = providerConfigSchema.parse({
+  const row = providerConfigWriteSchema.parse({
     ...input,
     id: crypto.randomUUID(),
     baseUrl: input.baseUrl.trim().replace(/\/+$/, ''),

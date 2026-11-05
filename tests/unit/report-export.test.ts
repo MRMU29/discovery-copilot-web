@@ -79,6 +79,16 @@ describe('buildReportHtmlDocument', () => {
     // content rendered as sanitized markdown
     expect(html).toContain('<h2>背景</h2>')
     expect(html).not.toContain('<script')
+    expect(html).toContain('Content-Security-Policy')
+    expect(html).toContain("default-src 'none'")
+    expect(html).toContain('img-src data: blob:')
+  })
+
+  it('blocks remote image loads in the standalone export', () => {
+    const html = buildReportHtmlDocument({ ...base, content: '![t](https://attacker.example/track.gif)' })
+    expect(html).toContain('https://attacker.example/track.gif') // DOMPurify keeps the tag
+    expect(html).toContain('img-src data: blob:') // CSP refuses the network request
+    expect(html).not.toMatch(/img-src[^;]*https?:/)
   })
 
   it('escapes hostile title text and inlines the brand logo when provided', () => {

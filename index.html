@@ -3,15 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="color-scheme" content="dark light" />
-    <meta name="theme-color" content="#010102" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f6fbfd" />
     <link rel="icon" type="image/jpeg" href="%BASE_URL%brand-icon.jpg" />
     <title>Discovery Copilot</title>
     <style>
       /*
        * 启动页：HTML 首帧即 100% 全覆盖（不依赖 JS），logo 由 1/2 大小放大
-       * 亮起 → 双色名称 → 标语浮现，1s 后整层淡出。令牌取自 tokens.css
-       * （其 :root[data-theme] 由 theme-init 在任何样式应用前设置）。
+       * 亮起 → 双色名称 → 标语浮现，1s 后整层淡出。fallback 值与 tokens.css
+       * 的浅色主题一致（其 :root[data-theme] 由 theme-init 在样式应用前设置）。
        * 动画以 forwards 结束于 opacity:0 + pointer-events:none，即使 JS
        * 失败启动页也会自行消失，不拦截应用；JS 禁用时由 <noscript> 隐藏。
        */
@@ -24,39 +24,39 @@
         align-items: center;
         justify-content: center;
         gap: 20px;
-        background-color: var(--color-canvas, #010102);
-        background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+        background-color: var(--color-canvas, #f6fbfd);
+        background-image: radial-gradient(rgba(17, 18, 31, 0.06) 1px, transparent 1px);
         background-size: 26px 26px;
         animation: dc-splash-out 0.25s ease-in 1s forwards;
       }
-      :root[data-theme='light'] #dc-splash {
-        background-image: radial-gradient(rgba(15, 15, 15, 0.05) 1px, transparent 1px);
+      :root[data-theme='dark'] #dc-splash {
+        background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
       }
       #dc-splash img {
         width: 56px;
         height: 56px;
-        border-radius: 12px;
+        border-radius: 14px;
         animation: dc-splash-logo 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
       }
       #dc-splash .dc-splash-name {
         margin: 0;
         font-family: var(--font-sans, 'Inter', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif);
-        font-size: 28px;
-        font-weight: 600;
+        font-size: 30px;
+        font-weight: 700;
         letter-spacing: -0.6px;
         line-height: 1.2;
-        color: var(--color-ink, #f7f8f8);
+        color: var(--color-ink, #222435);
         animation: dc-splash-rise 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) 0.35s both;
       }
       #dc-splash .dc-splash-name span {
-        color: var(--color-accent, #5e6ad2);
+        color: var(--color-accent, #223f97);
       }
       #dc-splash .dc-splash-tagline {
         margin: 0;
         font-family: var(--font-sans, 'Inter', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif);
         font-size: 14px;
         line-height: 1.5;
-        color: var(--color-ink-muted, #8a8f98);
+        color: var(--color-ink-muted, #494e62);
         animation: dc-splash-fade 0.35s ease-out 0.55s both;
       }
       @keyframes dc-splash-logo {

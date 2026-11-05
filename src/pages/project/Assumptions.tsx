@@ -51,12 +51,12 @@ export default function Assumptions({ projectId }: { projectId: string }) {
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-headline text-ink">{t('assumptions.title')}</h1>
+          <h1 className="text-subhead text-ink sm:text-headline">{t('assumptions.title')}</h1>
           <p className="mt-1 text-body-sm text-ink-muted">
             {t('assumptions.desc', { count: assumptions.length })}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button onClick={() => setAiOpen(true)}>{t('assumptions.aiCta')}</Button>
           <Button variant="secondary" onClick={() => setFormOpen(true)}>
             {t('assumptions.add')}

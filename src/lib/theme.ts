@@ -16,8 +16,8 @@ import { useCallback, useSyncExternalStore } from 'react'
 const STORAGE_KEY = 'dcopilot.theme'
 
 const META_THEME_COLOR: Record<ResolvedTheme, string> = {
-  dark: '#010102',
-  light: '#ffffff',
+  dark: '#11121f',
+  light: '#f6fbfd',
 }
 
 export function resolveTheme(pref: ThemePref, systemPrefersDark: boolean): ResolvedTheme {

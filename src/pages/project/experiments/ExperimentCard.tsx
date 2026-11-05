@@ -60,13 +60,13 @@ export function ExperimentCard({ experiment, assumption, assumptions }: Experime
   const toggle = (target: Pane) => setPane((cur) => (cur === target ? 'none' : target))
 
   return (
-    <article className="rounded-lg border border-hairline bg-surface-1 p-4">
+    <article className="rounded-lg border border-hairline bg-surface-1 p-4 shadow-card">
       <div className="flex flex-wrap items-center gap-2">
         <span className={`rounded-full px-2 py-0.5 text-caption ${statusMeta.badgeClass}`}>
           {t(statusMeta.labelKey)}
         </span>
         {assumption ? (
-          <span className="rounded-full bg-tint-blue px-2 py-0.5 text-caption text-surface-1" title={assumption.statement}>
+          <span className="rounded-full bg-tint-blue px-2 py-0.5 text-caption text-reading-ink" title={assumption.statement}>
             {t('experiment.assumptionBadge', {
               statement:
                 assumption.statement.length > 24 ? `${assumption.statement.slice(0, 24)}…` : assumption.statement,

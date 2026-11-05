@@ -14,6 +14,8 @@ interface DialogProps {
  * Minimal modal (no Radix by decision): Esc + backdrop click to close,
  * bottom sheet on mobile / centered card from sm up. Focus stays free-form —
  * full focus trapping arrives with a real headless-UI dependency if ever needed.
+ * On narrow screens the panel is bounded to the viewport, the close button is
+ * a 44px target, and the body scrolls internally with Home-Indicator room.
  */
 export function Dialog({ open, title, onClose, size = 'md', children }: DialogProps) {
   const t = useT()
@@ -29,7 +31,7 @@ export function Dialog({ open, title, onClose, size = 'md', children }: DialogPr
   if (!open) return null
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center sm:p-6"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-scrim/55 backdrop-blur-sm sm:items-center sm:p-6"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose()
       }}
@@ -38,22 +40,22 @@ export function Dialog({ open, title, onClose, size = 'md', children }: DialogPr
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className={`flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-xl border border-hairline bg-surface-1 sm:rounded-lg ${
+        className={`dc-safe-bottom flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-lg border border-hairline bg-surface-1 shadow-modal sm:rounded-lg ${
           size === 'lg' ? 'sm:max-w-2xl' : 'sm:max-w-lg'
         }`}
       >
-        <header className="flex items-center justify-between border-b border-hairline px-4 py-3">
-          <h2 className="text-subhead text-ink">{title}</h2>
+        <header className="flex items-center gap-3 border-b border-hairline px-4 py-3 sm:px-5 sm:py-4">
+          <h2 className="min-w-0 flex-1 text-subhead text-ink">{title}</h2>
           <button
             type="button"
             onClick={onClose}
             aria-label={t('common.close')}
-            className="flex size-9 items-center justify-center rounded-btn text-xl leading-none text-ink-muted hover:bg-surface-2 hover:text-ink"
+            className="flex size-11 shrink-0 items-center justify-center rounded-btn text-xl leading-none text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink"
           >
             ×
           </button>
         </header>
-        <div className="flex-1 overflow-y-auto px-4 py-4">{children}</div>
+        <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5 sm:py-5">{children}</div>
       </div>
     </div>
   )

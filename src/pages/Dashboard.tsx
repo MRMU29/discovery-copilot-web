@@ -122,7 +122,7 @@ export default function Dashboard() {
       onChange={(e) => setName(e.target.value)}
       placeholder={t('dashboard.namePlaceholder')}
       maxLength={120}
-      className="min-h-11 w-full rounded-btn border border-hairline-strong bg-surface-1 px-4 text-body text-ink placeholder:text-ink-faint focus:border-accent-focus focus:outline-none"
+      className="min-h-11 w-full max-w-full rounded-btn border border-hairline-strong bg-surface-2/50 px-4 text-body text-ink placeholder:text-ink-faint focus:border-accent-focus focus:outline-none focus:ring-2 focus:ring-accent-focus/30"
     />
   )
   const descriptionInput = (
@@ -133,21 +133,20 @@ export default function Dashboard() {
       rows={3}
       maxLength={2000}
       placeholder={t('dashboard.descPlaceholder')}
-      className="w-full rounded-btn border border-hairline-strong bg-surface-1 px-4 py-2.5 text-body text-ink placeholder:text-ink-faint focus:border-accent-focus focus:outline-none"
+      className="w-full max-w-full rounded-btn border border-hairline-strong bg-surface-2/50 px-4 py-2.5 text-body text-ink placeholder:text-ink-faint focus:border-accent-focus focus:outline-none focus:ring-2 focus:ring-accent-focus/30"
     />
   )
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-display-md text-ink">{t('dashboard.title')}</h1>
-        <p className="mt-1 text-body text-ink-muted">
-          {t('dashboard.subtitle')}
-        </p>
-      </div>
+    <div className="space-y-8 sm:space-y-10">
+      <header>
+        <p className="text-eyebrow text-accent">DISCOVERY COPILOT</p>
+        <h1 className="mt-2 text-headline text-ink sm:text-display-md">{t('dashboard.title')}</h1>
+        <p className="mt-2 max-w-2xl text-body text-ink-muted sm:text-body-lg">{t('dashboard.subtitle')}</p>
+      </header>
 
       {quota?.low && (
-        <div role="status" className="rounded-lg border border-warning/40 bg-surface-1 px-4 py-3 text-body-sm text-ink">
+        <div role="status" className="rounded-lg border border-warning/30 bg-tint-yellow px-5 py-3 text-body-sm text-ink">
           {t('dashboard.quotaLow', {
             used: quota.usage != null ? formatBytes(quota.usage) : t('settings.dataBackup.unknown'),
             quota: quota.quota != null ? formatBytes(quota.quota) : t('settings.dataBackup.unknown'),
@@ -157,12 +156,12 @@ export default function Dashboard() {
 
       <form
         onSubmit={handleCreate}
-        className="space-y-3 rounded-lg border border-hairline bg-surface-1 p-4"
+        className="space-y-4 rounded-lg border border-hairline bg-surface-1 p-4 shadow-card sm:space-y-5 sm:p-6"
         aria-label={t('dashboard.formLabel')}
       >
         <div>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <label htmlFor="new-project-name" className="text-caption text-ink-muted">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <label htmlFor="new-project-name" className="text-body-sm font-semibold text-ink-secondary">
               {t('dashboard.nameLabel')}
             </label>
             <FieldHint
@@ -176,8 +175,8 @@ export default function Dashboard() {
           {nameInput}
         </div>
         <div>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <label htmlFor="new-project-desc" className="text-caption text-ink-muted">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <label htmlFor="new-project-desc" className="text-body-sm font-semibold text-ink-secondary">
               {t('dashboard.descLabel')}
             </label>
             <FieldHint
@@ -190,7 +189,7 @@ export default function Dashboard() {
           </div>
           {descriptionInput}
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 pt-1">
           <Button type="submit" disabled={!name.trim() || creating}>
             {creating ? t('dashboard.creating') : t('dashboard.create')}
           </Button>
@@ -207,22 +206,22 @@ export default function Dashboard() {
           description={t('dashboard.emptyDesc')}
         />
       ) : (
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {data.active.map((p) => (
             <li key={p.id} className="relative">
               <Link
                 to={projectPath(p.id)}
-                className="block rounded-lg border border-hairline bg-surface-1 p-4 pr-12 transition-colors hover:border-hairline-strong"
+                className="block rounded-lg border border-hairline bg-surface-1 p-4 pr-12 shadow-card transition-all hover:-translate-y-0.5 hover:border-hairline-strong hover:shadow-pop sm:p-5"
               >
-                <p className="text-card-title text-ink">{p.name}</p>
-                {p.description && <p className="mt-1 text-body-sm text-ink-muted">{p.description}</p>}
-                <p className="mt-3 text-caption text-ink-faint">{t('dashboard.updatedAt', { date: p.updatedAt.slice(0, 10) })}</p>
+                <p className="text-subhead text-ink sm:text-card-title">{p.name}</p>
+                {p.description && <p className="mt-1.5 line-clamp-2 text-body-sm text-ink-muted">{p.description}</p>}
+                <p className="mt-4 text-caption text-ink-faint">{t('dashboard.updatedAt', { date: p.updatedAt.slice(0, 10) })}</p>
               </Link>
               <button
                 type="button"
                 aria-label={t('dashboard.deleteAria', { name: p.name })}
                 onClick={() => void handleSoftDelete(p.id)}
-                className="absolute right-2 top-2 min-h-9 rounded-btn px-2 text-caption text-ink-faint hover:bg-danger/10 hover:text-danger"
+                className="absolute right-2 top-2 min-h-11 min-w-11 rounded-btn px-2 text-caption text-ink-faint hover:bg-danger/10 hover:text-danger"
               >
                 {t('common.delete')}
               </button>
@@ -238,13 +237,13 @@ export default function Dashboard() {
             {data.deleted.map((p) => (
               <li
                 key={p.id}
-                className="flex items-center justify-between gap-3 rounded-lg border border-hairline bg-surface-1 px-4 py-2.5"
+                className="flex flex-col items-start gap-2 rounded-lg border border-hairline bg-surface-1 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
               >
-                <span className="min-w-0 flex-1 truncate text-body-sm text-ink-secondary">
+                <span className="min-w-0 flex-1 text-body-sm text-ink-secondary">
                   {p.name}
                   <span className="ml-2 text-caption text-ink-faint">{t('dashboard.daysLeft', { days: p.daysLeft })}</span>
                 </span>
-                <span className="flex shrink-0 gap-2">
+                <span className="flex min-w-0 flex-wrap justify-end gap-2">
                   <Button variant="secondary" onClick={() => void restoreProject(p.id)}>
                     {t('dashboard.restore')}
                   </Button>

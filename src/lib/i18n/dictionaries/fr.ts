@@ -170,7 +170,7 @@ export const fr: Dict = {
   'settings.aiProvider.fieldModel': 'Modèle',
   'settings.aiProvider.modelPlaceholder': 'deepseek-chat',
   'settings.aiProvider.noKeyNote':
-    'Seules les informations de connexion sont enregistrées ici — sans clé API. Saisissez la clé dans la carte du provider ou le dialogue IA lors de la première utilisation de l’IA de la session — gardez la clé du fournisseur à portée de main.',
+    'Vous pouvez saisir une API Key ici, mais elle reste uniquement en mémoire de session ; vous pouvez aussi la définir plus tard sur la fiche du Provider. Elle disparaît à la fermeture et n’est jamais écrite dans la base ni exportée avec .dcopilot.',
   'settings.aiProvider.emptyTitle': 'Aucun provider pour l’instant',
   'settings.aiProvider.emptyDesc':
     'Le mode Relay fonctionne sans aucune configuration ; seuls les modes BYOK / Hybride nécessitent d’ajouter un provider ici.',
@@ -181,6 +181,8 @@ export const fr: Dict = {
   'settings.aiProvider.keyLabel': 'Clé API (à ressaisir à chaque session ; uniquement en mémoire de session, disparaît à la fermeture)',
   'settings.aiProvider.keySavedPlaceholder': 'Enregistrée (cette session) — tapez pour remplacer',
   'settings.aiProvider.saveKey': 'Enregistrer pour cette session',
+  'settings.aiProvider.customEndpointConfirm': 'Votre API Key sera envoyée à l’hôte personnalisé {host}. Ne continuez que si vous faites confiance à ce service, sinon la clé peut fuiter. Continuer ?',
+  'settings.aiProvider.addKeyLabel': 'API Key (facultative, session uniquement)',
   'settings.aiProvider.testConnection': 'Tester la connexion',
   'settings.aiProvider.testing': 'Test en cours…',
   'settings.aiProvider.testOk': 'Connexion réussie.',
@@ -245,14 +247,14 @@ export const fr: Dict = {
   'settings.dataBackup.snapshotDeleted': 'Instantané supprimé.',
   'settings.dataBackup.dangerHeading': 'Zone de danger',
   'settings.dataBackup.dangerDesc':
-    'Effacer toutes les données de projets (projets / hypothèses / expériences / OST / rapports / audit des scores). Le mode IA, les configurations de provider et l’état d’onboarding sont conservés ; c’est irréversible.',
+    'Supprime toutes les données de projet (projets / hypothèses / expériences / OST / rapports / journal de score) et les instantanés locaux. Le mode IA, les configs Provider et l’état d’accueil sont conservés ; action irréversible.',
   'settings.dataBackup.clearData': 'Effacer les données de projets…',
   'settings.dataBackup.clearing': 'Effacement…',
   'settings.dataBackup.clearConfirm1':
-    'Effacer toutes les données de projets (projets/hypothèses/expériences/OST/rapports) ? C’est irréversible — exportez d’abord une sauvegarde .dcopilot.',
+    'Supprimer toutes les données de projet (projets/hypothèses/expériences/OST/rapports) et les instantanés locaux ? Irréversible — exportez d’abord une sauvegarde .dcopilot.',
   'settings.dataBackup.clearConfirm2':
-    'Confirmez à nouveau : vraiment tout effacer ? Le mode IA, les configurations de provider et l’état d’onboarding seront conservés.',
-  'settings.dataBackup.clearDone': 'Toutes les données de projets ont été effacées ; les réglages de l’application et des providers sont conservés.',
+    'Confirmez à nouveau : vraiment supprimer toutes les données de projet et les instantanés locaux ? Le mode IA, les configs Provider et l’accueil sont conservés.',
+  'settings.dataBackup.clearDone': 'Toutes les données de projet et les instantanés locaux ont été supprimés ; les réglages de l’app et les configs Provider sont conservés.',
   'settings.dataBackup.importConfirmTitle': 'Confirmer l’import',
   'settings.dataBackup.summaryTitle': 'Résumé des données',
   'settings.dataBackup.summaryProjects': '{count} projets ({created} nouveaux · {conflict} en conflit · {duplicate} identiques)',
@@ -423,7 +425,7 @@ export const fr: Dict = {
   'settings.privacy.controlTitle': '4. Vous contrôlez vos données à tout moment',
   'settings.privacy.controlExport': 'Exporter : regroupez vos projets en fichier .dcopilot via « Données et sauvegarde » (sans clé).',
   'settings.privacy.controlClear':
-    'Effacer : « Effacer les données de projets » ne supprime que les données métier ; « Réinitialiser l’application » supprime toutes les données locales et rend l’espace occupé.',
+    'Effacement : « Effacer les données de projet » supprime les données métier et les instantanés locaux ; « Réinitialiser l’app » supprime toutes les données locales et libère l’espace.',
   'settings.privacy.controlWarning':
     'Attention : effacer les données du site ou désinstaller le navigateur supprime irrévocablement les projets locaux — exportez régulièrement des sauvegardes.',
   'settings.privacy.changesTitle': '5. Évolutions et contact',
@@ -474,6 +476,10 @@ export const fr: Dict = {
   'backup.ostParentCrossProject': 'Le parent du nœud OST « {title} » appartient à un autre projet.',
   'backup.ostMissingAssumption': 'Le nœud OST « {title} » est lié à une hypothèse absente du fichier.',
   'backup.ostMissingExperiment': 'Le nœud OST « {title} » est lié à une expérience absente du fichier.',
+  'backup.ostOutcomeMustBeRoot': 'Le nœud OST « {title} » a une chaîne de types invalide : outcome doit être la racine.',
+  'backup.ostRequiredParent': 'Le nœud OST « {title} » a une chaîne de types invalide : {type} requiert un parent.',
+  'backup.ostWrongParentType': 'Le nœud OST « {title} » a une chaîne de types invalide : le parent de {type} doit être {parentType}.',
+  'backup.ostParentCycle': 'Le nœud OST « {title} » présente un cycle dans sa chaîne de parents.',
   'backup.reportMissingProject': 'Le rapport « {title}… » référence un projet absent du fichier.',
   'backup.capacity': 'L’import porterait le nombre de projets au-delà de la limite de {limit} — réduisez le périmètre.',
   'overview.stat.assumptions': 'Hypothèses clés',

@@ -32,9 +32,9 @@ export async function requestJson<T>(init: JsonRequestInit): Promise<{ status: n
     throw classifyAIError(err)
   }
   if (!response.ok) {
-    const status = response.status
-    const detail = await response.text().catch(() => '')
-    throw classifyAIError(new Error(detail.slice(0, 300) || `HTTP ${status}`), status)
+    // Error bodies come from an external (possibly hostile) endpoint and may echo
+    // the request URL/Authorization. Keep only the status code, never the body.
+    throw classifyAIError(new Error(`HTTP ${response.status}`), response.status)
   }
   try {
     return { status: response.status, data: (await response.json()) as T }

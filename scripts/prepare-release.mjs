@@ -6,15 +6,25 @@
  * 发布树不含内部材料与用户数据，并统计文件数。
  *
  *   node scripts/prepare-release.mjs [targetDir]
- *   默认 targetDir = ../discovery-copilot-web（相对 WEB 根）
+ *   默认 targetDir = ../../discovery-copilot-web（相对 WEB 根）
+ *   限制：目标目录名必须为 discovery-copilot-web，且不得位于工作区内或其祖先。
  */
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { basename, join, resolve, sep } from 'node:path'
 
 const ROOT = process.cwd()
 const APP_NAME = 'discovery-copilot-web'
 // Default target sits OUTSIDE the workspace: <parent-of-workspace>/discovery-copilot-web
 const TARGET = resolve(process.argv[2] ?? join(ROOT, '..', '..', APP_NAME))
+// Never let a CLI argument turn this script into an arbitrary recursive delete.
+// [targetDir] stays configurable: any parent is fine as long as the basename is fixed
+// and the target is neither the workspace itself, one of its ancestors, nor inside it.
+const insideWorkspace = TARGET === ROOT || TARGET.startsWith(ROOT + sep)
+const isWorkspaceAncestor = ROOT.startsWith(TARGET + sep)
+if (basename(TARGET) !== APP_NAME || insideWorkspace || isWorkspaceAncestor) {
+  console.error(`[prepare-release] 拒绝：目标目录名必须为 ${APP_NAME}，且不得位于工作区内或其祖先（收到 ${TARGET}）`)
+  process.exit(1)
+}
 
 // 排除清单：构建/依赖/缓存/日志 + 工作区内部材料（双保险——上层目录本就不复制）
 const EXCLUDE = new Set([
@@ -68,10 +78,12 @@ function copyDir(src, dest) {
 const problems = []
 const FORBIDDEN_NAMES = new Set(['AGENTS.md', 'HANDOFF.md', 'docs', '.scratch', '.zcode', 'acceptance-cmd11.md', 'acceptance-cmd12.md', 'review-report.md'])
 const SECRET_RES = [
-  { name: 'OpenAI-style key', re: /\bsk-[A-Za-z0-9]{20,}\b/ },
+  { name: 'OpenAI-style key', re: /\bsk-[A-Za-z0-9_-]{20,}\b/ },
   { name: 'GitHub token', re: /\b(?:ghp_|github_pat_)[A-Za-z0-9_]{20,}\b/ },
   { name: 'AWS access key', re: /\bAKIA[0-9A-Z]{16}\b/ },
   { name: 'Google API key', re: /\bAIza[0-9A-Za-z_-]{35}\b/ },
+  { name: 'PEM private key', re: /-----BEGIN (?:[A-Z0-9]+ )*PRIVATE KEY-----/ },
+  { name: 'Sensitive assignment', re: /(?:api[_-]?key|secret|password|passwd|credential|private[_-]?key|access[_-]?token|auth[_-]?token)\s*[:=]\s*['"][A-Za-z0-9_\-+/=]{20,}['"]/i },
 ]
 
 function walk(dir) {

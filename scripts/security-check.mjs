@@ -20,12 +20,27 @@ const SENSITIVE_PATH_EXEMPT = /(^|\/)\.env\.example$/i
 // 2) File contents must never match real credential shapes (length-gated so
 //    words like "task-" / "risk-" cannot false-positive).
 const SECRET_CONTENT_RES = [
-  { name: 'OpenAI-style key', re: /\bsk-[A-Za-z0-9]{20,}\b/ },
+  { name: 'OpenAI-style key', re: /\bsk-[A-Za-z0-9_-]{20,}\b/ },
   { name: 'GitHub token', re: /\b(?:ghp_|github_pat_)[A-Za-z0-9_]{20,}\b/ },
   { name: 'AWS access key', re: /\bAKIA[0-9A-Z]{16}\b/ },
   { name: 'Google API key', re: /\bAIza[0-9A-Za-z_-]{35}\b/ },
   { name: 'Anthropic key', re: /\bsk-ant-[A-Za-z0-9_-]{20,}\b/ },
+  { name: 'PEM private key', re: /-----BEGIN (?:[A-Z0-9]+ )*PRIVATE KEY-----/ },
+  { name: 'Sensitive assignment', re: /(?:api[_-]?key|secret|password|passwd|credential|private[_-]?key|access[_-]?token|auth[_-]?token)\s*[:=]\s*['"][A-Za-z0-9_\-+/=]{20,}['"]/i },
 ]
+
+// 0) Worktree hygiene: untracked sensitive files must never reach a push.
+const statusLines = execSync('git status --porcelain', { cwd: ROOT, encoding: 'utf8' })
+  .split('\n')
+  .map((s) => s.trim())
+  .filter(Boolean)
+for (const line of statusLines) {
+  if (!line.startsWith('??')) continue
+  const file = line.slice(3).trim()
+  if (SENSITIVE_PATH_RE.test(file) && !SENSITIVE_PATH_EXEMPT.test(file)) {
+    failures.push(`未跟踪的敏感文件: ${file}`)
+  }
+}
 
 const tracked = execSync('git ls-files', { cwd: ROOT, encoding: 'utf8' })
   .split('\n')
@@ -82,4 +97,4 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log(`[security:check] OK — ${tracked.length} 个跟踪文件（内容扫描 ${scanned} 个），未发现密钥形态、敏感路径或内部材料。`)
+console.log(`[security:check] OK — ${tracked.length} 个跟踪文件（内容扫描 ${scanned} 个），工作区 ${statusLines.length} 项改动，未发现密钥形态、敏感路径或内部材料。`)

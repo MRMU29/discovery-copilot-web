@@ -27,6 +27,7 @@ import {
   type Snapshot,
 } from '@/schemas/entities'
 import { getSettings } from './settings'
+import { REQUIRED_PARENT } from './ost'
 
 /**
  * §7 .dcopilot backup / restore — the MVP's first-class migration feature.
@@ -47,7 +48,7 @@ export const DCOPILT_MAX_BYTES = 20 * 1024 * 1024
 
 export const dcopilotFileSchema = z.object({
   format: z.literal(DCOPILT_FORMAT),
-  formatVersion: z.number().int(),
+  formatVersion: z.number().int().min(0),
   appVersion: z.string(),
   exportedAt: z.string(),
   projects: z.array(projectSchema),
@@ -262,6 +263,30 @@ function validateIntegrity(file: DcopilotFile): string[] {
     }
     if (row.linkedExperimentId && !experimentIds.has(row.linkedExperimentId)) {
       issues.push(translate('backup.ostMissingExperiment', { title }))
+    }
+    // §5.3 parent/type chain — REQUIRED_PARENT is the shared authority.
+    if (row.type === 'outcome') {
+      if (row.parentId != null)
+        issues.push(translate('backup.ostOutcomeMustBeRoot', { title }))
+    } else if (row.parentId == null) {
+      issues.push(translate('backup.ostRequiredParent', { title, type: row.type }))
+    } else {
+      const parent = nodeById.get(row.parentId)
+      if (parent && parent.type !== REQUIRED_PARENT[row.type])
+        issues.push(translate('backup.ostWrongParentType', { title, type: row.type, parentType: REQUIRED_PARENT[row.type] }))
+    }
+    // 父链环检测：沿 parentId 上溯，重复访问即成环；父节点缺失交由 ostMissingParent 报告。
+    const seen = new Set<string>([row.id])
+    let cursor = row.parentId
+    while (cursor != null) {
+      if (seen.has(cursor)) {
+        issues.push(translate('backup.ostParentCycle', { title }))
+        break
+      }
+      seen.add(cursor)
+      const ancestor = nodeById.get(cursor)
+      if (!ancestor) break
+      cursor = ancestor.parentId
     }
   }
   for (const row of file.reports) {

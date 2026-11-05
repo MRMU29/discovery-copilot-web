@@ -70,46 +70,47 @@ const DOCUMENT_CSS = `
 * { box-sizing: border-box; }
 body {
   margin: 0;
-  background: #f6f5f4;
-  color: #37352f;
+  background: #f6fbfd;
+  color: #222435;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
     'Microsoft YaHei', 'Noto Sans SC', sans-serif;
   font-size: 16px;
-  line-height: 1.6;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
 }
 .page { max-width: 780px; margin: 0 auto; padding: 48px 20px 32px; }
 .doc {
   background: #ffffff;
-  border: 1px solid #e9e7e4;
-  border-radius: 10px;
+  border: 1px solid #d3dee4;
+  border-radius: 14px;
+  box-shadow: 0 4px 6px -1px rgba(17, 18, 31, 0.07), 0 1px 2px rgba(17, 18, 31, 0.04);
   padding: 44px 52px 36px;
 }
 .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 26px; }
 .brand img { width: 28px; height: 28px; border-radius: 6px; }
-.brand span { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: #9b9a97; }
-h1 { font-size: 26px; line-height: 1.3; margin: 0 0 8px; color: #1f1e1d; }
-.meta { font-size: 13px; color: #787774; margin: 0 0 6px; }
-.rule { border: none; border-top: 1px solid #e9e7e4; margin: 24px 0 8px; }
+.brand span { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: #5c6479; }
+h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.6px; line-height: 1.25; margin: 0 0 8px; color: #222435; }
+.meta { font-size: 13px; color: #494e62; margin: 0 0 6px; }
+.rule { border: none; border-top: 1px solid #d3dee4; margin: 24px 0 8px; }
 .doc-body h2 {
   font-size: 20px; line-height: 1.4; margin: 30px 0 10px;
-  padding-bottom: 6px; border-bottom: 1px solid #efefee; color: #1f1e1d;
+  padding-bottom: 6px; border-bottom: 1px solid #d3dee4; color: #222435;
 }
-.doc-body h3 { font-size: 17px; margin: 22px 0 8px; color: #1f1e1d; }
+.doc-body h3 { font-size: 17px; margin: 22px 0 8px; color: #222435; }
 .doc-body p { margin: 10px 0; }
 .doc-body ul, .doc-body ol { padding-left: 24px; margin: 10px 0; }
 .doc-body li { margin: 4px 0; }
 .doc-body table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 14px; }
-.doc-body th, .doc-body td { border: 1px solid #e9e7e4; padding: 8px 10px; text-align: left; }
-.doc-body th { background: #f6f5f4; }
+.doc-body th, .doc-body td { border: 1px solid #d3dee4; padding: 8px 10px; text-align: left; }
+.doc-body th { background: #f6fbfd; }
 .doc-body blockquote {
-  border-left: 3px solid #e9e7e4; margin: 12px 0; padding: 2px 14px; color: #787774;
+  border-left: 3px solid #d3dee4; margin: 12px 0; padding: 2px 14px; color: #494e62;
 }
-.doc-body code { background: #f6f5f4; border-radius: 4px; padding: 2px 5px; font-size: 0.9em; }
-.doc-body pre { background: #f6f5f4; border-radius: 8px; padding: 14px; overflow: auto; }
+.doc-body code { background: #f6fbfd; border-radius: 6px; padding: 2px 5px; font-size: 0.9em; }
+.doc-body pre { background: #f6fbfd; border-radius: 8px; padding: 14px; overflow: auto; }
 .doc-body pre code { background: none; padding: 0; }
-.doc-body hr { border: none; border-top: 1px solid #e9e7e4; margin: 24px 0; }
-.footer { font-size: 12px; color: #9b9a97; text-align: center; padding: 20px 0 8px; }
+.doc-body hr { border: none; border-top: 1px solid #d3dee4; margin: 24px 0; }
+.footer { font-size: 12px; color: #5c6479; text-align: center; padding: 20px 0 8px; }
 `
 
 export interface ReportExportInput extends ReportDisplayFields {
@@ -135,6 +136,7 @@ export function buildReportHtmlDocument(input: ReportExportInput, logoDataUrl?: 
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; base-uri 'none'; form-action 'none'" />
 <title>${title}</title>
 <style>${DOCUMENT_CSS}</style>
 </head>
