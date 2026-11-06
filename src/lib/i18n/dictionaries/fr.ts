@@ -294,7 +294,7 @@ export const fr: Dict = {
   'settings.about.resetting': 'Réinitialisation…',
   'settings.about.diagnosticsTitle': 'Diagnostics',
   'settings.about.diagnosticsDesc':
-    'Exporte des métadonnées anonymisées pour les rapports de bugs : version app/format, environnement navigateur, aperçu du stockage et les 50 dernières métadonnées de requêtes IA. Sans clé API, sans texte de Prompt ni données de projet ; tout est prévisualisable avant export.',
+    'Exporte des métadonnées anonymisées pour les rapports de bugs : version app/format, environnement navigateur, aperçu du stockage, les 50 dernières métadonnées de requêtes IA ainsi que les noms d’hôte de vos fournisseurs d’IA configurés (domaine uniquement, sans chemin ni clé). Sans clé API, sans texte de Prompt ni données de projet ; tout est prévisualisable avant export.',
   'settings.about.diagnosticsAction': 'Prévisualiser les diagnostics…',
   'settings.about.diagnosticsBusy': 'Génération…',
   'settings.about.docsTitle': 'Produit et documents',
@@ -421,7 +421,7 @@ export const fr: Dict = {
     'L’application elle-même : les pages et ressources statiques sont servies par la plateforme d’hébergement (Cloudflare Pages) ; aucune télémétrie, statistique ni rapport de plantage n’est intégré.',
   'settings.privacy.diagnosticsTitle': '3. Diagnostics (entièrement manuels)',
   'settings.privacy.diagnostics':
-    '« À propos → Diagnostics » n’est généré qu’après votre clic, avec prévisualisation intégrale avant export : version app/format, environnement navigateur, aperçu du stockage et les 50 dernières métadonnées de requêtes IA. Aucune clé API, aucun texte de Prompt, aucune donnée de projet.',
+    '« À propos → Diagnostics » n’est généré qu’après votre clic, avec prévisualisation intégrale avant export : version app/format, environnement navigateur, aperçu du stockage, les 50 dernières métadonnées de requêtes IA ainsi que les noms d’hôte de vos fournisseurs d’IA configurés (domaine uniquement, sans chemin ni clé). Aucune clé API, aucun texte de Prompt, aucune donnée de projet.',
   'settings.privacy.controlTitle': '4. Vous contrôlez vos données à tout moment',
   'settings.privacy.controlExport': 'Exporter : regroupez vos projets en fichier .dcopilot via « Données et sauvegarde » (sans clé).',
   'settings.privacy.controlClear':

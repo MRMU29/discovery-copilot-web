@@ -293,7 +293,7 @@ export const ja: Dict = {
   'settings.about.resetting': 'リセット中…',
   'settings.about.diagnosticsTitle': '診断パッケージ',
   'settings.about.diagnosticsDesc':
-    '問題報告用に匿名化メタデータを書き出します：アプリ/形式バージョン、ブラウザー環境、ストレージ概況、直近 50 件の AI リクエストメタデータ。API Key・Prompt 本文・プロジェクトデータは含まれません。書き出し前に全内容をプレビューできます。',
+    '問題報告用に匿名化メタデータを書き出します：アプリ/形式バージョン、ブラウザー環境、ストレージ概況、直近 50 件の AI リクエストメタデータ、および設定した AI Provider のホスト名（ドメインのみ、パス・Key は含みません）。API Key・Prompt 本文・プロジェクトデータは含まれません。書き出し前に全内容をプレビューできます。',
   'settings.about.diagnosticsAction': '診断パッケージをプレビュー…',
   'settings.about.diagnosticsBusy': '生成中…',
   'settings.about.docsTitle': '製品とドキュメント',
@@ -419,7 +419,7 @@ export const ja: Dict = {
     'アプリ自体：ページと静的リソースはホスティング平台（Cloudflare Pages）から配信されます。テレメトリ・統計・クラッシュレポート機能は組み込まれていません。',
   'settings.privacy.diagnosticsTitle': '3. 診断パッケージ（完全手動）',
   'settings.privacy.diagnostics':
-    '「このアプリについて → 診断パッケージ」は自分がクリックした後にのみ生成され、書き出し前に全内容をプレビューできます：アプリ/形式バージョン、ブラウザー環境、ストレージ概況、直近 50 件の AI リクエストメタデータ。API Key・Prompt 本文・プロジェクトデータは含まれません。',
+    '「このアプリについて → 診断パッケージ」は自分がクリックした後にのみ生成され、書き出し前に全内容をプレビューできます：アプリ/形式バージョン、ブラウザー環境、ストレージ概況、直近 50 件の AI リクエストメタデータ、および設定した AI Provider のホスト名（ドメインのみ、パス・Key は含みません）。API Key・Prompt 本文・プロジェクトデータは含まれません。',
   'settings.privacy.controlTitle': '4. データはいつでも自分で管理できる',
   'settings.privacy.controlExport': '書き出し：「データとバックアップ」から .dcopilot ファイルとして持ち運べます（Key は含まない）。',
   'settings.privacy.controlClear':

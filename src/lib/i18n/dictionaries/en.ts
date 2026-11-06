@@ -291,7 +291,7 @@ export const en: Dict = {
   'settings.about.resetting': 'Resetting…',
   'settings.about.diagnosticsTitle': 'Diagnostics',
   'settings.about.diagnosticsDesc':
-    'Export de-identified metadata for issue reports: app/format version, browser environment, storage overview and the last 50 AI request metadata records. Contains no API Key, no Prompt text, no project data; preview everything before exporting.',
+    'Export de-identified metadata for issue reports: app/format version, browser environment, storage overview, the last 50 AI request metadata records, and the hostnames of your configured AI providers (domain only, no path or key). Contains no API Key, no Prompt text, no project data; preview everything before exporting.',
   'settings.about.diagnosticsAction': 'Preview diagnostics…',
   'settings.about.diagnosticsBusy': 'Generating…',
   'settings.about.docsTitle': 'Product & documents',
@@ -419,7 +419,7 @@ export const en: Dict = {
     'The application itself: pages and static assets are served by the hosting platform (Cloudflare Pages); the application integrates no telemetry, analytics or crash reporting.',
   'settings.privacy.diagnosticsTitle': '3. Diagnostics (fully manual)',
   'settings.privacy.diagnostics':
-    '"About → Diagnostics" is generated only after you click, and everything can be previewed before export: app / format version, browser environment, storage overview and the last 50 AI request metadata records. No API Key, no Prompt text, no project data.',
+    '"About → Diagnostics" is generated only after you click, and everything can be previewed before export: app / format version, browser environment, storage overview, the last 50 AI request metadata records, and the hostnames of your configured AI providers (domain only, no path or key). No API Key, no Prompt text, no project data.',
   'settings.privacy.controlTitle': '4. You control your data at any time',
   'settings.privacy.controlExport': 'Export: bundle projects into a .dcopilot file via "Data & Backup" (no Key inside).',
   'settings.privacy.controlClear':

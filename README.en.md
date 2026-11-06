@@ -17,6 +17,8 @@ An account-free, local-first (IndexedDB), BYOK product discovery workspace that 
 
 English | [简体中文](./README.md)
 
+Not affiliated with Microsoft Discovery or GitHub Copilot. This is a local-first product discovery workbench.
+
 **Turn assumptions, experiments and reports into one complete discovery flow — the data never leaves your browser.**
 
 Live: <https://discovery-copilot-web.pages.dev>
@@ -116,7 +118,7 @@ location / {
 ## Security model
 
 - **The API Key lives in session memory only** (gone when the page closes): never written to IndexedDB or localStorage, never exported with `.dcopilot`, never placed in URLs, logs or diagnostics; there is no "remember key" feature. A Key entered while adding a Provider is also session-only. Re-enter the key after importing a backup on a new device.
-- Backup files (`.dcopilot`) and diagnostics contain no secrets; diagnostics hold only de-identified metadata (versions, browser environment, storage overview, last 50 AI request metadata records) with a full preview before export.
+- Backup files (`.dcopilot`) and diagnostics contain no secrets; diagnostics hold only de-identified metadata (versions, browser environment, storage overview, last 50 AI request metadata records, and the hostnames of your configured AI providers — domain only, no path or key) with a full preview before export.
 - AI output (including report Markdown) is sanitized with DOMPurify both for in-app rendering and exported files (protocol allow-list, XSS defense).
 - The app ships a full Privacy Policy and Terms of Use (with a disclaimer) in-app under Settings → About → Product & documents.
 
@@ -166,7 +168,7 @@ On the GitHub side: `.github/dependabot.yml` (weekly npm / GitHub Actions checks
 
 1. Score audit trail (score_events) does not migrate with `.dcopilot` (no key in the §7.2 format); current assumption scores migrate fully.
 2. PNG report export is best-effort (html-to-image may drift on complex gradients/custom fonts) — **use HTML export for faithful sharing**.
-3. Session-memory API keys mean re-entry after every refresh / browser restart (use "save for this session" in Settings).
+3. Session-memory API keys mean re-entry after every refresh / browser restart. "Save for this session" in Settings only keeps the key in the current page's memory for AI dialogs; it does not survive a refresh.
 4. Capacity limits (§5.4): <= 50 local projects, <= 200 assumptions / 300 OST nodes / 100 experiments / 20 reports per project; imports <= 20 MB per file.
 5. BYOK direct calls depend on each provider's CORS policy — use a compatible proxy for providers that block browsers (`pnpm probe:provider-cors` probes without a key).
 6. No auto-sync: **local data is the only copy** — export `.dcopilot` backups regularly (deleted projects are restorable from the recycle bin for 30 days).

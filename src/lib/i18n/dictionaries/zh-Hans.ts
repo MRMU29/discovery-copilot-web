@@ -282,7 +282,7 @@ export const zhHans = {
   'settings.about.resetting': '重置中…',
   'settings.about.diagnosticsTitle': '诊断包',
   'settings.about.diagnosticsDesc':
-    '导出脱敏元数据用于问题反馈：应用/格式版本、浏览器环境、存储概况与最近 50 条 AI 请求元数据。不含 API Key、Prompt 正文或任何项目数据；导出前可预览全部内容。',
+    '导出脱敏元数据用于问题反馈：应用/格式版本、浏览器环境、存储概况、最近 50 条 AI 请求元数据，以及你配置的 AI Provider 主机名（仅域名，不含路径与密钥）。不含 API Key、Prompt 正文或任何项目数据；导出前可预览全部内容。',
   'settings.about.diagnosticsAction': '预览诊断包…',
   'settings.about.diagnosticsBusy': '生成中…',
   'settings.about.docsTitle': '产品与文档',
@@ -400,7 +400,7 @@ export const zhHans = {
   'settings.privacy.flowHosting': '应用本身：页面与静态资源由托管平台（Cloudflare Pages）分发；本应用不接任何遥测、统计或崩溃上报服务。',
   'settings.privacy.diagnosticsTitle': '三、诊断包（完全手动）',
   'settings.privacy.diagnostics':
-    '「关于 → 诊断包」在你主动点击后才生成，导出前可预览全部内容：应用 / 格式版本、浏览器环境、存储概况与最近 50 条 AI 请求元数据。不含 API Key、Prompt 正文或任何项目数据。',
+    '「关于 → 诊断包」在你主动点击后才生成，导出前可预览全部内容：应用 / 格式版本、浏览器环境、存储概况、最近 50 条 AI 请求元数据，以及你配置的 AI Provider 主机名（仅域名，不含路径与密钥）。不含 API Key、Prompt 正文或任何项目数据。',
   'settings.privacy.controlTitle': '四、你随时可以控制数据',
   'settings.privacy.controlExport': '导出：通过「数据与备份」把项目打包为 .dcopilot 文件随身携带（不含 Key）。',
   'settings.privacy.controlClear': '清除：「清除项目数据」删除业务数据与本地快照；「初始化应用」会删除全部本地数据并归还存储空间。',

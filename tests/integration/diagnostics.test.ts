@@ -32,6 +32,7 @@ describe('buildDiagnosticReport (§6.4)', () => {
     expect(report.formatVersion).toBe(1)
     expect(report.generatedAt).toBeTruthy()
     expect(typeof report.userAgent).toBe('string')
+    expect(report.providerHosts).toEqual([])
     expect(report.aiRequests).toEqual([])
   })
 
@@ -52,6 +53,26 @@ describe('buildDiagnosticReport (§6.4)', () => {
       expect.arrayContaining(['providerId', 'model', 'promptId', 'promptVersion', 'status', 'errorCode']),
     )
     expect(keys.some((k) => /content|message|text|prompt(?!Id|Version)|statement|body/i.test(k))).toBe(false)
+  })
+
+  it('lists configured provider hostnames only — no path, query or key', async () => {
+    const base = {
+      label: 'Test',
+      kind: 'openai-compatible' as const,
+      model: 'test-model',
+      createdAt: '2026-10-05T00:00:00.000Z',
+    }
+    await db.ai_providers.bulkPut([
+      { ...base, id: 'p1', baseUrl: 'https://api.example.com/v1/chat?foo=bar' },
+      { ...base, id: 'p2', baseUrl: 'https://api.example.com/v1/other' },
+      { ...base, id: 'p3', baseUrl: 'not-a-url' },
+    ])
+    const report = await buildDiagnosticReport()
+    expect(report.providerHosts).toEqual(['api.example.com'])
+    const text = JSON.stringify(report)
+    expect(text).not.toContain('/v1/')
+    expect(text).not.toContain('foo=bar')
+    expect(text).not.toContain('not-a-url')
   })
 
   it('never embeds secrets or product data in the serialized report', async () => {

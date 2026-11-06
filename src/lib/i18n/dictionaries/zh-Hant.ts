@@ -274,7 +274,7 @@ export const zhHant: Dict = {
   'settings.about.resetting': '重置中…',
   'settings.about.diagnosticsTitle': '診斷包',
   'settings.about.diagnosticsDesc':
-    '匯出脫敏元資料用於問題回饋：應用/格式版本、瀏覽器環境、儲存概況與最近 50 條 AI 請求元資料。不含 API Key、Prompt 正文或任何專案資料；匯出前可預覽全部內容。',
+    '匯出脫敏元資料用於問題回饋：應用/格式版本、瀏覽器環境、儲存概況、最近 50 條 AI 請求元資料，以及你設定的 AI Provider 主機名稱（僅網域，不含路徑與金鑰）。不含 API Key、Prompt 正文或任何專案資料；匯出前可預覽全部內容。',
   'settings.about.diagnosticsAction': '預覽診斷包…',
   'settings.about.diagnosticsBusy': '產生中…',
   'settings.about.docsTitle': '產品與文件',
@@ -392,7 +392,7 @@ export const zhHant: Dict = {
   'settings.privacy.flowHosting': '應用本身：頁面與靜態資源由託管平台（Cloudflare Pages）分發；本應用不接任何遙測、統計或崩潰上報服務。',
   'settings.privacy.diagnosticsTitle': '三、診斷包（完全手動）',
   'settings.privacy.diagnostics':
-    '「關於 → 診斷包」在你主動點擊後才產生，匯出前可預覽全部內容：應用 / 格式版本、瀏覽器環境、儲存概況與最近 50 條 AI 請求元資料。不含 API Key、Prompt 正文或任何專案資料。',
+    '「關於 → 診斷包」在你主動點擊後才產生，匯出前可預覽全部內容：應用 / 格式版本、瀏覽器環境、儲存概況、最近 50 條 AI 請求元資料，以及你設定的 AI Provider 主機名稱（僅網域，不含路徑與金鑰）。不含 API Key、Prompt 正文或任何專案資料。',
   'settings.privacy.controlTitle': '四、你隨時可以控制資料',
   'settings.privacy.controlExport': '匯出：透過「資料與備份」把專案打包為 .dcopilot 檔案隨身攜帶（不含 Key）。',
   'settings.privacy.controlClear': '清除：「清除專案資料」刪除業務資料與本機快照；「初始化應用」會刪除全部本機資料並歸還儲存空間。',

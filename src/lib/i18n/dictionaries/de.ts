@@ -294,7 +294,7 @@ export const de: Dict = {
   'settings.about.resetting': 'Wird zurückgesetzt…',
   'settings.about.diagnosticsTitle': 'Diagnose',
   'settings.about.diagnosticsDesc':
-    'Anonymisierte Metadaten für Fehlermeldungen exportieren: App-/Formatversion, Browserumgebung, Speicherübersicht und die letzten 50 KI-Anfrage-Metadaten. Ohne API Key, ohne Prompt-Text und ohne Projektdaten; vor dem Export ist alles einsehbar.',
+    'Anonymisierte Metadaten für Fehlermeldungen exportieren: App-/Formatversion, Browserumgebung, Speicherübersicht, die letzten 50 KI-Anfrage-Metadaten sowie die Hostnamen deiner konfigurierten KI-Provider (nur Domain, ohne Pfad und Key). Ohne API Key, ohne Prompt-Text und ohne Projektdaten; vor dem Export ist alles einsehbar.',
   'settings.about.diagnosticsAction': 'Diagnose-Vorschau…',
   'settings.about.diagnosticsBusy': 'Wird erzeugt…',
   'settings.about.docsTitle': 'Produkt & Dokumente',
@@ -421,7 +421,7 @@ export const de: Dict = {
     'Die Anwendung selbst: Seiten und statische Ressourcen liefert die Hosting-Plattform (Cloudflare Pages) aus; Telemetrie, Statistik oder Crash-Reporting sind nicht eingebaut.',
   'settings.privacy.diagnosticsTitle': '3. Diagnose (vollständig manuell)',
   'settings.privacy.diagnostics':
-    '„Über → Diagnose“ entsteht erst nach deinem Klick und lässt sich vor dem Export vollständig ansehen: App-/Formatversion, Browserumgebung, Speicherübersicht und die letzten 50 KI-Anfrage-Metadaten. Kein API Key, kein Prompt-Text, keine Projektdaten.',
+    '„Über → Diagnose“ entsteht erst nach deinem Klick und lässt sich vor dem Export vollständig ansehen: App-/Formatversion, Browserumgebung, Speicherübersicht, die letzten 50 KI-Anfrage-Metadaten sowie die Hostnamen deiner konfigurierten KI-Provider (nur Domain, ohne Pfad und Key). Kein API Key, kein Prompt-Text, keine Projektdaten.',
   'settings.privacy.controlTitle': '4. Du kontrollierst deine Daten jederzeit',
   'settings.privacy.controlExport': 'Export: Projekte über „Daten & Backup“ als .dcopilot-Datei mitnehmen (ohne Keys).',
   'settings.privacy.controlClear':

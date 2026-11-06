@@ -285,7 +285,7 @@ export const ko: Dict = {
   'settings.about.resetting': '초기화 중…',
   'settings.about.diagnosticsTitle': '진단 패키지',
   'settings.about.diagnosticsDesc':
-    '문제 보고를 위해 비식별 메타데이터를 내보냅니다: 앱/형식 버전, 브라우저 환경, 저장 개요, 최근 50건의 AI 요청 메타데이터. API Key, Prompt 본문, 프로젝트 데이터는 포함되지 않으며 내보내기 전에 전체를 미리 볼 수 있습니다.',
+    '문제 보고를 위해 비식별 메타데이터를 내보냅니다: 앱/형식 버전, 브라우저 환경, 저장 개요, 최근 50건의 AI 요청 메타데이터, 그리고 설정한 AI Provider 호스트 이름(도메인만, 경로·Key 미포함). API Key, Prompt 본문, 프로젝트 데이터는 포함되지 않으며 내보내기 전에 전체를 미리 볼 수 있습니다.',
   'settings.about.diagnosticsAction': '진단 패키지 미리 보기…',
   'settings.about.diagnosticsBusy': '생성 중…',
   'settings.about.docsTitle': '제품과 문서',
@@ -406,7 +406,7 @@ export const ko: Dict = {
   'settings.privacy.flowHosting': '앱 자체: 페이지와 정적 자원은 호스팅 플랫폼(Cloudflare Pages)이 전달하며, 텔레메트리·통계·크래시 리포트 기능이 없습니다.',
   'settings.privacy.diagnosticsTitle': '3. 진단 패키지(완전 수동)',
   'settings.privacy.diagnostics':
-    '"정보 → 진단 패키지"는 내가 클릭한 후에만 생성되며 내보내기 전에 전체를 미리 볼 수 있습니다: 앱/형식 버전, 브라우저 환경, 저장 개요, 최근 50건의 AI 요청 메타데이터. API Key, Prompt 본문, 프로젝트 데이터는 없습니다.',
+    '"정보 → 진단 패키지"는 내가 클릭한 후에만 생성되며 내보내기 전에 전체를 미리 볼 수 있습니다: 앱/형식 버전, 브라우저 환경, 저장 개요, 최근 50건의 AI 요청 메타데이터, 그리고 설정한 AI Provider 호스트 이름(도메인만, 경로·Key 미포함). API Key, Prompt 본문, 프로젝트 데이터는 없습니다.',
   'settings.privacy.controlTitle': '4. 언제든 데이터를 통제할 수 있습니다',
   'settings.privacy.controlExport': '내보내기: "데이터와 백업"으로 프로젝트를 .dcopilot 파일로 들고 다닐 수 있습니다(Key 미포함).',
   'settings.privacy.controlClear': '삭제: 「프로젝트 데이터 삭제」는 업무 데이터와 로컬 스냅샷을 삭제합니다; 「앱 초기화」는 모든 로컬 데이터를 삭제하고 저장 공간을 반환합니다.',
