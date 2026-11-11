@@ -181,12 +181,13 @@ GitHub 仓库端：本仓库已配置 `.github/dependabot.yml`（npm / GitHub Ac
 
 ## 许可证与致谢
 
-本项目采用 [MIT](./LICENSE) 许可，Copyright (c) 2026 MRMU29。
+本项目自有源代码、文档与原创素材采用 [MIT](./LICENSE) 许可（Copyright (c) 2026 MRMU29）：可自由使用、修改与分发（含商用），须保留版权与许可声明。完整声明见 [NOTICE](./NOTICE)。
 
-**致谢**
+**第三方依赖**：仓库不复制第三方源码，依赖经 npm 安装并各自适用其许可。静态构建会把部分依赖打包进 `dist`，因此随产物分发 [`THIRD_PARTY_LICENSES.txt`](./public/THIRD_PARTY_LICENSES.txt)（线上访问 `/THIRD_PARTY_LICENSES.txt`），列出全部 63 个随产物分发的包、SPDX 与许可全文；其中含 Apache-2.0 的 Dexie `NOTICE`、`marked` 的三段许可文本、BSD-3-Clause 的 d3-ease 版权行。运行时依赖全为宽松许可（MIT / ISC / Apache-2.0 / BSD-3-Clause / 0BSD / MIT AND ISC，以及 DOMPurify 的 `MPL-2.0 OR Apache-2.0` 双许可，本项目选 Apache-2.0 分支），**无 GPL / AGPL / SSPL 或非商业许可**。构建期的 MPL-2.0（lightningcss）与 CC-BY-4.0（caniuse-lite 数据）不进入产物。
 
-- React、Vite、Tailwind CSS、Dexie、React Router、dnd-kit、Recharts、Zod、marked、DOMPurify、html-to-image、Vitest 等上游项目，按各自许可证经 npm 依赖使用（见 `package.json`）。
+**AI 生成素材**：`public/brand-icon.jpg` 由 AI 生成（豆包）。依据《豆包用户协议》§9.1 平台不主张输出内容所有权、§9.2 上传与发布内容归用户，该图按本仓库 MIT 许可一并分发；文件元数据中的 AI 生成隐式标识按 §6.4 保留、不得删除，本段同时作为发布时的显式 AI 生成标识。界面图标为项目自绘内联 SVG，`screenshots/` 为本项目界面截图，未内嵌第三方字体。
 
+**致谢**：React、Vite、Tailwind CSS、Dexie、React Router、dnd-kit、Recharts、Zod、marked、DOMPurify、html-to-image、Vitest 等上游项目，按各自许可证经 npm 依赖使用（见 `package.json`）。
 ---
 
 <div align="center">

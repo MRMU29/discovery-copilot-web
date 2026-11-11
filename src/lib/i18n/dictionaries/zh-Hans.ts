@@ -335,7 +335,7 @@ export const zhHans = {
   'settings.product.p4.desc': 'AI 只提建议：识别结果、实验草稿、报告改写都要经你确认后才会写入数据。',
   'settings.product.openSourceTitle': '开源',
   'settings.product.openSourceBody':
-    '项目以 MIT 许可开源：可以自由使用、修改与分发。开源依赖清单以 package.json 为准；界面图标为项目自绘内联 SVG，应用图标为项目自有素材，均无第三方版权约束。欢迎通过仓库 Issues 反馈问题与建议。',
+    '项目以 MIT 许可开源：可以自由使用、修改与分发。开源依赖清单以 package.json 为准，随产物分发的第三方许可全文见 THIRD_PARTY_LICENSES.txt 与 NOTICE；界面图标为项目自绘内联 SVG，应用图标由 AI 生成（豆包），依平台条款权利归用户并随 MIT 许可分发，已保留 AI 生成标识。欢迎通过仓库 Issues 反馈问题与建议。',
   'settings.product.moreTitle': '延伸阅读',
   'settings.product.linkPrivacyDesc': '数据存在哪、什么情况下会离开你的设备',
   'settings.product.linkTermsDesc': '使用条款与免责声明',
@@ -368,7 +368,7 @@ export const zhHans = {
   'settings.terms.s6.p1':
     '你承诺在合法范围内使用本应用，不得将其用于任何违反适用法律或侵犯他人合法权益的活动；通过本应用向第三方服务发送的内容，由你对其合法性与权利归属负责。',
   'settings.terms.s7.title': '七、知识产权',
-  'settings.terms.s7.p1': '本应用的源代码以 MIT 许可开源，你可以依据该许可自由使用、修改与分发。应用图标与界面图标为项目自有素材。',
+  'settings.terms.s7.p1': '本应用的源代码以 MIT 许可开源，你可以依据该许可自由使用、修改与分发。界面图标为项目自绘内联 SVG；应用图标由 AI 生成，依平台条款权利归用户并随本仓库 MIT 许可分发，文件内的 AI 生成标识予以保留。第三方依赖各自适用其许可，详见 THIRD_PARTY_LICENSES.txt 与 NOTICE。',
   'settings.terms.s8.title': '八、免责声明',
   'settings.terms.s8.p1':
     '本应用不承诺无错误、不间断运行或适用于任何特定用途；不对适销性、不侵权或输出准确性提供任何明示或默示的担保。使用本应用的风险由你自行承担。',

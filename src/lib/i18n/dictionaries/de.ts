@@ -349,7 +349,7 @@ export const de: Dict = {
   'settings.product.p4.desc': 'Die KI schlägt nur vor: Identifikationsergebnisse, Experimententwürfe und Berichtsüberarbeitungen landen erst nach deiner Bestätigung in den Daten.',
   'settings.product.openSourceTitle': 'Open Source',
   'settings.product.openSourceBody':
-    'Das Projekt ist unter der MIT-Lizenz quelloffen: freie Nutzung, Änderung und Verbreitung. Open-Source-Abhängigkeiten stehen in package.json; Oberflächensymbole sind selbstgezeichnete Inline-SVGs, das App-Icon ist eigenes Material — keine urheberrechtlichen Einschränkungen durch Dritte. Feedback gern über Repository-Issues.',
+    'Das Projekt ist unter der MIT-Lizenz quelloffen: freie Nutzung, Änderung und Verbreitung. Die Abhängigkeiten stehen in package.json, die vollständigen Lizenztexte der im Build enthaltenen Drittanbieter in THIRD_PARTY_LICENSES.txt und NOTICE. Oberflächensymbole sind selbstgezeichnete Inline-SVGs; das App-Icon wurde mit Doubao per KI erzeugt, gehört nach den Plattformbedingungen dem Nutzer, wird im Rahmen der Projektrechte unter MIT verteilt und behält seine KI-Kennzeichnung. Feedback über Issues willkommen.',
   'settings.product.moreTitle': 'Weiterlesen',
   'settings.product.linkPrivacyDesc': 'Wo Daten liegen und wann sie dein Gerät verlassen',
   'settings.product.linkTermsDesc': 'Nutzungsbedingungen und Haftungsausschluss',
@@ -387,7 +387,7 @@ export const de: Dict = {
     'Du versicherst, die Anwendung im Rahmen geltenden Rechts zu nutzen und nicht für Handlungen, die gegen Gesetze oder Rechte anderer verstoßen; für Rechtmäßigkeit und Rechte an Inhalten, die du über die Anwendung an Drittdienste sendest, bist du verantwortlich.',
   'settings.terms.s7.title': '7. Geistiges Eigentum',
   'settings.terms.s7.p1':
-    'Der Quellcode der Anwendung ist unter der MIT-Lizenz quelloffen; du darfst ihn nach deren Bedingungen frei nutzen, ändern und verbreiten. App-Icon und Oberflächensymbole sind eigene Grafiken des Projekts.',
+    'Der Quellcode der Anwendung ist unter der MIT-Lizenz quelloffen; du darfst ihn nach deren Bedingungen frei nutzen, ändern und verbreiten. Oberflächensymbole sind selbstgezeichnete Inline-SVGs; das App-Icon ist KI-generiert, wird im Rahmen der Projektrechte unter MIT verteilt und behält seine KI-Kennzeichnung. Abhängigkeiten Dritter behalten ihre eigenen Lizenzen; siehe THIRD_PARTY_LICENSES.txt und NOTICE.',
   'settings.terms.s8.title': '8. Haftungsausschluss',
   'settings.terms.s8.p1':
     'Die Anwendung verspricht weder fehlerfreien noch unterbrechungsfreien Betrieb noch Eignung für einen bestimmten Zweck; es werden keine Garantien — weder ausdrücklich noch stillschweigend — für Marktgängigkeit, Rechtsfreiheit oder Ausgabegenauigkeit gegeben. Das Nutzungsrisiko trägst du.',

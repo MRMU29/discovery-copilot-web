@@ -349,7 +349,7 @@ export const fr: Dict = {
   'settings.product.p4.desc': 'L’IA ne fait que proposer : résultats d’identification, brouillons d’expériences et réécritures de rapports n’entrent dans vos données qu’après votre confirmation.',
   'settings.product.openSourceTitle': 'Open source',
   'settings.product.openSourceBody':
-    'Le projet est open source sous licence MIT : libre d’utilisation, de modification et de distribution. Les dépendances open source sont listées dans package.json ; les icônes d’interface sont des SVG en ligne dessinés sur mesure et l’icône de l’app est une création originale — aucune contrainte de droits tiers. Feedback bienvenu via les Issues du dépôt.',
+    'Le projet est open source sous licence MIT : libre d’utilisation, de modification et de distribution. Les dépendances sont listées dans package.json et les textes complets des licences tierces livrés avec le build se trouvent dans THIRD_PARTY_LICENSES.txt et NOTICE. Les icônes d’interface sont des SVG en ligne dessinés pour le projet ; l’icône de l’app a été générée par IA avec Doubao, appartient à l’utilisateur selon les conditions de la plateforme, est distribuée sous MIT dans la mesure des droits du projet et conserve son marquage IA. Vos retours sont bienvenus via les Issues.',
   'settings.product.moreTitle': 'Pour aller plus loin',
   'settings.product.linkPrivacyDesc': 'Où sont stockées les données et quand elles quittent votre appareil',
   'settings.product.linkTermsDesc': 'Conditions d’utilisation et avertissement',
@@ -387,7 +387,7 @@ export const fr: Dict = {
     'Vous vous engagez à utiliser l’Application dans le cadre de la loi et à ne pas l’employer pour des activités violant la loi applicable ou les droits d’autrui ; vous êtes responsable de la légalité et des droits sur les contenus envoyés à des services tiers via l’Application.',
   'settings.terms.s7.title': '7. Propriété intellectuelle',
   'settings.terms.s7.p1':
-    'Le code source de l’Application est open source sous licence MIT ; vous pouvez l’utiliser, le modifier et le distribuer librement selon cette licence. L’icône de l’app et les icônes d’interface sont des créations originales du projet.',
+    'Le code source de l’Application est open source sous licence MIT ; vous pouvez l’utiliser, le modifier et le distribuer librement selon cette licence. Les icônes d’interface sont des SVG en ligne dessinés pour le projet ; l’icône de l’app est générée par IA, distribuée sous MIT dans la mesure des droits du projet et conserve son marquage IA. Les dépendances tierces gardent leurs propres licences ; voir THIRD_PARTY_LICENSES.txt et NOTICE.',
   'settings.terms.s8.title': '8. Avertissement (disclaimer)',
   'settings.terms.s8.p1':
     'L’Application ne promet ni fonctionnement sans erreur, ni continuité de service, ni adéquation à un usage particulier ; aucune garantie — expresse ou implicite — n’est donnée quant à la qualité marchande, à la non-contrefaçon ou à l’exactitude des sorties. Vous assumez tous les risques liés à son utilisation.',

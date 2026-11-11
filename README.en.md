@@ -181,12 +181,13 @@ Unit + integration tests (Vitest, fake-indexeddb covering IndexedDB transactions
 
 ## License & credits
 
-This project is [MIT](./LICENSE) licensed, Copyright (c) 2026 MRMU29.
+The project's own source code, documentation and original assets are [MIT](./LICENSE) licensed (Copyright (c) 2026 MRMU29): free to use, modify and distribute, including commercially, provided the copyright and license notices are retained. The full declaration is in [NOTICE](./NOTICE).
 
-**Credits**
+**Third-party dependencies**: this repository vendors no third-party source code. Dependencies are installed from npm and remain under their own licenses. The static build bundles part of them into `dist`, so the build ships [`THIRD_PARTY_LICENSES.txt`](./public/THIRD_PARTY_LICENSES.txt) (served at `/THIRD_PARTY_LICENSES.txt`): the full list of 63 bundled packages, their SPDX identifiers and the applicable license texts, including the Dexie Apache-2.0 `NOTICE`, the three-part `marked` license and the BSD-3-Clause d3-ease copyright line. Every runtime dependency is permissive (MIT / ISC / Apache-2.0 / BSD-3-Clause / 0BSD / MIT AND ISC, plus DOMPurify's `MPL-2.0 OR Apache-2.0` dual license, of which this project selects the Apache-2.0 branch). **No GPL / AGPL / SSPL or non-commercial dependency is bundled.** Build-time-only MPL-2.0 (lightningcss) and CC-BY-4.0 (caniuse-lite data) never enter the build output.
 
-- Upstream projects used via npm dependencies under their respective licenses (see `package.json`): React, Vite, Tailwind CSS, Dexie, React Router, dnd-kit, Recharts, Zod, marked, DOMPurify, html-to-image, Vitest and others.
+**AI-generated asset**: `public/brand-icon.jpg` was generated with an AI image service (Doubao). Under the Doubao User Agreement §9.1 the service does not claim ownership of output content and §9.2 assigns uploaded/published content to the user; the image is distributed under this repository's MIT license to the extent the project holds rights in it. The embedded AI-generation implicit label in its metadata is retained and must not be removed (§6.4); this paragraph also serves as the explicit AI-generation label for publication. Interface icons are inline SVG geometry drawn for this project, `screenshots/` contains captures of this app's own UI, and no web fonts are bundled.
 
+**Credits**: upstream projects used via npm dependencies under their respective licenses (see `package.json`): React, Vite, Tailwind CSS, Dexie, React Router, dnd-kit, Recharts, Zod, marked, DOMPurify, html-to-image, Vitest and others.
 ---
 
 <div align="center">

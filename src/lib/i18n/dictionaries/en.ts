@@ -347,7 +347,7 @@ export const en: Dict = {
   'settings.product.p4.desc': 'AI only suggests: identification results, experiment drafts and report rewrites enter your data only after you confirm.',
   'settings.product.openSourceTitle': 'Open source',
   'settings.product.openSourceBody':
-    'The project is open source under the MIT license: free to use, modify and distribute. Open-source dependencies are listed in package.json; interface icons are hand-drawn inline SVGs and the app icon is original artwork — no third-party copyright constraints. Feedback and suggestions are welcome via repository Issues.',
+    'The project is open source under the MIT license: free to use, modify and distribute. Dependencies are listed in package.json, and the full third-party license texts shipped with the build are in THIRD_PARTY_LICENSES.txt and NOTICE. Interface icons are inline SVGs drawn for this project; the app icon was AI-generated with Doubao, is distributed under MIT to the extent the project holds rights in it under the platform terms, and retains its AI-generation label. Feedback is welcome via repository Issues.',
   'settings.product.moreTitle': 'Further reading',
   'settings.product.linkPrivacyDesc': 'Where data is stored and when it leaves your device',
   'settings.product.linkTermsDesc': 'Terms of use and the disclaimer',
@@ -385,7 +385,7 @@ export const en: Dict = {
     'You agree to use the Application lawfully and not for any activity that violates applicable law or infringes the rights of others; you are responsible for the legality and rights of content you send to third-party services through the Application.',
   'settings.terms.s7.title': '7. Intellectual property',
   'settings.terms.s7.p1':
-    'The source code of the Application is open source under the MIT license; you may use, modify and distribute it under that license. The app icon and interface icons are original project artwork.',
+    'The source code of the Application is open source under the MIT license; you may use, modify and distribute it under that license. Interface icons are inline SVGs drawn for this project; the app icon was AI-generated and is distributed under MIT to the extent the project holds rights in it, with its AI-generation label retained. Third-party dependencies keep their own licenses; see THIRD_PARTY_LICENSES.txt and NOTICE.',
   'settings.terms.s8.title': '8. Disclaimer',
   'settings.terms.s8.p1':
     'The Application carries no warranty of error-free or uninterrupted operation or fitness for any particular purpose; no warranty, express or implied, is given regarding merchantability, non-infringement or output accuracy. You assume all risk arising from using the Application.',

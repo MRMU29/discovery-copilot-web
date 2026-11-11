@@ -338,7 +338,7 @@ export const ko: Dict = {
   'settings.product.p4.desc': 'AI는 제안만 합니다: 추출 결과, 실험 초안, 보고서 수정은 내가 확인한 후에야 데이터에 기록됩니다.',
   'settings.product.openSourceTitle': '오픈소스',
   'settings.product.openSourceBody':
-    '이 프로젝트는 MIT 라이선스로 공개되어 자유로운 사용·수정·배포가 가능합니다. 오픈소스 의존성은 package.json 기준이며, 인터페이스 아이콘은 자체 제작 인라인 SVG, 앱 아이콘은 자체 소재로 제3자 저작권 제약이 없습니다. 저장소 Issues로 피드백을 환영합니다.',
+    '이 프로젝트는 MIT 라이선스로 공개되어 자유로운 사용·수정·배포가 가능합니다. 오픈소스 의존성은 package.json 기준이며, 빌드에 포함되는 제3자 라이선스 전문은 THIRD_PARTY_LICENSES.txt 와 NOTICE 에 있습니다. 인터페이스 아이콘은 자체 제작 인라인 SVG, 앱 아이콘은 AI 생성(더우바오)으로 플랫폼 약관에 따라 권리가 사용자에게 귀속되며 MIT 라이선스로 배포되고 AI 생성 표시를 유지합니다. 저장소 Issues로 피드백을 환영합니다.',
   'settings.product.moreTitle': '더 읽기',
   'settings.product.linkPrivacyDesc': '데이터가 어디에 저장되고 언제 기기 밖으로 나가는지',
   'settings.product.linkTermsDesc': '이용 조건과 면책 조항',
@@ -373,7 +373,7 @@ export const ko: Dict = {
   'settings.terms.s6.p1':
     '본 앱을 합법적 범위에서 사용하고 적용 법령 위반이나 타인의 권리 침해에 해당하는 활동에 사용하지 않을 것을 약속합니다. 본 앱을 통해 제3자 서비스로 보내는 내용의 적법성과 권리 귀속은 내가 책임집니다.',
   'settings.terms.s7.title': '7. 지식재산권',
-  'settings.terms.s7.p1': '본 앱의 소스 코드는 MIT 라이선스로 공개되며 해당 라이선스 조건 아래 자유로운 사용·수정·배포가 가능합니다. 앱 아이콘과 인터페이스 아이콘은 자체 소재입니다.',
+  'settings.terms.s7.p1': '본 앱의 소스 코드는 MIT 라이선스로 공개되며 해당 라이선스 조건 아래 자유로운 사용·수정·배포가 가능합니다. 인터페이스 아이콘은 자체 제작 인라인 SVG, 앱 아이콘은 AI 생성으로 프로젝트가 권리를 가지는 범위에서 MIT 라이선스로 배포되며 AI 생성 표시를 유지합니다. 제3자 의존성은 각자의 라이선스를 따릅니다. 자세한 내용은 THIRD_PARTY_LICENSES.txt 와 NOTICE 를 참조하세요.',
   'settings.terms.s8.title': '8. 면책 조항',
   'settings.terms.s8.p1':
     '본 앱은 오류 없음, 무중단 동작, 특정 용도 적합성을 약속하지 않으며 상품성, 비침해, 출력 정확성에 대해 명시적이든 묵시적이든 어떤 보증도 하지 않습니다. 본 앱 사용의 위험은 사용자가 부담합니다.',

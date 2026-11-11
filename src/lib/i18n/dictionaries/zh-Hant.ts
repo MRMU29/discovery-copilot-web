@@ -327,7 +327,7 @@ export const zhHant: Dict = {
   'settings.product.p4.desc': 'AI 只提建議：識別結果、實驗草稿、報告改寫都要經你確認後才會寫入資料。',
   'settings.product.openSourceTitle': '開源',
   'settings.product.openSourceBody':
-    '專案以 MIT 授權開源：可以自由使用、修改與散布。開源依賴清單以 package.json 為準；介面圖示為專案自繪內聯 SVG，應用圖示為專案自有素材，均無第三方版權約束。歡迎透過倉庫 Issues 回饋問題與建議。',
+    '專案以 MIT 授權開源：可以自由使用、修改與散布。開源依賴清單以 package.json 為準，隨產物分發的第三方許可全文見 THIRD_PARTY_LICENSES.txt 與 NOTICE；介面圖示為專案自繪內聯 SVG，應用圖示由 AI 生成（豆包），依平台條款權利歸用戶並隨 MIT 授權分發，已保留 AI 生成標識。歡迎透過倉庫 Issues 回饋問題與建議。',
   'settings.product.moreTitle': '延伸閱讀',
   'settings.product.linkPrivacyDesc': '資料存在哪、什麼情況下會離開你的裝置',
   'settings.product.linkTermsDesc': '使用條款與免責聲明',
@@ -360,7 +360,7 @@ export const zhHant: Dict = {
   'settings.terms.s6.p1':
     '你承諾在合法範圍內使用本應用，不得將其用於任何違反適用法律或侵犯他人合法權益的活動；透過本應用向第三方服務發送的內容，由你對其合法性與權利歸屬負責。',
   'settings.terms.s7.title': '七、知識產權',
-  'settings.terms.s7.p1': '本應用的原始碼以 MIT 授權開源，你可以依據該授權自由使用、修改與散布。應用圖示與介面圖示為專案自有素材。',
+  'settings.terms.s7.p1': '本應用的原始碼以 MIT 授權開源，你可以依據該授權自由使用、修改與散布。介面圖示為專案自繪內聯 SVG；應用圖示由 AI 生成，依平台條款權利歸用戶並隨本倉庫 MIT 授權分發，檔案內的 AI 生成標識予以保留。第三方依賴各自適用其許可，詳見 THIRD_PARTY_LICENSES.txt 與 NOTICE。',
   'settings.terms.s8.title': '八、免責聲明',
   'settings.terms.s8.p1':
     '本應用不承諾無錯誤、不中斷執行或適用於任何特定用途；不對適銷性、不侵權或輸出準確性提供任何明示或默示的擔保。使用本應用的風險由你自行承擔。',

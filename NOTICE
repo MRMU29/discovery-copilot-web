@@ -1,0 +1,38 @@
+Discovery Copilot — NOTICE
+=========================
+
+Project license: MIT (see LICENSE), Copyright (c) 2026 MRMU29.
+The MIT license covers the project's own source code, documentation and
+original assets. It does not relicense third-party software.
+
+Third-party software:
+  This repository does not vendor third-party source code. Dependencies are
+  installed from npm and remain under their own licenses. The static build
+  (Cloudflare Pages) bundles part of them, so the full list of bundled
+  packages, their SPDX identifiers and the applicable license texts are
+  distributed with the build as public/THIRD_PARTY_LICENSES.txt
+  (served at /THIRD_PARTY_LICENSES.txt). Runtime dependencies are all
+  permissive: MIT, ISC, Apache-2.0, BSD-3-Clause, 0BSD, MIT AND ISC, and
+  DOMPurify's (MPL-2.0 OR Apache-2.0) dual license (Apache-2.0 selected).
+  No GPL-only / AGPL / SSPL / non-commercial dependency is bundled.
+
+AI-generated asset notice:
+  public/brand-icon.jpg was generated with an AI image service (Doubao).
+  Under the Doubao User Agreement §9.1 the service does not claim ownership
+  of output content, and §9.2 assigns uploaded/published content to the
+  user; §9.4 reserves the platform's own rights in its service materials.
+  The image is distributed with this repository under the MIT license to
+  the extent the project holds rights in it. The embedded AI-generation
+  implicit label in the file metadata (product: doubao / anchorName: AI
+  image generation) is retained intentionally and must not be removed or
+  altered (Doubao User Agreement §6.4). This NOTICE serves as the explicit
+  AI-generation label for the published asset.
+
+Other assets:
+  Interface icons in src/components/ui/icons.tsx are inline SVG geometry
+  drawn for this project. The screenshots in screenshots/ are captures of
+  this application's own interface. No web fonts are bundled; the UI uses
+  system font stacks.
+
+Full one-hand license verification ledger is kept in the project workspace
+(outside this repository) and is not distributed with the source.
