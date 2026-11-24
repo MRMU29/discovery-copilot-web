@@ -1,6 +1,6 @@
 /** §3.1 route contract: /project/:projectId/<section>, flat child routes, ≤3 segments. */
 
-export const PROJECT_SECTIONS = ['overview', 'assumptions', 'experiments', 'ost', 'report'] as const
+export const PROJECT_SECTIONS = ['overview', 'assumptions', 'experiments', 'ost', 'report', 'decisions'] as const
 
 export type ProjectSection = (typeof PROJECT_SECTIONS)[number]
 
@@ -11,6 +11,7 @@ export const SECTION_LABELS: Record<ProjectSection, string> = {
   experiments: 'nav.section.experiments',
   ost: 'nav.section.ost',
   report: 'nav.section.report',
+  decisions: 'nav.section.decisions',
 }
 
 /**

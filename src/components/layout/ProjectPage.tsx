@@ -11,6 +11,7 @@ const Assumptions = lazy(() => import('@/pages/project/Assumptions'))
 const Experiments = lazy(() => import('@/pages/project/Experiments'))
 const Ost = lazy(() => import('@/pages/project/Ost'))
 const Report = lazy(() => import('@/pages/project/Report'))
+const Decisions = lazy(() => import('@/pages/project/Decisions'))
 
 const SECTION_COMPONENTS: Record<ProjectSection, React.LazyExoticComponent<React.ComponentType<{ projectId: string }>>> = {
   overview: Overview,
@@ -18,6 +19,7 @@ const SECTION_COMPONENTS: Record<ProjectSection, React.LazyExoticComponent<React
   experiments: Experiments,
   ost: Ost,
   report: Report,
+  decisions: Decisions,
 }
 
 const tabClass = ({ isActive }: { isActive: boolean }) =>
@@ -97,7 +99,7 @@ export default function ProjectPage() {
         aria-label={t('nav.sections')}
         className="fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-surface-1 shadow-pop md:hidden"
       >
-        <div className="mx-auto grid max-w-6xl grid-cols-5 pb-[max(env(safe-area-inset-bottom),0.375rem)] pt-1">
+        <div className="mx-auto grid max-w-6xl grid-cols-6 pb-[max(env(safe-area-inset-bottom),0.375rem)] pt-1">
           {PROJECT_SECTIONS.map((s) => (
             <NavLink
               key={s}

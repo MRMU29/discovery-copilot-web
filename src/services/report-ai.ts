@@ -3,7 +3,7 @@ import { buildReportPrompt } from '@/ai/prompts/builders'
 import { resolvePricing } from '@/ai/pricing'
 import { runAi } from '@/ai/run'
 import type { AIProvider, GenerateJSONResult } from '@/ai/types'
-import { assumptionsRepo, experimentsRepo, ostRepo, projectsRepo } from '@/db/repositories'
+import { assumptionsRepo, decisionsRepo, experimentsRepo, ostRepo, projectsRepo } from '@/db/repositories'
 import { zhHans } from '@/lib/i18n/dictionaries/zh-Hans'
 import { nowIso } from '@/lib/clock'
 import { DomainError } from '@/lib/errors'
@@ -52,6 +52,12 @@ const EXPERIMENT_STATUS_LABELS = {
   dropped: '已放弃',
 } as const
 
+const EXPERIMENT_OUTCOME_LABELS = {
+  supported: '支持',
+  refuted: '推翻',
+  inconclusive: '不确定',
+} as const
+
 const OST_TYPE_LABELS = {
   outcome: '目标结果',
   opportunity: '机会痛点',
@@ -69,9 +75,10 @@ export async function buildReportContext(projectId: string): Promise<string> {
   if (!project || project.deletedAt) {
     throw new DomainError('NOT_FOUND', `项目不存在或已在回收站: ${projectId}`)
   }
-  const [assumptions, experiments, nodes] = await Promise.all([
+  const [assumptions, experiments, decisions, nodes] = await Promise.all([
     assumptionsRepo.byProject(projectId),
     experimentsRepo.byProject(projectId),
+    decisionsRepo.byProject(projectId),
     ostRepo.byProject(projectId),
   ])
 
@@ -99,17 +106,40 @@ export async function buildReportContext(projectId: string): Promise<string> {
     const lines = experiments.map((e) => {
       const linked = e.assumptionId ? (assumptionById.get(e.assumptionId)?.statement ?? null) : null
       const status = EXPERIMENT_STATUS_LABELS[e.status] ?? e.status
+      const outcome = e.outcome ? `结论：${EXPERIMENT_OUTCOME_LABELS[e.outcome]}` : null
+      const metric = e.metric && e.actualValue ? `指标：${e.metric} = ${e.actualValue}` : null
       const parts = [
         linked ? `针对假设「${linked}」` : '未关联假设',
         e.hypothesis,
         `方法：${e.method}`,
         e.successCriteria ? `成功标准：${e.successCriteria}` : null,
         `状态：${status}`,
+        outcome,
+        metric,
         e.result ? `结果：${e.result}` : null,
       ].filter((p): p is string => p !== null)
       return `- ${parts.join('｜')}`
     })
     blocks.push(`### 验证实验\n${lines.join('\n')}`)
+  }
+
+  if (decisions.length > 0) {
+    const lines = [...decisions]
+      .sort((a, b) => b.decidedAt.localeCompare(a.decidedAt))
+      .map((d) => {
+        const links: string[] = []
+        if (d.linkedAssumptionIds.length > 0) links.push(`${d.linkedAssumptionIds.length} 条假设`)
+        if (d.linkedExperimentIds.length > 0) links.push(`${d.linkedExperimentIds.length} 个实验`)
+        const prefix = d.status === 'superseded' ? '（已推翻）' : ''
+        const parts = [
+          `${prefix}${d.decidedAt.slice(0, 10)} ${d.statement}`,
+          d.rationale ? `依据：${d.rationale}` : null,
+          links.length > 0 ? `关联：${links.join(' / ')}` : null,
+          d.status === 'superseded' && d.supersededAt ? `推翻于 ${d.supersededAt.slice(0, 10)}` : null,
+        ].filter((p): p is string => p !== null)
+        return `- ${parts.join('｜')}`
+      })
+    blocks.push(`### 决策记录\n${lines.join('\n')}`)
   }
 
   if (nodes.length > 0) {
