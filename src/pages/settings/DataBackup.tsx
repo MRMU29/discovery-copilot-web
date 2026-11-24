@@ -22,12 +22,25 @@ import {
   type ImportSummary,
 } from '@/services/backup'
 import { clearProductData } from '@/services/maintenance'
+import { scanDataHealth, repairHealthIssue, type HealthIssue, type HealthReport } from '@/services/health'
 import { updateSettings } from '@/services/settings'
 import { nowIso } from '@/lib/clock'
 import { listActiveProjects, listDeletedProjects } from '@/services/projects'
 
 function formatBytes(bytes: number | null): string {
   return bytes != null ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : '—'
+}
+
+/** Stable list key: one row can carry several broken links (different fields). */
+function issueKey(issue: HealthIssue): string {
+  return `${issue.kind}|${issue.table}|${issue.entityId}|${issue.detail?.field ?? ''}|${issue.detail?.refId ?? ''}`
+}
+
+const HEALTH_KIND_KEYS: Record<HealthIssue['kind'], string> = {
+  orphan: 'health.kind.orphan',
+  'broken-link': 'health.kind.brokenLink',
+  cycle: 'health.kind.cycle',
+  'over-capacity': 'health.kind.overCapacity',
 }
 
 const STRATEGY_OPTIONS: { value: ConflictStrategy; labelKey: string; hintKey: string }[] = [
@@ -74,6 +87,11 @@ export default function DataBackup() {
   const [strategy, setStrategy] = useState<ConflictStrategy>('copy')
   const [restoreSettings, setRestoreSettings] = useState(true)
   const [importing, setImporting] = useState(false)
+  const [healthReport, setHealthReport] = useState<HealthReport | null>(null)
+  const [scanning, setScanning] = useState(false)
+  const [repairingKey, setRepairingKey] = useState<string | null>(null)
+  const [healthError, setHealthError] = useState<string | null>(null)
+  const [healthNotice, setHealthNotice] = useState<string | null>(null)
 
   const projectRows = useLiveQuery(async () => {
     const [active, deleted] = await Promise.all([listActiveProjects(), listDeletedProjects()])
@@ -102,6 +120,37 @@ export default function DataBackup() {
 
   async function handlePersist() {
     setPersist((await requestPersistent()) ? 'granted' : 'denied')
+  }
+
+  async function handleScanHealth() {
+    setScanning(true)
+    setHealthError(null)
+    setHealthNotice(null)
+    try {
+      setHealthReport(await scanDataHealth())
+    } catch (err) {
+      setHealthError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setScanning(false)
+    }
+  }
+
+  async function handleRepair(issue: HealthIssue) {
+    if (!window.confirm(t('settings.dataBackup.healthRepairConfirm'))) return
+    const key = issueKey(issue)
+    setRepairingKey(key)
+    setHealthError(null)
+    setHealthNotice(null)
+    try {
+      await repairHealthIssue(issue)
+      // Re-scan so the list reflects reality instead of a locally patched copy.
+      setHealthReport(await scanDataHealth())
+      setHealthNotice(t('settings.dataBackup.healthRepaired'))
+    } catch (err) {
+      setHealthError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setRepairingKey(null)
+    }
   }
 
   async function handleClearData() {
@@ -380,6 +429,87 @@ export default function DataBackup() {
               </li>
             ))}
           </ul>
+        )}
+      </section>
+
+      <section aria-label={t('settings.dataBackup.healthHeading')} className="rounded-lg border border-hairline bg-surface-1 p-4">
+        <h3 className="text-eyebrow text-ink-muted">{t('settings.dataBackup.healthHeading')}</h3>
+        <p className="mt-2 text-caption text-ink-faint">{t('settings.dataBackup.healthDesc')}</p>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <Button variant="secondary" onClick={() => void handleScanHealth()} disabled={scanning}>
+            {scanning ? t('settings.dataBackup.healthScanning') : t('settings.dataBackup.healthScan')}
+          </Button>
+          {healthReport && (
+            <span className="text-caption text-ink-faint">
+              {t('settings.dataBackup.healthScannedAt', { when: formatWhen(healthReport.scannedAt) })}
+            </span>
+          )}
+        </div>
+
+        {healthNotice && (
+          <p role="status" className="mt-2 text-body-sm text-success">
+            {healthNotice}
+          </p>
+        )}
+        {healthError && (
+          <p role="alert" className="mt-2 text-body-sm text-danger">
+            {healthError}
+          </p>
+        )}
+
+        {healthReport && healthReport.issues.length === 0 && (
+          <p role="status" className="mt-3 text-body-sm text-success">
+            {t('settings.dataBackup.healthClean', {
+              rows: Object.values(healthReport.counts).reduce((sum, value) => sum + value, 0),
+            })}
+          </p>
+        )}
+
+        {healthReport && healthReport.issues.length > 0 && (
+          <>
+            <p className="mt-3 text-caption text-ink-secondary">
+              {t('settings.dataBackup.healthSummary', { count: healthReport.issues.length })}
+            </p>
+            <ul className="mt-2 space-y-2">
+              {healthReport.issues.map((issue) => {
+                const key = issueKey(issue)
+                const label =
+                  issue.label.length > 80 ? `${issue.label.slice(0, 80)}…` : issue.label
+                return (
+                  <li
+                    key={key}
+                    className="flex flex-col gap-2 rounded-btn border border-hairline bg-surface-2 px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <span className="min-w-0 flex-1 text-body-sm text-ink-secondary">
+                      <span className="mr-2 rounded-full border border-hairline bg-surface-1 px-1.5 text-caption text-ink-muted">
+                        {t(HEALTH_KIND_KEYS[issue.kind])}
+                      </span>
+                      {label || issue.entityId}
+                      {issue.kind === 'over-capacity' && issue.detail && (
+                        <span className="ml-2 text-caption text-danger">
+                          {t('health.detail.overCapacity', {
+                            count: issue.detail.count ?? 0,
+                            limit: issue.detail.limit ?? 0,
+                          })}
+                        </span>
+                      )}
+                    </span>
+                    {issue.kind !== 'over-capacity' && (
+                      <Button
+                        variant="ghost"
+                        onClick={() => void handleRepair(issue)}
+                        disabled={repairingKey !== null}
+                      >
+                        {repairingKey === key
+                          ? t('settings.dataBackup.healthRepairing')
+                          : t('settings.dataBackup.healthRepair')}
+                      </Button>
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
+          </>
         )}
       </section>
 
