@@ -3,7 +3,6 @@ import type { Dict } from '../index'
 /** Русский (ru) — таблица терминов: см. шапку файла zh-Hans.ts. */
 export const ru: Dict = {
   // ---- app / shell ----
-  'app.tagline': 'Рабочее пространство продуктового поиска — без аккаунтов, всё локально',
   'shell.settings': 'Настройки',
   'shell.offline': 'Устройство офлайн: AI-вызовы недоступны; локальные функции и данные не затронуты.',
   'shell.toggleToDark': 'Переключить на тёмную тему',
@@ -59,6 +58,10 @@ export const ru: Dict = {
   'dashboard.create': 'Создать проект',
   'dashboard.creating': 'Создание…',
   'dashboard.loadSample': 'Загрузить пример проекта',
+  'dashboard.backupHeading': 'Состояние резервных копий',
+  'dashboard.backupNever': 'Этот браузер хранит единственную копию, а экспорт .dcopilot ещё не делался.',
+  'dashboard.backupStale': 'Экспорта не было {days} дней — этот браузер хранит единственную копию.',
+  'dashboard.backupCta': 'Экспортировать копию',
   'dashboard.loadingSample': 'Загрузка…',
   'dashboard.emptyTitle': 'Пока нет проектов',
   'dashboard.emptyDesc':
@@ -73,9 +76,6 @@ export const ru: Dict = {
   'dashboard.confirmHardDelete': 'Удалить навсегда «{name}» и все его данные? Действие необратимо.',
   'dashboard.hintNameGood': 'Доставка свежего корма для питомцев · пилот',
   'dashboard.hintNameBad': 'Великий проект',
-  'dashboard.hintDescGood':
-    'Семьи с кошками в крупных городах, тратящие от 500 юаней в месяц на питомцев (кого); хотят кормить свежим кормом, но нет времени готовить (проблема); хотят справляться с недельным кормлением за 30 минут (ожидаемый результат).',
-  'dashboard.hintDescBad': 'Сделать великий продукт, который изменит индустрию питомцев.',
 
   // ---- welcome / onboarding ----
   'welcome.title1': 'Добро пожаловать в Discovery Copilot',
@@ -240,6 +240,9 @@ export const ru: Dict = {
   'settings.dataBackup.createSnapshot': 'Создать снимок сейчас',
   'settings.dataBackup.creatingSnapshot': 'Создание…',
   'settings.dataBackup.snapshotDone': 'Локальный снимок создан ({count} проектов).',
+  'settings.dataBackup.snapshotPruneConfirm': 'Уже есть {keep} локальных снимка; новый удалит самый старый по бюджету количества и размера. Скачайте его заранее, если он нужен. Продолжить?',
+  'settings.dataBackup.snapshotDonePruned': 'Снимок создан ({count} проектов); удалено старых снимков сверх бюджета: {pruned}.',
+  'settings.dataBackup.snapshotBudget': 'Снимки: {size} МБ из бюджета {budget} МБ (хранятся последние {keep})',
   'settings.dataBackup.noSnapshots': 'Снимков пока нет.',
   'settings.dataBackup.snapshotRestore': 'Восстановить…',
   'settings.dataBackup.snapshotDownload': 'Скачать',

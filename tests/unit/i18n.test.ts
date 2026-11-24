@@ -43,18 +43,18 @@ describe('dictionaries — key parity with zh-Hans', () => {
 })
 
 describe('translate', () => {
-  it('resolves keys in the active locale', () => {
-    setLocale('en')
+  it('resolves keys in the active locale', async () => {
+    await setLocale('en')
     expect(getLocale()).toBe('en')
     expect(translate('common.cancel')).toBe(en['common.cancel'])
-    setLocale('zh-Hans')
+    await setLocale('zh-Hans')
     expect(translate('common.cancel')).toBe(zhHans['common.cancel'])
   })
 
-  it('interpolates {params}', () => {
-    setLocale('en')
+  it('interpolates {params}', async () => {
+    await setLocale('en')
     expect(translate('dashboard.trash', { count: 3 })).toBe('Recycle bin (3)')
-    setLocale('zh-Hans')
+    await setLocale('zh-Hans')
     expect(translate('dashboard.trash', { count: 3 })).toBe('回收站（3）')
   })
 

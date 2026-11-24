@@ -66,3 +66,37 @@ describe('AI error taxonomy (§6.2)', () => {
     }
   })
 })
+
+describe('requestJson abort composition', () => {
+  const hang = ((_url: string, init?: RequestInit) =>
+    new Promise((_resolve, reject) => {
+      init?.signal?.addEventListener('abort', () => reject(init.signal!.reason))
+    })) as unknown as typeof fetch
+
+  it('times out without AbortSignal.timeout (Safari 16 path)', async () => {
+    const saved = AbortSignal.timeout
+    // Simulate a browser that lacks the static helper entirely.
+    // @ts-expect-error — deliberately remove the API
+    AbortSignal.timeout = undefined
+    try {
+      await expect(
+        requestJson({ url: 'https://api.test/v1', headers: {}, timeoutMs: 10, fetchImpl: hang }),
+      ).rejects.toMatchObject({ code: 'TIMEOUT' })
+    } finally {
+      AbortSignal.timeout = saved
+    }
+  })
+
+  it('treats a caller abort as ABORTED', async () => {
+    const controller = new AbortController()
+    const promise = requestJson({
+      url: 'https://api.test/v1',
+      headers: {},
+      timeoutMs: 5000,
+      signal: controller.signal,
+      fetchImpl: hang,
+    })
+    controller.abort()
+    await expect(promise).rejects.toMatchObject({ code: 'ABORTED' })
+  })
+})

@@ -3,7 +3,6 @@ import type { Dict } from '../index'
 /** Français (fr) — table des termes : voir l'en-tête de zh-Hans.ts. */
 export const fr: Dict = {
   // ---- app / shell ----
-  'app.tagline': 'Espace de travail de découverte produit, sans compte et tout en local',
   'shell.settings': 'Paramètres',
   'shell.offline': 'Cet appareil est hors ligne : les appels IA sont indisponibles ; les fonctions et données locales ne sont pas affectées.',
   'shell.toggleToDark': 'Passer en mode sombre',
@@ -59,6 +58,10 @@ export const fr: Dict = {
   'dashboard.create': 'Créer le projet',
   'dashboard.creating': 'Création…',
   'dashboard.loadSample': 'Charger le projet d’exemple',
+  'dashboard.backupHeading': 'Santé des sauvegardes',
+  'dashboard.backupNever': 'Ce navigateur détient la seule copie et aucun export .dcopilot n’a encore été fait.',
+  'dashboard.backupStale': 'Aucun export depuis {days} jours — ce navigateur détient la seule copie.',
+  'dashboard.backupCta': 'Exporter une sauvegarde',
   'dashboard.loadingSample': 'Chargement…',
   'dashboard.emptyTitle': 'Aucun projet pour l’instant',
   'dashboard.emptyDesc':
@@ -74,9 +77,6 @@ export const fr: Dict = {
   'dashboard.confirmHardDelete': 'Supprimer définitivement « {name} » et toutes ses données ? C’est irréversible.',
   'dashboard.hintNameGood': 'Livraison de nourriture fraîche pour animaux · pilote',
   'dashboard.hintNameBad': 'Un projet génial',
-  'dashboard.hintDescGood':
-    'Foyers avec chat dans les grandes villes dépensant 500+ CNY/mois pour l’animal (qui) ; veulent nourrir frais mais n’ont pas le temps de préparer (problème) ; espèrent gérer une semaine de repas en 30 minutes (résultat attendu).',
-  'dashboard.hintDescBad': 'Créer un produit génial qui révolutionne l’industrie des animaux.',
 
   // ---- welcome / onboarding ----
   'welcome.title1': 'Bienvenue dans Discovery Copilot',
@@ -242,6 +242,9 @@ export const fr: Dict = {
   'settings.dataBackup.createSnapshot': 'Créer un instantané maintenant',
   'settings.dataBackup.creatingSnapshot': 'Création…',
   'settings.dataBackup.snapshotDone': 'Instantané local créé ({count} projets).',
+  'settings.dataBackup.snapshotPruneConfirm': 'Vous avez déjà {keep} instantanés locaux ; en créer un supprime le plus ancien selon le budget de nombre et de taille. Téléchargez-le d’abord si vous voulez le garder. Continuer ?',
+  'settings.dataBackup.snapshotDonePruned': 'Instantané créé ({count} projets) et {pruned} instantané(s) hors budget supprimé(s).',
+  'settings.dataBackup.snapshotBudget': 'Instantanés : {size} Mo sur un budget de {budget} Mo (les {keep} plus récents sont conservés)',
   'settings.dataBackup.noSnapshots': 'Aucun instantané pour l’instant.',
   'settings.dataBackup.snapshotRestore': 'Restaurer…',
   'settings.dataBackup.snapshotDownload': 'Télécharger',

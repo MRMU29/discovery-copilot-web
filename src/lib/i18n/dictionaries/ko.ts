@@ -3,7 +3,6 @@ import type { Dict } from '../index'
 /** 한국어 (ko) — 용어 대조표는 zh-Hans.ts 파일 머리글을 참고. */
 export const ko: Dict = {
   // ---- app / shell ----
-  'app.tagline': '계정 없는 로컬 퍼스트 제품 디스커버리 워크스페이스',
   'shell.settings': '설정',
   'shell.offline': '이 기기는 오프라인 상태입니다: AI 호출을 사용할 수 없으며, 로컬 기능과 데이터는 영향을 받지 않습니다.',
   'shell.toggleToDark': '다크 모드로 전환',
@@ -58,6 +57,10 @@ export const ko: Dict = {
   'dashboard.create': '프로젝트 만들기',
   'dashboard.creating': '만드는 중…',
   'dashboard.loadSample': '예시 프로젝트 불러오기',
+  'dashboard.backupHeading': '백업 상태',
+  'dashboard.backupNever': '이 브라우저가 유일한 사본이며 아직 .dcopilot 백업을 내보내지 않았습니다.',
+  'dashboard.backupStale': '{days}일 동안 백업을 내보내지 않았습니다. 이 브라우저가 유일한 사본입니다.',
+  'dashboard.backupCta': '백업 내보내기',
   'dashboard.loadingSample': '불러오는 중…',
   'dashboard.emptyTitle': '아직 프로젝트가 없어요',
   'dashboard.emptyDesc':
@@ -72,9 +75,6 @@ export const ko: Dict = {
   'dashboard.confirmHardDelete': '"{name}"과 모든 데이터를 영구 삭제할까요? 이 작업은 되돌릴 수 없습니다.',
   'dashboard.hintNameGood': '반려동물 생식 배달 · 파일럿 버전',
   'dashboard.hintNameBad': '위대한 프로젝트',
-  'dashboard.hintDescGood':
-    '도시권 거주, 반려동물 지출 월 500위안 이상 고양이 가정(누구에게); 생식을 주고 싶지만 만들 시간이 없음(문제); 주 30분에 일주일 먹이 주기 해결(기대 결과).',
-  'dashboard.hintDescBad': '반려동물 업계를 바꿀 위대한 제품 만들기.',
 
   // ---- welcome / onboarding ----
   'welcome.title1': 'Discovery Copilot에 오신 것을 환영합니다',
@@ -234,6 +234,9 @@ export const ko: Dict = {
   'settings.dataBackup.createSnapshot': '지금 스냅샷 만들기',
   'settings.dataBackup.creatingSnapshot': '만드는 중…',
   'settings.dataBackup.snapshotDone': '로컬 스냅샷을 만들었습니다({count}개 프로젝트).',
+  'settings.dataBackup.snapshotPruneConfirm': '로컬 스냅샷이 {keep}개 있습니다. 새로 만들면 개수·용량 예산에 따라 가장 오래된 것이 삭제됩니다. 필요하면 먼저 내려받으세요. 계속할까요?',
+  'settings.dataBackup.snapshotDonePruned': '스냅샷을 만들었습니다({count}개 프로젝트). 예산을 넘은 오래된 스냅샷 {pruned}개를 삭제했습니다.',
+  'settings.dataBackup.snapshotBudget': '스냅샷 합계 {size} MB / 예산 {budget} MB (최신 {keep}개 유지)',
   'settings.dataBackup.noSnapshots': '아직 스냅샷이 없습니다.',
   'settings.dataBackup.snapshotRestore': '복원…',
   'settings.dataBackup.snapshotDownload': '다운로드',

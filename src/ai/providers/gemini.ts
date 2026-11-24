@@ -3,13 +3,15 @@ import { AIError } from '../errors'
 import { getPrompt } from '../prompts'
 import type {
   AIProvider,
+  ChatMessage,
   GenerateJSONResult,
   GenerateOptions,
   GenerateTextResult,
   ProviderConfig,
 } from '../types'
 import { DEFAULT_TIMEOUT_MS } from '../types'
-import { extractJson, requestJson } from './http'
+import { requestJson } from './http'
+import { runJsonRepairLoop } from './json-repair'
 import type { AdapterDeps } from './openai-compatible'
 
 interface GeminiResponse {
@@ -89,50 +91,36 @@ export class GeminiProvider implements AIProvider {
 
   async generateJSON<T>(options: GenerateOptions, schema: z.ZodType<T>): Promise<GenerateJSONResult<T>> {
     const jsonSystem = options.systemPrompt ?? getPrompt('chat-json', '1.0.0').template
-    let messages: GenerateOptions['messages'] = [{ role: 'system', content: jsonSystem }, ...options.messages]
-    let lastUsage = { inputTokens: 0, outputTokens: 0 }
-
-    for (let attempt = 1; attempt <= 2; attempt++) {
-      const { data } = await requestJson<GeminiResponse>({
-        url: this.url(`models/${this.config.model}:generateContent`),
-        headers: { 'Content-Type': 'application/json' },
-        body: {
-          ...this.contents({ ...options, messages }),
-          generationConfig: {
-            ...(options.temperature !== undefined ? { temperature: options.temperature } : {}),
-            ...(options.maxTokens !== undefined ? { maxOutputTokens: options.maxTokens } : {}),
-            responseMimeType: 'application/json',
+    const messages: ChatMessage[] = [{ role: 'system', content: jsonSystem }, ...options.messages]
+    return runJsonRepairLoop<T>({
+      schema,
+      messages,
+      attempt: async (attemptMessages) => {
+        const { data } = await requestJson<GeminiResponse>({
+          url: this.url(`models/${this.config.model}:generateContent`),
+          headers: { 'Content-Type': 'application/json' },
+          body: {
+            ...this.contents({ ...options, messages: attemptMessages }),
+            generationConfig: {
+              ...(options.temperature !== undefined ? { temperature: options.temperature } : {}),
+              ...(options.maxTokens !== undefined ? { maxOutputTokens: options.maxTokens } : {}),
+              responseMimeType: 'application/json',
+            },
           },
-        },
-        signal: options.signal,
-        timeoutMs: this.deps.timeoutMs ?? DEFAULT_TIMEOUT_MS,
-        fetchImpl: this.deps.fetchImpl,
-      })
-      const raw = data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? '').join('') ?? ''
-      lastUsage = {
-        inputTokens: lastUsage.inputTokens + (data.usageMetadata?.promptTokenCount ?? 0),
-        outputTokens: lastUsage.outputTokens + (data.usageMetadata?.candidatesTokenCount ?? 0),
-      }
-      try {
-        const parsed = schema.parse(extractJson(raw))
-        return { data: parsed, usage: lastUsage, attempts: attempt }
-      } catch (err) {
-        if (attempt === 2) break
-        const detail =
-          err instanceof z.ZodError
-            ? err.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ')
-            : 'JSON 解析失败'
-        messages = [
-          ...messages,
-          { role: 'assistant', content: raw },
-          {
-            role: 'user',
-            content: `上面的输出未通过校验（${detail}）。只输出修正后的 JSON 对象，不要任何解释或代码块。`,
+          signal: options.signal,
+          timeoutMs: this.deps.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+          fetchImpl: this.deps.fetchImpl,
+        })
+        const raw = data.candidates?.[0]?.content?.parts?.map((part) => part.text ?? '').join('') ?? ''
+        return {
+          raw,
+          usage: {
+            inputTokens: data.usageMetadata?.promptTokenCount ?? 0,
+            outputTokens: data.usageMetadata?.candidatesTokenCount ?? 0,
           },
-        ]
-      }
-    }
-    throw new AIError('PARSE', 'AI 输出两次均未通过 Schema 校验')
+        }
+      },
+    })
   }
 }
 

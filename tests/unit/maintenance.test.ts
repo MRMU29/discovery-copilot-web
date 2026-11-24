@@ -36,6 +36,7 @@ describe('clearProductData (清除全部产品数据不可恢复)', () => {
       aiMode: 'byok',
       perRequestBudgetUsd: null,
       monthlyBudgetUsd: null,
+      lastBackupAt: null,
       updatedAt: t,
     })
     await db.ai_providers.put({

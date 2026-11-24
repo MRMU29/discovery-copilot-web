@@ -4,6 +4,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { createProject, deleteProjectCascade, listActiveProjects, listDeletedProjects, restoreProject, softDeleteProject } from '@/services/projects'
 import { SAMPLE_PROJECT_NAME, loadSampleProject } from '@/services/sample-project'
 import { getOnboarding, markOnboardingDone } from '@/services/onboarding'
+import { getSettings } from '@/services/settings'
 import { storageEstimate, type QuotaReport } from '@/db/quota'
 import { RETENTION_MS } from '@/lib/limits'
 import { Button } from '@/components/ui/Button'
@@ -13,6 +14,8 @@ import { projectPath } from '@/app/nav'
 import { useT } from '@/lib/i18n'
 
 const DAY_MS = 24 * 60 * 60 * 1000
+/** Nudge when the only copy has not been exported for this long. */
+const BACKUP_REMINDER_DAYS = 30
 
 function formatBytes(bytes: number): string {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`
@@ -31,7 +34,11 @@ export default function Dashboard() {
   const hintsHighlighted = onboarding !== undefined && !onboarding.fieldHints
 
   const data = useLiveQuery(async () => {
-    const [active, deleted] = await Promise.all([listActiveProjects(), listDeletedProjects()])
+    const [active, deleted, settings] = await Promise.all([
+      listActiveProjects(),
+      listDeletedProjects(),
+      getSettings(),
+    ])
     const now = Date.now() // impure call kept out of render (react-hooks/purity)
     return {
       active,
@@ -39,6 +46,10 @@ export default function Dashboard() {
         ...p,
         daysLeft: Math.max(0, Math.ceil((Date.parse(p.deletedAt!) + RETENTION_MS - now) / DAY_MS)),
       })),
+      // Age is derived here (not in render) so the reminder stays pure.
+      backupAgeDays: settings.lastBackupAt
+        ? Math.floor((now - Date.parse(settings.lastBackupAt)) / DAY_MS)
+        : null,
     }
   }, [])
 
@@ -199,6 +210,29 @@ export default function Dashboard() {
         </div>
       </form>
       {error && <ErrorState message={error} />}
+
+      {/*
+        Backup health (§7.3): the browser holds the only copy, so a stale (or
+        missing) export deserves a nudge that the previous UI never gave.
+      */}
+      {data.active.length > 0 && (data.backupAgeDays === null || data.backupAgeDays >= BACKUP_REMINDER_DAYS) && (
+        <section
+          aria-label={t('dashboard.backupHeading')}
+          className="flex flex-col gap-3 rounded-lg border border-warning/40 bg-surface-1 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <p className="text-body-sm text-ink-secondary">
+            {data.backupAgeDays === null
+              ? t('dashboard.backupNever')
+              : t('dashboard.backupStale', { days: data.backupAgeDays })}
+          </p>
+          <Link
+            to="/settings/data-backup"
+            className="min-h-11 shrink-0 rounded-btn border border-hairline px-3 py-2 text-center text-caption text-ink hover:border-hairline-strong"
+          >
+            {t('dashboard.backupCta')}
+          </Link>
+        </section>
+      )}
 
       {data.active.length === 0 ? (
         <EmptyState

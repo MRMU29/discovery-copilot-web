@@ -13,12 +13,13 @@ export type ResolvedTheme = 'light' | 'dark'
 
 import { useCallback, useSyncExternalStore } from 'react'
 
-const STORAGE_KEY = 'dcopilot.theme'
-
-const META_THEME_COLOR: Record<ResolvedTheme, string> = {
+/** Mirrored resolution cache; also read by public/theme-init.js. */
+export const THEME_STORAGE_KEY = 'dcopilot.theme'
+export const THEME_META_COLOR: Record<ResolvedTheme, string> = {
   dark: '#11121f',
   light: '#f6fbfd',
 }
+const STORAGE_KEY = THEME_STORAGE_KEY
 
 export function resolveTheme(pref: ThemePref, systemPrefersDark: boolean): ResolvedTheme {
   if (pref === 'system') return systemPrefersDark ? 'dark' : 'light'
@@ -36,7 +37,7 @@ export function applyResolvedTheme(resolved: ResolvedTheme): void {
   document.documentElement.dataset.theme = resolved
   document
     .querySelector('meta[name="theme-color"]')
-    ?.setAttribute('content', META_THEME_COLOR[resolved])
+    ?.setAttribute('content', THEME_META_COLOR[resolved])
 }
 
 /** Pre-paint hook (theme-init.ts): cached resolution, else system, else dark. */

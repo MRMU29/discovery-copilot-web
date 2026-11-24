@@ -3,6 +3,7 @@ import { buildIdentifyPrompt } from '@/ai/prompts/builders'
 import { resolvePricing } from '@/ai/pricing'
 import { runAi } from '@/ai/run'
 import type { AIProvider, GenerateJSONResult } from '@/ai/types'
+import { db } from '@/db/db'
 import { assumptionsRepo } from '@/db/repositories'
 import { CAPS } from '@/lib/limits'
 import { ASSUMPTION_TYPES } from '@/schemas/entities'
@@ -86,20 +87,24 @@ export async function applyIdentifiedAssumptions(
 ): Promise<ApplyResult> {
   const capacity = CAPS.assumptions - (await assumptionsRepo.countByProject(projectId))
   const applicable = picks.slice(0, Math.max(0, capacity))
-  let created = 0
-  for (const pick of applicable) {
-    await createAssumption(
-      projectId,
-      {
-        statement: pick.statement,
-        type: pick.type,
-        impact: pick.suggestedImpact,
-        risk: pick.suggestedRisk,
-        confidence: null,
-      },
-      { changedBy: 'ai-suggestion' },
-    )
-    created += 1
-  }
-  return { created, skipped: picks.length - created }
+  // All-or-nothing: a failure halfway used to leave a partial batch behind with no
+  // way to tell the user which rows landed. Nested transactions reuse this zone.
+  return db.transaction('rw', [db.projects, db.assumptions, db.score_events], async () => {
+    let created = 0
+    for (const pick of applicable) {
+      await createAssumption(
+        projectId,
+        {
+          statement: pick.statement,
+          type: pick.type,
+          impact: pick.suggestedImpact,
+          risk: pick.suggestedRisk,
+          confidence: null,
+        },
+        { changedBy: 'ai-suggestion' },
+      )
+      created += 1
+    }
+    return { created, skipped: picks.length - created }
+  })
 }

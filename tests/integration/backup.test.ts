@@ -311,7 +311,7 @@ describe('snapshots (§7.6)', () => {
 
   it('can restore from a snapshot payload through the same pipeline', async () => {
     await seedFullProject()
-    const snapshot = await createSnapshot()
+    const { snapshot } = await createSnapshot()
     const parsed = parseDcopilotFile(snapshot.payload)
     expect(parsed.ok).toBe(true)
     if (!parsed.ok) return
@@ -326,5 +326,13 @@ describe('parseDcopilotFile — formatVersion 非负下界', () => {
     const result = parseDcopilotFile(JSON.stringify(negative))
     expect(result.ok).toBe(false)
     if (!result.ok) expect(result.issues.join()).toContain('formatVersion')
+  })
+})
+
+describe('snapshot retention respects a byte budget as well as a count', () => {
+  it('keeps the newest snapshot even when it alone exceeds the budget', async () => {
+    await seedFullProject()
+    const first = await createSnapshot()
+    expect(first.pruned).toEqual([])
   })
 })

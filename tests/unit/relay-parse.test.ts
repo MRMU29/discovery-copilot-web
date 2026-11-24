@@ -94,3 +94,15 @@ describe('parseRelayResult', () => {
     if (!result.ok) expect(result.issues[0]).toContain('粘贴内容为空')
   })
 })
+
+describe('relay parse is prototype-safe', () => {
+  it('keeps a __proto__ key as data instead of touching Object.prototype', () => {
+    const polluted = parseRelayResult(
+      '{"__proto__":{"polluted":true},"experiments":[{"hypothesis":"若提供模板则导入更快","method":"m","successCriteria":"c"}]}',
+      schema,
+    )
+    expect(({} as Record<string, unknown>).polluted).toBeUndefined()
+    expect((Object.prototype as Record<string, unknown>).polluted).toBeUndefined()
+    expect(polluted.ok).toBe(true)
+  })
+})

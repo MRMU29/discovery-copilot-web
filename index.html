@@ -6,6 +6,13 @@
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#f6fbfd" />
     <link rel="icon" type="image/jpeg" href="%BASE_URL%brand-icon.jpg" />
+    <!--
+      Resolve the theme before the first paint. A classic same-origin script is
+      allowed by `script-src 'self'` and blocks rendering, unlike the deferred ES
+      module bootstrap — this is what removes the dark-mode flash. Keep in sync
+      with src/lib/theme.ts (asserted by tests/unit/theme-boot.test.ts).
+    -->
+    <script src="%BASE_URL%theme-init.js"></script>
     <title>Discovery Copilot</title>
     <style>
       /*
@@ -15,6 +22,13 @@
        * 动画以 forwards 结束于 opacity:0 + pointer-events:none，即使 JS
        * 失败启动页也会自行消失，不拦截应用；JS 禁用时由 <noscript> 隐藏。
        */
+      /* Paint-proof fallback: correct surface before tokens.css is parsed. */
+      :root {
+        background-color: #f6fbfd;
+      }
+      :root[data-theme='dark'] {
+        background-color: #11121f;
+      }
       #dc-splash {
         position: fixed;
         inset: 0;
@@ -30,6 +44,7 @@
         animation: dc-splash-out 0.25s ease-in 1s forwards;
       }
       :root[data-theme='dark'] #dc-splash {
+        background-color: #11121f;
         background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
       }
       #dc-splash img {

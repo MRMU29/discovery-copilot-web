@@ -84,9 +84,12 @@ export async function runAi(
         kind: options.kind,
         promptId: options.promptId ?? (options.kind === 'json' ? 'chat-json' : 'chat'),
         promptVersion: options.promptVersion ?? '1.0.0',
-        inputTokens: 0,
-        outputTokens: 0,
-        estimatedUsd: null,
+        // Failed calls may still have consumed tokens (JSON repair attempts);
+        // record them so the monthly cost view is not silently optimistic.
+        inputTokens: aiError.usage?.inputTokens ?? 0,
+        outputTokens: aiError.usage?.outputTokens ?? 0,
+        estimatedUsd:
+          options.pricing && aiError.usage ? computeCost(aiError.usage, options.pricing).totalUsd : null,
         status: 'error',
         errorCode: aiError.code,
         durationMs: Date.now() - started,

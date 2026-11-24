@@ -130,7 +130,7 @@ const EXPERIMENTS: SampleExperiment[] = [
   },
 ]
 
-const DESCRIPTION =
+export const SAMPLE_PROJECT_DESCRIPTION =
   '面向城市养宠家庭的鲜食外卖订阅：按周定制菜单、冷链到家，解决「想喂鲜食但没时间做」的问题。目标用户是一二线城市、月宠物支出 500 元以上的养猫养狗家庭；期望 3 个月内用最小成本验证订阅需求与单位经济模型。'
 
 export const SAMPLE_PROJECT_NAME = '示例 · 宠物鲜食外卖'
@@ -146,7 +146,7 @@ export interface SampleProjectRefs {
  * 演示数据的评分事件 changedBy 记为 'user'（它不是 AI 建议）。
  */
 export async function loadSampleProject(): Promise<SampleProjectRefs> {
-  const project = await createProject({ name: SAMPLE_PROJECT_NAME, description: DESCRIPTION })
+  const project = await createProject({ name: SAMPLE_PROJECT_NAME, description: SAMPLE_PROJECT_DESCRIPTION })
 
   const assumptionIds: Record<string, string> = {}
   for (const a of ASSUMPTIONS) {

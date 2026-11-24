@@ -122,6 +122,12 @@ export const settingsSchema = z.strictObject({
   /** §6.4 预算熔断（USD）。null = 不设限；确认后可单次绕过（budgetConfirmed）。 */
   perRequestBudgetUsd: z.number().positive().nullable().default(null),
   monthlyBudgetUsd: z.number().positive().nullable().default(null),
+  /**
+   * Last successful `.dcopilot` export (ISO). The browser is the only copy of the
+   * data, so the dashboard nudges when this is null or stale. Never exported:
+   * another device's backup age says nothing about this device.
+   */
+  lastBackupAt: z.string().nullable().default(null),
   updatedAt: z.string(),
 })
 

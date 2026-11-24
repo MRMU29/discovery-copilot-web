@@ -16,10 +16,33 @@ export interface JsonRequestInit {
   fetchImpl?: typeof fetch
 }
 
+/**
+ * Compose timeout + caller signal without `AbortSignal.any` / `AbortSignal.timeout`
+ * (Safari only shipped those in 16.4 / 17.4; README promises 16+ best effort, and
+ * a missing API surfaced as a TypeError that was misclassified as NETWORK).
+ * Returns a disposer so the timer and listener never outlive the request.
+ */
+function composeAbort(timeoutMs: number, external?: AbortSignal): { signal: AbortSignal; dispose: () => void } {
+  const controller = new AbortController()
+  const onTimeout = () => controller.abort(new DOMException('The operation timed out.', 'TimeoutError'))
+  const timer = setTimeout(onTimeout, timeoutMs)
+  const onExternalAbort = () => controller.abort(external?.reason)
+  if (external) {
+    if (external.aborted) onExternalAbort()
+    else external.addEventListener('abort', onExternalAbort, { once: true })
+  }
+  return {
+    signal: controller.signal,
+    dispose: () => {
+      clearTimeout(timer)
+      external?.removeEventListener('abort', onExternalAbort)
+    },
+  }
+}
+
 export async function requestJson<T>(init: JsonRequestInit): Promise<{ status: number; data: T }> {
   const fetchImpl = init.fetchImpl ?? globalThis.fetch
-  const timeout = AbortSignal.timeout(init.timeoutMs)
-  const signal = init.signal ? AbortSignal.any([init.signal, timeout]) : timeout
+  const { signal, dispose } = composeAbort(init.timeoutMs, init.signal)
   let response: Response
   try {
     response = await fetchImpl(init.url, {
@@ -29,17 +52,21 @@ export async function requestJson<T>(init: JsonRequestInit): Promise<{ status: n
       signal,
     })
   } catch (err) {
+    dispose()
     throw classifyAIError(err)
   }
   if (!response.ok) {
     // Error bodies come from an external (possibly hostile) endpoint and may echo
     // the request URL/Authorization. Keep only the status code, never the body.
+    dispose()
     throw classifyAIError(new Error(`HTTP ${response.status}`), response.status)
   }
   try {
     return { status: response.status, data: (await response.json()) as T }
   } catch {
     throw new AIError('PARSE', '响应不是有效 JSON')
+  } finally {
+    dispose()
   }
 }
 

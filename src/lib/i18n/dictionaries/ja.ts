@@ -3,7 +3,6 @@ import type { Dict } from '../index'
 /** 日本語 (ja) — 用語対応表は zh-Hans.ts のファイル先頭を参照。 */
 export const ja: Dict = {
   // ---- app / shell ----
-  'app.tagline': 'アカウント不要・ローカルファーストのプロダクトディスカバリーワークスペース',
   'shell.settings': '設定',
   'shell.offline': 'この端末はオフラインです：AI 呼び出しは利用できません。ローカル機能とデータには影響しません。',
   'shell.toggleToDark': 'ダークモードに切り替え',
@@ -59,6 +58,10 @@ export const ja: Dict = {
   'dashboard.create': 'プロジェクトを作成',
   'dashboard.creating': '作成中…',
   'dashboard.loadSample': 'サンプルプロジェクトを読み込む',
+  'dashboard.backupHeading': 'バックアップ状態',
+  'dashboard.backupNever': 'このブラウザが唯一のコピーで、まだ .dcopilot を書き出していません。',
+  'dashboard.backupStale': '{days} 日間バックアップを書き出していません。このブラウザが唯一のコピーです。',
+  'dashboard.backupCta': 'バックアップを書き出す',
   'dashboard.loadingSample': '読み込み中…',
   'dashboard.emptyTitle': 'プロジェクトはまだありません',
   'dashboard.emptyDesc':
@@ -73,9 +76,6 @@ export const ja: Dict = {
   'dashboard.confirmHardDelete': '「{name}」とその全データを完全に削除しますか？この操作は取り消せません。',
   'dashboard.hintNameGood': 'ペット向け生鮮フードデリバリー · パイロット版',
   'dashboard.hintNameBad': '偉大なプロジェクト',
-  'dashboard.hintDescGood':
-    '都市圏在住・月のペット支出 500 元以上の猫飼い世帯（誰に）；生鮮フードを与えたいが作る時間がない（課題）；週 30 分で 1 週間の給餌を済ませたい（期待結果）。',
-  'dashboard.hintDescBad': 'ペット業界を変える偉大な製品を作る。',
 
   // ---- welcome / onboarding ----
   'welcome.title1': 'Discovery Copilot へようこそ',
@@ -240,6 +240,9 @@ export const ja: Dict = {
   'settings.dataBackup.createSnapshot': '今すぐスナップショットを作成',
   'settings.dataBackup.creatingSnapshot': '作成中…',
   'settings.dataBackup.snapshotDone': 'ローカルスナップショットを作成しました（{count} 件のプロジェクト）。',
+  'settings.dataBackup.snapshotPruneConfirm': 'ローカルスナップショットが {keep} 件あります。新規作成すると件数と容量の予算に従って最古のものが削除されます。必要なら先にダウンロードしてください。続けますか？',
+  'settings.dataBackup.snapshotDonePruned': 'スナップショットを作成しました（{count} プロジェクト）。予算超過の古いスナップショット {pruned} 件を削除しました。',
+  'settings.dataBackup.snapshotBudget': 'スナップショット合計 {size} MB / 予算 {budget} MB（最新 {keep} 件を保持）',
   'settings.dataBackup.noSnapshots': 'スナップショットはまだありません。',
   'settings.dataBackup.snapshotRestore': '復元…',
   'settings.dataBackup.snapshotDownload': 'ダウンロード',

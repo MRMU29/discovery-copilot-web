@@ -1,6 +1,7 @@
 // First import: sets <html data-theme> from the cached resolution before any
 // stylesheet applies (see src/lib/theme.ts). Keep it above tokens.css.
 import '@/lib/theme-init'
+import { safeStashTarget } from '@/lib/deep-link'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import '@/styles/tokens.css'
@@ -10,10 +11,10 @@ import App from '@/app/App'
 // path in sessionStorage before serving index.html, restore it before the
 // router initializes. No-op when nothing stashed a path.
 try {
-  const redirectTarget = sessionStorage.getItem('dc-redirect')
-  if (redirectTarget) {
+  const safeTarget = safeStashTarget(sessionStorage.getItem('dc-redirect'))
+  if (safeTarget) {
     sessionStorage.removeItem('dc-redirect')
-    history.replaceState(null, '', redirectTarget)
+    history.replaceState(null, '', safeTarget)
   }
 } catch {
   // sessionStorage unavailable (private mode) — nothing to restore

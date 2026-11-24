@@ -3,7 +3,6 @@ import type { Dict } from '../index'
 /** 繁體中文（zh-Hant）——術語與 zh-Hans 對照表見 zh-Hans.ts 文件頭。 */
 export const zhHant: Dict = {
   // ---- app / shell ----
-  'app.tagline': '無帳號的本地優先產品發現工作台',
   'shell.settings': '設定',
   'shell.offline': '目前裝置離線：AI 呼叫不可用；本機功能與資料不受影響。',
   'shell.toggleToDark': '切換到深色模式',
@@ -57,6 +56,10 @@ export const zhHant: Dict = {
   'dashboard.create': '新增專案',
   'dashboard.creating': '建立中…',
   'dashboard.loadSample': '載入範例專案',
+  'dashboard.backupHeading': '備份健康',
+  'dashboard.backupNever': '本機資料是唯一副本，還沒有匯出過 .dcopilot 備份。',
+  'dashboard.backupStale': '已經 {days} 天沒有匯出備份了；本機資料是唯一副本。',
+  'dashboard.backupCta': '去匯出備份',
   'dashboard.loadingSample': '載入中…',
   'dashboard.emptyTitle': '還沒有專案',
   'dashboard.emptyDesc': '用上方表單建立第一個專案，開始梳理關鍵假設、設計驗證實驗；或點「載入範例專案」看看每個頁面長什麼樣。',
@@ -70,9 +73,6 @@ export const zhHant: Dict = {
   'dashboard.confirmHardDelete': '永久刪除「{name}」及其全部資料？此操作不可復原。',
   'dashboard.hintNameGood': '寵物鮮食外送 · 試點版',
   'dashboard.hintNameBad': '一個偉大的專案',
-  'dashboard.hintDescGood':
-    '面向一二線城市、月寵物支出 500 元以上的養貓家庭（誰）；想餵鮮食但沒時間做（問題）；期望每週 30 分鐘搞定一週餵食（期望結果）。',
-  'dashboard.hintDescBad': '做一個改變寵物行業的偉大產品。',
 
   // ---- welcome / onboarding ----
   'welcome.title1': '歡迎來到 Discovery Copilot',
@@ -225,6 +225,9 @@ export const zhHant: Dict = {
   'settings.dataBackup.createSnapshot': '立即建立快照',
   'settings.dataBackup.creatingSnapshot': '建立中…',
   'settings.dataBackup.snapshotDone': '已建立本機快照（{count} 個專案）。',
+  'settings.dataBackup.snapshotPruneConfirm': '已有 {keep} 份本機快照，新建會依數量與容量預算刪除最舊的一份。建議先下載保留。繼續嗎？',
+  'settings.dataBackup.snapshotDonePruned': '已建立本機快照（{count} 個專案），並刪除 {pruned} 份超出預算的舊快照。',
+  'settings.dataBackup.snapshotBudget': '快照合計 {size} MB / 預算 {budget} MB（保留最近 {keep} 份）',
   'settings.dataBackup.noSnapshots': '還沒有快照。',
   'settings.dataBackup.snapshotRestore': '還原…',
   'settings.dataBackup.snapshotDownload': '下載',

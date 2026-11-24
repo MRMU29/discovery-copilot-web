@@ -25,10 +25,21 @@ const STATUS_MAP: Record<number, AIErrorCode> = {
   429: 'RATE_LIMITED',
 }
 
+export interface ConsumedTokens {
+  inputTokens: number
+  outputTokens: number
+}
+
 export class AIError extends Error {
   readonly code: AIErrorCode
   /** HTTP status when the failure came from a response. */
   readonly status?: number
+  /**
+   * Tokens already billed upstream before the failure (e.g. both JSON repair
+   * attempts returned unusable bodies). The usage ledger must not record 0 here,
+   * otherwise the cost view silently under-reports.
+   */
+  usage?: ConsumedTokens
 
   constructor(code: AIErrorCode, message: string, status?: number) {
     super(message)
@@ -65,6 +76,11 @@ export function userMessage(code: AIErrorCode): string {
  */
 export function classifyAIError(err: unknown, status?: number): AIError {
   if (err instanceof AIError) return err
+  // Native `AbortSignal.timeout` rejects with a DOMException named TimeoutError
+  // (not AbortError); the portable composition in providers/http.ts does the same.
+  if (err instanceof DOMException && err.name === 'TimeoutError') {
+    return new AIError('TIMEOUT', userMessage('TIMEOUT'))
+  }
   if (err instanceof DOMException && err.name === 'AbortError') {
     const reason = (err as DOMException & { reason?: unknown }).reason
     if (reason instanceof DOMException && reason.name === 'TimeoutError') {

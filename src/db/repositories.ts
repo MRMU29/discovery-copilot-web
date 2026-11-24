@@ -154,6 +154,21 @@ export const settingsRepo = {
   },
 }
 
+/**
+ * §7.6 local snapshots (pre-overwrite-import safety net).
+ *
+ * Count *and* size are capped: 3 × the 20 MB import ceiling would be 60 MB,
+ * above the 50 MB quota warning line. The newest snapshot is always kept, then
+ * older ones are kept while both the count and the byte budget allow.
+ */
+export const SNAPSHOT_KEEP = 3
+export const SNAPSHOT_BUDGET_BYTES = 24 * 1024 * 1024
+
+/** UTF-8 bytes of a payload — matches the "≤20 MB" import wording. */
+function payloadBytes(payload: string): number {
+  return new TextEncoder().encode(payload).byteLength
+}
+
 /** §7.6 local snapshots (pre-overwrite-import safety net, latest 3 kept). */
 export const snapshotsRepo = {
   put(row: Snapshot) {
@@ -165,10 +180,20 @@ export const snapshotsRepo = {
   delete(id: string) {
     return db.snapshots.delete(id)
   },
-  async prune(keep = 3): Promise<void> {
+  /** Returns the ids it deleted, so callers can tell the user what was pruned. */
+  async prune(keep = SNAPSHOT_KEEP, maxBytes = SNAPSHOT_BUDGET_BYTES): Promise<string[]> {
     const rows = await db.snapshots.orderBy('createdAt').reverse().toArray()
-    const doomed = rows.slice(keep).map((r) => r.id)
+    const doomed: string[] = []
+    let keptBytes = 0
+    rows.forEach((row, index) => {
+      const size = payloadBytes(row.payload)
+      // The newest row is always kept; older rows must fit both budgets.
+      const fits = index === 0 || (index < keep && keptBytes + size <= maxBytes)
+      if (fits) keptBytes += size
+      else doomed.push(row.id)
+    })
     if (doomed.length > 0) await db.snapshots.bulkDelete(doomed)
+    return doomed
   },
 }
 

@@ -3,13 +3,15 @@ import { AIError } from '../errors'
 import { getPrompt } from '../prompts'
 import type {
   AIProvider,
+  ChatMessage,
   GenerateJSONResult,
   GenerateOptions,
   GenerateTextResult,
   ProviderConfig,
 } from '../types'
 import { DEFAULT_TIMEOUT_MS } from '../types'
-import { extractJson, requestJson } from './http'
+import { requestJson } from './http'
+import { runJsonRepairLoop } from './json-repair'
 
 interface OpenAIChatResponse {
   choices?: { message?: { content?: string } }[]
@@ -92,52 +94,35 @@ export class OpenAICompatibleProvider implements AIProvider {
 
   async generateJSON<T>(options: GenerateOptions, schema: z.ZodType<T>): Promise<GenerateJSONResult<T>> {
     const jsonSystem = options.systemPrompt ?? getPrompt('chat-json', '1.0.0').template
-    let messages: { role: 'system' | 'user' | 'assistant'; content: string }[] = [
-      { role: 'system', content: jsonSystem },
-      ...options.messages,
-    ]
-    let lastUsage = { inputTokens: 0, outputTokens: 0 }
-
-    for (let attempt = 1; attempt <= 2; attempt++) {
-      const { data } = await requestJson<OpenAIChatResponse>({
-        url: `${this.base()}/chat/completions`,
-        headers: { ...authHeaders(requireKey(this.deps)), 'Content-Type': 'application/json' },
-        body: {
-          model: this.config.model,
-          messages,
-          ...(options.temperature !== undefined ? { temperature: options.temperature } : {}),
-          ...(options.maxTokens !== undefined ? { max_tokens: options.maxTokens } : {}),
-          response_format: { type: 'json_object' },
-        },
-        signal: options.signal,
-        timeoutMs: this.deps.timeoutMs ?? DEFAULT_TIMEOUT_MS,
-        fetchImpl: this.deps.fetchImpl,
-      })
-      const raw = data.choices?.[0]?.message?.content
-      if (typeof raw !== 'string') throw new AIError('PARSE', '响应缺少 choices[0].message.content')
-      lastUsage = {
-        inputTokens: lastUsage.inputTokens + (data.usage?.prompt_tokens ?? 0),
-        outputTokens: lastUsage.outputTokens + (data.usage?.completion_tokens ?? 0),
-      }
-      try {
-        const parsed = schema.parse(extractJson(raw))
-        return { data: parsed, usage: lastUsage, attempts: attempt }
-      } catch (err) {
-        if (attempt === 2) break
-        const detail =
-          err instanceof z.ZodError
-            ? err.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ')
-            : 'JSON 解析失败'
-        messages = [
-          ...messages,
-          { role: 'assistant' as const, content: raw },
-          {
-            role: 'user' as const,
-            content: `上面的输出未通过校验（${detail}）。只输出修正后的 JSON 对象，不要任何解释或代码块。`,
+    const messages: ChatMessage[] = [{ role: 'system', content: jsonSystem }, ...options.messages]
+    return runJsonRepairLoop<T>({
+      schema,
+      messages,
+      attempt: async (attemptMessages) => {
+        const { data } = await requestJson<OpenAIChatResponse>({
+          url: `${this.base()}/chat/completions`,
+          headers: { ...authHeaders(requireKey(this.deps)), 'Content-Type': 'application/json' },
+          body: {
+            model: this.config.model,
+            messages: attemptMessages,
+            ...(options.temperature !== undefined ? { temperature: options.temperature } : {}),
+            ...(options.maxTokens !== undefined ? { max_tokens: options.maxTokens } : {}),
+            response_format: { type: 'json_object' },
           },
-        ]
-      }
-    }
-    throw new AIError('PARSE', 'AI 输出两次均未通过 Schema 校验')
+          signal: options.signal,
+          timeoutMs: this.deps.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+          fetchImpl: this.deps.fetchImpl,
+        })
+        const raw = data.choices?.[0]?.message?.content
+        if (typeof raw !== 'string') throw new AIError('PARSE', '响应缺少 choices[0].message.content')
+        return {
+          raw,
+          usage: {
+            inputTokens: data.usage?.prompt_tokens ?? 0,
+            outputTokens: data.usage?.completion_tokens ?? 0,
+          },
+        }
+      },
+    })
   }
 }

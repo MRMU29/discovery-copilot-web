@@ -42,16 +42,22 @@ export default function AppShell() {
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
 
-  // Theme: settings row is authoritative; until it loads, mirror the pre-paint
-  // resolution (theme-init) by applying 'system'.
-  const themePref = settings?.theme ?? 'system'
-  useEffect(() => applyThemePreference(themePref), [themePref])
+  // Theme: the settings row is authoritative, but it loads asynchronously. Do
+  // nothing until it arrives — applying 'system' as a placeholder used to flip the
+  // document (and overwrite the localStorage mirror) to light for one frame, which
+  // is exactly the flash the pre-paint script exists to prevent.
+  const storedThemePref = settings?.theme
+  const themePref = storedThemePref ?? 'system'
+  useEffect(() => {
+    if (!storedThemePref) return
+    return applyThemePreference(storedThemePref)
+  }, [storedThemePref])
   const resolvedTheme = useResolvedTheme(themePref)
 
   // Locale: same liveQuery drives the i18n store; until settings load, stay zh-Hans.
   const language = settings?.language ?? 'zh-Hans'
   useEffect(() => {
-    setLocale(language)
+    void setLocale(language)
   }, [language])
 
   // 顶栏/侧栏快捷切换：在浅/深之间直接翻转并持久化（恢复"跟随系统"在外观页）。

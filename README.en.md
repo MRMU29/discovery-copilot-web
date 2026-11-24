@@ -79,8 +79,10 @@ React 18 + TypeScript + Vite · Tailwind CSS 4 (single-source design tokens in `
 pnpm install
 pnpm dev              # dev server (add --host to test from a phone)
 pnpm build            # type check + production build
-pnpm test             # full Vitest suite (includes a 20 MB import stress probe)
-pnpm test:coverage    # coverage gate (schemas/db/ai lines >= 80%)
+pnpm test             # full Vitest suite (~10s)
+pnpm test:coverage    # coverage gate (schemas/db/ai >= 80%, services included)
+pnpm test:stress      # 20 MB import stress probe (excluded by default: slow, load-sensitive)
+pnpm test:e2e         # 3 Playwright smoke flows: create / record / export (local Edge)
 pnpm lint && pnpm typecheck
 pnpm preview          # preview the production build locally
 pnpm probe:provider-cors   # provider direct-call CORS matrix (no key needed)
@@ -180,7 +182,17 @@ On the GitHub side: `.github/dependabot.yml` (weekly npm / GitHub Actions checks
 
 ## Tests
 
-Unit + integration tests (Vitest, fake-indexeddb covering IndexedDB transactions and migrations; see `pnpm test` for the current count); dedicated tests for all six import scenarios (valid / invalid / corrupted / legacy / conflict / rollback); coverage gate at schemas/db/ai lines >= 80%. `pnpm test` excludes the 20 MB import stress probe (its runtime swings with machine load and would dominate the default run); run it explicitly with `pnpm test:stress`.
+Unit + integration tests (Vitest, fake-indexeddb covering IndexedDB transactions and migrations; see `pnpm test` for the current count); dedicated tests for all six import scenarios (valid / invalid / corrupted / legacy / conflict / rollback). Coverage gate: `schemas`/`db`/`ai` lines >= 80%, with `services` counted (overall >= 70%, currently ~87%).
+
+Three layers:
+
+| Layer | Command | Notes |
+| --- | --- | --- |
+| Static | `pnpm lint` / `pnpm typecheck` | ESLint (incl. react-hooks) + `tsc --noEmit` |
+| Regression | `pnpm test` / `pnpm test:coverage` | The 20 MB import stress probe is excluded from the default run (slow and load-sensitive); use `pnpm test:stress` |
+| End-to-end | `pnpm test:e2e` | Playwright + local Edge, three smoke flows: create project → record assumption → export `.dcopilot` |
+
+CI (`.github/workflows/ci.yml`) runs lint + typecheck + test + `security:check` on push / PR; the E2E suite needs a browser and runs locally.
 
 ## License & credits
 

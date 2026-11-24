@@ -3,7 +3,6 @@ import type { Dict } from '../index'
 /** English (en) — terminology cross-reference: see the header of zh-Hans.ts. */
 export const en: Dict = {
   // ---- app / shell ----
-  'app.tagline': 'An account-free, local-first product discovery workspace',
   'shell.settings': 'Settings',
   'shell.offline': 'This device is offline: AI calls are unavailable; local features and data are unaffected.',
   'shell.toggleToDark': 'Switch to dark mode',
@@ -59,6 +58,10 @@ export const en: Dict = {
   'dashboard.create': 'Create project',
   'dashboard.creating': 'Creating…',
   'dashboard.loadSample': 'Load sample project',
+  'dashboard.backupHeading': 'Backup health',
+  'dashboard.backupNever': 'This browser holds the only copy and no .dcopilot export has been made yet.',
+  'dashboard.backupStale': 'No export for {days} days — this browser holds the only copy.',
+  'dashboard.backupCta': 'Export a backup',
   'dashboard.loadingSample': 'Loading…',
   'dashboard.emptyTitle': 'No projects yet',
   'dashboard.emptyDesc':
@@ -73,9 +76,6 @@ export const en: Dict = {
   'dashboard.confirmHardDelete': 'Permanently delete "{name}" and all of its data? This cannot be undone.',
   'dashboard.hintNameGood': 'Fresh pet-food delivery · pilot',
   'dashboard.hintNameBad': 'A great project',
-  'dashboard.hintDescGood':
-    'Cat-owning households in tier-1/2 cities spending 500+ CNY/month on pets (who); want to feed fresh food but no time to prepare it (problem); expect to handle a week of feeding in 30 minutes (desired outcome).',
-  'dashboard.hintDescBad': 'Build a great product that changes the pet industry.',
 
   // ---- welcome / onboarding ----
   'welcome.title1': 'Welcome to Discovery Copilot',
@@ -239,6 +239,9 @@ export const en: Dict = {
   'settings.dataBackup.createSnapshot': 'Create snapshot now',
   'settings.dataBackup.creatingSnapshot': 'Creating…',
   'settings.dataBackup.snapshotDone': 'Local snapshot created ({count} projects).',
+  'settings.dataBackup.snapshotPruneConfirm': 'You already have {keep} local snapshots; creating another drops the oldest one under the count/byte budget. Download it first if you want to keep it. Continue?',
+  'settings.dataBackup.snapshotDonePruned': 'Snapshot created ({count} projects) and {pruned} over-budget snapshot(s) removed.',
+  'settings.dataBackup.snapshotBudget': 'Snapshots total {size} MB of a {budget} MB budget (latest {keep} kept)',
   'settings.dataBackup.noSnapshots': 'No snapshots yet.',
   'settings.dataBackup.snapshotRestore': 'Restore…',
   'settings.dataBackup.snapshotDownload': 'Download',

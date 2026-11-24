@@ -143,7 +143,9 @@ export async function buildDcopilotFile(scope: 'all' | string): Promise<Dcopilot
     experiments: experiments.filter((e) => ids.has(e.projectId)),
     ostNodes: ostNodes.filter((n) => ids.has(n.projectId)),
     reports: reports.filter((r) => ids.has(r.projectId)),
-    settings,
+    // Backup age is device-local: exporting it would make a restored file claim a
+    // freshness it does not have.
+    settings: settings ? { ...settings, lastBackupAt: null } : null,
   })
 }
 
@@ -424,7 +426,7 @@ export async function applyImport(file: DcopilotFile, options: ImportOptions): P
     options.conflictStrategy === 'overwrite' && summary.counts.conflict > 0
   if (willOverwrite) {
     const snapshot = await createSnapshot()
-    result.snapshotId = snapshot.id
+    result.snapshotId = snapshot.snapshot.id
   }
 
   await db.transaction(
@@ -511,7 +513,13 @@ function remapProjectCopy(
 // Snapshots (§7.6)
 // ---------------------------------------------------------------------------
 
-export async function createSnapshot(): Promise<Snapshot> {
+export interface SnapshotResult {
+  snapshot: Snapshot
+  /** Ids of snapshots dropped by the count/byte budget (empty on the first three). */
+  pruned: string[]
+}
+
+export async function createSnapshot(): Promise<SnapshotResult> {
   const file = await buildDcopilotFile('all')
   const row = snapshotSchema.parse({
     id: crypto.randomUUID(),
@@ -521,6 +529,6 @@ export async function createSnapshot(): Promise<Snapshot> {
     appVersion: file.appVersion,
   })
   await snapshotsRepo.put(row)
-  await snapshotsRepo.prune(3)
-  return row
+  const pruned = await snapshotsRepo.prune()
+  return { snapshot: row, pruned }
 }

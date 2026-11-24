@@ -28,6 +28,28 @@ export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
+  build: {
+    rollupOptions: {
+      output: {
+        /**
+         * Vendor chunks (§6.1): the hash-named "jsx-runtime" blob used to carry
+         * React + Dexie + Zod + Router, so any app change invalidated all of it.
+         * Splitting by library keeps long-term caching across releases.
+         */
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined
+          if (id.includes('react-router')) return 'vendor-router'
+          if (/node_modules[\\/](react|react-dom|scheduler)[\\/]/.test(id)) return 'vendor-react'
+          if (id.includes('/dexie')) return 'vendor-dexie'
+          if (/node_modules[\\/]zod[\\/]/.test(id)) return 'vendor-zod'
+          if (id.includes('recharts') || id.includes('victory-vendor') || /node_modules[\\/]d3-/.test(id)) {
+            return 'vendor-charts'
+          }
+          return 'vendor'
+        },
+      },
+    },
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
@@ -40,8 +62,16 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'json'],
-      include: ['src/schemas/**', 'src/db/**', 'src/ai/**'],
-      thresholds: { lines: 80 },
+      // §7.5 / v0.3 §8: services are the highest-risk layer (import pipeline,
+      // transactions), so they join the coverage gate. Per-glob thresholds keep the
+      // original stricter bar where it already holds.
+      include: ['src/schemas/**', 'src/db/**', 'src/ai/**', 'src/services/**'],
+      thresholds: {
+        lines: 70,
+        'src/schemas/**': { lines: 80 },
+        'src/db/**': { lines: 80 },
+        'src/ai/**': { lines: 80 },
+      },
     },
   },
 })

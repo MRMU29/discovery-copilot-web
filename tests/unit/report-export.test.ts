@@ -106,8 +106,8 @@ describe('buildReportHtmlDocument', () => {
 })
 
 describe('export follows the active UI locale', () => {
-  it('writes English provenance, project label, lang and footer under en', () => {
-    setLocale('en')
+  it('writes English provenance, project label, lang and footer under en', async () => {
+    await setLocale('en')
     try {
       const html = buildReportHtmlDocument(base)
       expect(html).toContain('<html lang="en">')
@@ -117,7 +117,7 @@ describe('export follows the active UI locale', () => {
       expect(html).not.toContain('AI 生成于')
       expect(reportMetaLine(base)).toContain('sections:')
     } finally {
-      setLocale('zh-Hans')
+      await setLocale('zh-Hans')
     }
   })
 })

@@ -1,0 +1,32 @@
+name: CI
+
+# §7.5 / v0.3 §8: the project shipped entirely on manual gates. This is the
+# minimum check that catches the class of defect the audit found (an undefined
+# i18n key, a production-reachable dev route): lint + typecheck + tests + the
+# repository's own security gate.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm lint
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Unit + integration tests
+        run: pnpm test
+      - name: Security gate (keys, sensitive paths, internal docs)
+        run: pnpm security:check

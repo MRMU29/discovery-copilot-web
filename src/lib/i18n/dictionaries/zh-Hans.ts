@@ -11,7 +11,6 @@
  */
 export const zhHans = {
   // ---- app / shell ----
-  'app.tagline': '无账号的本地优先产品发现工作台',
   'shell.settings': '设置',
   'shell.offline': '当前设备离线：AI 调用不可用；本地功能与数据不受影响。',
   'shell.toggleToDark': '切换到深色模式',
@@ -65,6 +64,10 @@ export const zhHans = {
   'dashboard.create': '新建项目',
   'dashboard.creating': '创建中…',
   'dashboard.loadSample': '加载示例项目',
+  'dashboard.backupHeading': '备份健康',
+  'dashboard.backupNever': '本地数据是唯一副本，还没有导出过 .dcopilot 备份。',
+  'dashboard.backupStale': '已经 {days} 天没有导出备份了；本地数据是唯一副本。',
+  'dashboard.backupCta': '去导出备份',
   'dashboard.loadingSample': '加载中…',
   'dashboard.emptyTitle': '还没有项目',
   'dashboard.emptyDesc': '用上方表单创建第一个项目，开始梳理关键假设、设计验证实验；或点「加载示例项目」看看每个页面长什么样。',
@@ -78,9 +81,6 @@ export const zhHans = {
   'dashboard.confirmHardDelete': '永久删除「{name}」及其全部数据？此操作不可恢复。',
   'dashboard.hintNameGood': '宠物鲜食外卖 · 试点版',
   'dashboard.hintNameBad': '一个伟大的项目',
-  'dashboard.hintDescGood':
-    '面向一二线城市、月宠物支出 500 元以上的养猫家庭（谁）；想喂鲜食但没时间做（问题）；期望每周 30 分钟搞定一周喂食（期望结果）。',
-  'dashboard.hintDescBad': '做一个改变宠物行业的伟大产品。',
 
   // ---- welcome / onboarding ----
   'welcome.title1': '欢迎来到 Discovery Copilot',
@@ -233,6 +233,9 @@ export const zhHans = {
   'settings.dataBackup.createSnapshot': '立即创建快照',
   'settings.dataBackup.creatingSnapshot': '创建中…',
   'settings.dataBackup.snapshotDone': '已创建本地快照（{count} 个项目）。',
+  'settings.dataBackup.snapshotPruneConfirm': '已有 {keep} 份本地快照，新建会按数量与体积预算删除最旧的一份。建议先下载保留。继续吗？',
+  'settings.dataBackup.snapshotDonePruned': '已创建本地快照（{count} 个项目），并删除 {pruned} 份超出预算的旧快照。',
+  'settings.dataBackup.snapshotBudget': '快照合计 {size} MB / 预算 {budget} MB（保留最近 {keep} 份）',
   'settings.dataBackup.noSnapshots': '还没有快照。',
   'settings.dataBackup.snapshotRestore': '恢复…',
   'settings.dataBackup.snapshotDownload': '下载',

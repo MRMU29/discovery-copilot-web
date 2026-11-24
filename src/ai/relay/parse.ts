@@ -20,7 +20,9 @@ function toCamelCase(key: string): string {
 function normalizeKeys(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(normalizeKeys)
   if (value !== null && typeof value === 'object') {
-    const out: Record<string, unknown> = {}
+    // Null prototype: a pasted `{"__proto__": …}` (or "constructor") key lands as
+    // an own property instead of replacing the accumulator's prototype.
+    const out: Record<string, unknown> = Object.create(null) as Record<string, unknown>
     for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
       out[toCamelCase(key)] = normalizeKeys(val)
     }

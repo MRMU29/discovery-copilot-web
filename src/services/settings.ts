@@ -8,7 +8,15 @@ import { settingsRowSchema, settingsSchema, type Settings } from '@/schemas/enti
 const SETTINGS_KEY = 'app'
 
 /** Keys that must never enter persisted settings (§6.3: keys stay in session memory only). */
-const SECRET_KEY_RE = /(api[\s_-]*key|secret|token|password|credential)/i
+// Suffix-shaped secrets (apiKey / openaiApiKey / clientSecret / password …) plus
+// bare bearer-token field names. Substring matching used to reject legitimate
+// future fields such as `tokenBudget`; these two anchored patterns do not.
+const SECRET_KEY_SUFFIX_RE = /(?:api[\s_-]*key|secret|password|passwd|credential|private[\s_-]*key)$/i
+const SECRET_KEY_EXACT_RE = /^(?:token|access[\s_-]*token|auth[\s_-]*token|refresh[\s_-]*token|bearer)$/i
+
+function looksLikeSecretKey(key: string): boolean {
+  return SECRET_KEY_SUFFIX_RE.test(key) || SECRET_KEY_EXACT_RE.test(key)
+}
 
 export async function getSettings(): Promise<Settings> {
   const row = await settingsRepo.get(SETTINGS_KEY)
@@ -21,13 +29,14 @@ export async function getSettings(): Promise<Settings> {
     aiMode: parsed.aiMode,
     perRequestBudgetUsd: parsed.perRequestBudgetUsd,
     monthlyBudgetUsd: parsed.monthlyBudgetUsd,
+    lastBackupAt: parsed.lastBackupAt,
     updatedAt: parsed.updatedAt,
   }
 }
 
 export async function updateSettings(patch: Record<string, unknown>): Promise<Settings> {
   for (const key of Object.keys(patch)) {
-    if (SECRET_KEY_RE.test(key)) {
+    if (looksLikeSecretKey(key)) {
       throw new DomainError('SECRET_REJECTED', `设置不允许携带疑似密钥字段: ${key}`)
     }
   }

@@ -3,7 +3,6 @@ import type { Dict } from '../index'
 /** Deutsch (de) — Terminologietabelle: siehe Kopf der Datei zh-Hans.ts. */
 export const de: Dict = {
   // ---- app / shell ----
-  'app.tagline': 'Konto-freier, lokal arbeitender Arbeitsplatz für Produkt-Discovery',
   'shell.settings': 'Einstellungen',
   'shell.offline': 'Dieses Gerät ist offline: KI-Aufrufe sind nicht verfügbar; lokale Funktionen und Daten sind nicht betroffen.',
   'shell.toggleToDark': 'Zum dunklen Design wechseln',
@@ -59,6 +58,10 @@ export const de: Dict = {
   'dashboard.create': 'Projekt erstellen',
   'dashboard.creating': 'Wird erstellt…',
   'dashboard.loadSample': 'Beispielprojekt laden',
+  'dashboard.backupHeading': 'Backup-Zustand',
+  'dashboard.backupNever': 'Dieser Browser hält die einzige Kopie und es wurde noch kein .dcopilot-Export erstellt.',
+  'dashboard.backupStale': 'Seit {days} Tagen kein Export — dieser Browser hält die einzige Kopie.',
+  'dashboard.backupCta': 'Backup exportieren',
   'dashboard.loadingSample': 'Wird geladen…',
   'dashboard.emptyTitle': 'Noch keine Projekte',
   'dashboard.emptyDesc':
@@ -74,9 +77,6 @@ export const de: Dict = {
   'dashboard.confirmHardDelete': '„{name}“ samt aller Daten endgültig löschen? Das kann nicht rückgängig gemacht werden.',
   'dashboard.hintNameGood': 'Frische-Haustierfutter-Lieferung · Pilot',
   'dashboard.hintNameBad': 'Ein großartiges Projekt',
-  'dashboard.hintDescGood':
-    'Katzenhaushalte in Großstädten mit 500+ CNY monatlichen Tierausgaben (wer); wollen frisch füttern, haben aber keine Zeit zu kochen (Problem); erwarten, das Füttern einer Woche in 30 Minuten zu erledigen (gewünschtes Ergebnis).',
-  'dashboard.hintDescBad': 'Ein großartiges Produkt bauen, das die Tierindustrie verändert.',
 
   // ---- welcome / onboarding ----
   'welcome.title1': 'Willkommen bei Discovery Copilot',
@@ -242,6 +242,9 @@ export const de: Dict = {
   'settings.dataBackup.createSnapshot': 'Jetzt Schnappschuss erstellen',
   'settings.dataBackup.creatingSnapshot': 'Wird erstellt…',
   'settings.dataBackup.snapshotDone': 'Lokaler Schnappschuss erstellt ({count} Projekte).',
+  'settings.dataBackup.snapshotPruneConfirm': 'Es gibt bereits {keep} lokale Schnappschüsse. Ein neuer entfernt den ältesten nach Anzahl- und Größenbudget. Lade ihn vorher herunter, wenn du ihn behalten willst. Fortfahren?',
+  'settings.dataBackup.snapshotDonePruned': 'Schnappschuss erstellt ({count} Projekte); {pruned} über dem Budget liegende alte Schnappschüsse entfernt.',
+  'settings.dataBackup.snapshotBudget': 'Schnappschüsse insgesamt {size} MB von {budget} MB Budget (neueste {keep} bleiben)',
   'settings.dataBackup.noSnapshots': 'Noch keine Schnappschüsse.',
   'settings.dataBackup.snapshotRestore': 'Wiederherstellen…',
   'settings.dataBackup.snapshotDownload': 'Herunterladen',

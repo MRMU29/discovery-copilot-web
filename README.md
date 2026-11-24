@@ -79,8 +79,10 @@ React 18 + TypeScript + Vite · Tailwind CSS 4（设计令牌单一来源 `src/s
 pnpm install
 pnpm dev              # 开发服务器（--host 后可用手机直连）
 pnpm build            # 类型检查 + 产物构建
-pnpm test             # Vitest 全量（含 20MB 导入压测探针）
-pnpm test:coverage    # 覆盖率门槛（schemas/db/ai 行覆盖 ≥ 80%）
+pnpm test             # Vitest 全量（约 10s）
+pnpm test:coverage    # 覆盖率门槛（schemas/db/ai ≥ 80%，services 纳入统计）
+pnpm test:stress      # 20 MB 导入压测探针（默认不跑：单例耗时长且随机器负载波动）
+pnpm test:e2e         # Playwright 冒烟 3 条：建项目 / 录假设 / 导出（需本机 Edge）
 pnpm lint && pnpm typecheck
 pnpm preview          # 生产构建本地预览
 pnpm probe:provider-cors   # Provider 浏览器直连 CORS 矩阵（无 Key）
@@ -180,7 +182,17 @@ GitHub 仓库端：本仓库已配置 `.github/dependabot.yml`（npm / GitHub Ac
 
 ## 测试
 
-单元 + 集成测试（Vitest，fake-indexeddb 覆盖 IndexedDB 事务与迁移；以 `pnpm test` 输出为准），导入「合法 / 非法 / 损坏 / 旧版本 / 冲突 / 回滚」六类场景均有专测；覆盖率门槛 schemas/db/ai 行覆盖 ≥ 80%。`pnpm test` 不包含 20 MB 级导入压力探针（单例耗时随机器负载波动，会拖垮默认回归），需要时单独跑 `pnpm test:stress`。
+单元 + 集成测试（Vitest，fake-indexeddb 覆盖 IndexedDB 事务与迁移；以 `pnpm test` 输出为准），导入「合法 / 非法 / 损坏 / 旧版本 / 冲突 / 回滚」六类场景均有专测。覆盖率门槛：`schemas`/`db`/`ai` 行覆盖 ≥ 80%，`services` 纳入统计（整体 ≥ 70%，实际约 87%）。
+
+三层门禁：
+
+| 层 | 命令 | 说明 |
+| --- | --- | --- |
+| 静态 | `pnpm lint` / `pnpm typecheck` | ESLint（含 react-hooks）+ `tsc --noEmit` |
+| 回归 | `pnpm test` / `pnpm test:coverage` | 20 MB 导入压测移出默认集（单例耗时随机器负载波动，会拖垮回归），单独 `pnpm test:stress` |
+| 端到端 | `pnpm test:e2e` | Playwright + 本机 Edge 三条冒烟：新建项目 → 录入假设 → 导出 `.dcopilot` |
+
+CI（`.github/workflows/ci.yml`）在 push / PR 时跑 lint + typecheck + test + `security:check`；E2E 需浏览器，本地执行。
 
 ## 许可证与致谢
 

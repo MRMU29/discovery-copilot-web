@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { requestPersistent, storageEstimate, type QuotaReport } from '@/db/quota'
-import { snapshotsRepo } from '@/db/repositories'
+import { SNAPSHOT_BUDGET_BYTES, SNAPSHOT_KEEP, snapshotsRepo } from '@/db/repositories'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
 import { PageSkeleton } from '@/components/common/states'
@@ -22,6 +22,8 @@ import {
   type ImportSummary,
 } from '@/services/backup'
 import { clearProductData } from '@/services/maintenance'
+import { updateSettings } from '@/services/settings'
+import { nowIso } from '@/lib/clock'
 import { listActiveProjects, listDeletedProjects } from '@/services/projects'
 
 function formatBytes(bytes: number | null): string {
@@ -78,6 +80,11 @@ export default function DataBackup() {
     return [...active, ...deleted]
   }, [])
   const snapshots = useLiveQuery(() => snapshotsRepo.list(), [])
+  const snapshotBytes = (snapshots ?? []).reduce(
+    // UTF-8 bytes, same unit as the import ceiling and the retention budget.
+    (total, row) => total + new TextEncoder().encode(row.payload).byteLength,
+    0,
+  )
 
   useEffect(() => {
     let alive = true
@@ -119,6 +126,8 @@ export default function DataBackup() {
     try {
       const file = await buildDcopilotFile('all')
       downloadFile(dcopilotFileName(t('dashboard.title')), JSON.stringify(file, null, 2), 'application/json')
+      // Backup health (§7.3 gap): record that a full export just happened.
+      await updateSettings({ lastBackupAt: nowIso() }).catch(() => undefined)
       setNotice(t('settings.dataBackup.exportAllDone', { count: file.projects.length }))
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
@@ -136,6 +145,7 @@ export default function DataBackup() {
       const file = await buildDcopilotFile(selectedProjectId)
       const name = file.projects[0]?.name ?? ''
       downloadFile(dcopilotFileName(name), JSON.stringify(file, null, 2), 'application/json')
+      await updateSettings({ lastBackupAt: nowIso() }).catch(() => undefined)
       setNotice(t('settings.dataBackup.exportOneDone', { name }))
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
@@ -145,12 +155,27 @@ export default function DataBackup() {
   }
 
   async function handleCreateSnapshot() {
+    // The 4th snapshot silently dropped the oldest one (count *and* byte budget).
+    // Warn first so the user can download it — a snapshot is a full backup.
+    if ((snapshots?.length ?? 0) >= SNAPSHOT_KEEP) {
+      const confirmed = window.confirm(
+        t('settings.dataBackup.snapshotPruneConfirm', { keep: SNAPSHOT_KEEP }),
+      )
+      if (!confirmed) return
+    }
     setSnapshotting(true)
     setError(null)
     setNotice(null)
     try {
-      const snapshot = await createSnapshot()
-      setNotice(t('settings.dataBackup.snapshotDone', { count: snapshot.projectCount }))
+      const { snapshot, pruned } = await createSnapshot()
+      setNotice(
+        pruned.length > 0
+          ? t('settings.dataBackup.snapshotDonePruned', {
+              count: snapshot.projectCount,
+              pruned: pruned.length,
+            })
+          : t('settings.dataBackup.snapshotDone', { count: snapshot.projectCount }),
+      )
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -315,6 +340,12 @@ export default function DataBackup() {
       <section aria-label={t('settings.dataBackup.snapshotHeading')} className="rounded-lg border border-hairline bg-surface-1 p-4">
         <h3 className="text-eyebrow text-ink-muted">{t('settings.dataBackup.snapshotHeading')}</h3>
         <p className="mt-2 text-caption text-ink-faint">{t('settings.dataBackup.snapshotNote')}</p>
+        <p className="mt-1 text-caption text-ink-faint">
+          {t('settings.dataBackup.snapshotBudget', {
+            size: (snapshotBytes / 1024 / 1024).toFixed(1),
+            budget: Math.round(SNAPSHOT_BUDGET_BYTES / 1024 / 1024),
+          })}
+        </p>
         <div className="mt-3">
           <Button variant="secondary" onClick={() => void handleCreateSnapshot()} disabled={snapshotting}>
             {snapshotting ? t('settings.dataBackup.creatingSnapshot') : t('settings.dataBackup.createSnapshot')}
