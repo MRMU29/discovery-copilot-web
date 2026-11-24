@@ -311,12 +311,7 @@ function validateIntegrity(file: DcopilotFile): string[] {
   for (const row of file.decisions) {
     // 决策必须有所属项目；引用悬空不在这里阻断（见 sanitizeDecision）。
     if (!projectIds.has(row.projectId)) {
-      issues.push(
-        translate('common.fieldIssue', {
-          field: 'decisions.projectId',
-          message: `${row.id} references a missing project`,
-        }),
-      )
+      issues.push(translate('backup.decisionMissingProject', { title: row.statement.slice(0, 16) }))
     }
   }
   return issues

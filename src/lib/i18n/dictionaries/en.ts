@@ -529,6 +529,7 @@ export const en: Dict = {
   'backup.ostWrongParentType': 'OST node "{title}" has an invalid type chain: a {type} parent must be a {parentType}.',
   'backup.ostParentCycle': 'OST node "{title}" has a cycle in its parent chain.',
   'backup.reportMissingProject': 'Report "{title}…" references a project not present in the file.',
+  'backup.decisionMissingProject': 'Decision "{title}…" references a project not present in the file.',
   'backup.capacity': 'The import would exceed the project limit of {limit} — reduce the import scope.',
   'overview.stat.assumptions': 'Key assumptions',
   'overview.stat.experiments': 'Validation experiments',

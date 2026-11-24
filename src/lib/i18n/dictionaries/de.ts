@@ -531,6 +531,7 @@ export const de: Dict = {
   'backup.ostWrongParentType': 'OST-Knoten „{title}" hat eine ungültige Typkette: das Elternteil von {type} muss {parentType} sein.',
   'backup.ostParentCycle': 'OST-Knoten „{title}" hat einen Zyklus in der Elternkette.',
   'backup.reportMissingProject': 'Bericht „{title}…“ verweist auf ein Projekt, das in der Datei fehlt.',
+  'backup.decisionMissingProject': 'Entscheidung „{title}…“ verweist auf ein Projekt, das in der Datei fehlt.',
   'backup.capacity': 'Der Import würde das Projektlimit von {limit} überschreiten — verkleinere den Umfang.',
   'overview.stat.assumptions': 'Schlüsselannahmen',
   'overview.stat.experiments': 'Prüfexperimente',

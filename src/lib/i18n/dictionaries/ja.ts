@@ -529,6 +529,7 @@ export const ja: Dict = {
   'backup.ostWrongParentType': 'OST ノード「{title}」の型チェーンが不正です：{type} の親は {parentType} でなければなりません。',
   'backup.ostParentCycle': 'OST ノード「{title}」の親チェーンに循環があります。',
   'backup.reportMissingProject': 'レポート「{title}…」が参照するプロジェクトがファイル内にありません。',
+  'backup.decisionMissingProject': '意思決定「{title}…」が参照するプロジェクトがファイル内にありません。',
   'backup.capacity': 'インポート後のプロジェクト総数が上限 {limit} を超えるため、範囲を減らしてください。',
   'overview.stat.assumptions': '重要な仮説',
   'overview.stat.experiments': '検証実験',

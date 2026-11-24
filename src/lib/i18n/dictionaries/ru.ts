@@ -529,6 +529,7 @@ export const ru: Dict = {
   'backup.ostWrongParentType': 'Узел OST «{title}» имеет неверную цепочку типов: родителем {type} должен быть {parentType}.',
   'backup.ostParentCycle': 'В цепочке родителей узла OST «{title}» обнаружен цикл.',
   'backup.reportMissingProject': 'Отчёт «{title}…» ссылается на проект, отсутствующий в файле.',
+  'backup.decisionMissingProject': 'Решение «{title}…» ссылается на проект, отсутствующий в файле.',
   'backup.capacity': 'После импорта число проектов превысит лимит {limit} — уменьшите объём импорта.',
   'overview.stat.assumptions': 'Ключевые гипотезы',
   'overview.stat.experiments': 'Проверочные эксперименты',

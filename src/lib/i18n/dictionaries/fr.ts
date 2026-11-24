@@ -531,6 +531,7 @@ export const fr: Dict = {
   'backup.ostWrongParentType': 'Le nœud OST « {title} » a une chaîne de types invalide : le parent de {type} doit être {parentType}.',
   'backup.ostParentCycle': 'Le nœud OST « {title} » présente un cycle dans sa chaîne de parents.',
   'backup.reportMissingProject': 'Le rapport « {title}… » référence un projet absent du fichier.',
+  'backup.decisionMissingProject': 'La décision « {title}… » référence un projet absent du fichier.',
   'backup.capacity': 'L’import porterait le nombre de projets au-delà de la limite de {limit} — réduisez le périmètre.',
   'overview.stat.assumptions': 'Hypothèses clés',
   'overview.stat.experiments': 'Expériences de validation',

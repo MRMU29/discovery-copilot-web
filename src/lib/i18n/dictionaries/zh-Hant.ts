@@ -499,6 +499,7 @@ export const zhHant: Dict = {
   'backup.ostWrongParentType': 'OST 節點「{title}」類型鏈不合法：{type} 的父節點必須是 {parentType}。',
   'backup.ostParentCycle': 'OST 節點「{title}」的父節點鏈存在環。',
   'backup.reportMissingProject': '報告「{title}…」引用的專案不在檔案內。',
+  'backup.decisionMissingProject': '決策「{title}…」引用的專案不在檔案內。',
   'backup.capacity': '匯入後專案總數將超過上限 {limit}，請減少匯入範圍。',
   'overview.stat.assumptions': '關鍵假設',
   'overview.stat.experiments': '驗證實驗',

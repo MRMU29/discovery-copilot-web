@@ -514,6 +514,7 @@ export const ko: Dict = {
   'backup.ostWrongParentType': 'OST 노드 「{title}」의 유형 체인이 잘못되었습니다: {type}의 부모는 {parentType}이어야 합니다.',
   'backup.ostParentCycle': 'OST 노드 「{title}」의 부모 체인에 순환이 있습니다.',
   'backup.reportMissingProject': '보고서 "{title}…"이(가) 참조하는 프로젝트가 파일 안에 없습니다.',
+  'backup.decisionMissingProject': '결정 "{title}…"이(가) 참조하는 프로젝트가 파일 안에 없습니다.',
   'backup.capacity': '가져온 후 프로젝트 총수가 한도 {limit}을(를) 초과합니다. 가져오기 범위를 줄이세요.',
   'overview.stat.assumptions': '핵심 가설',
   'overview.stat.experiments': '검증 실험',

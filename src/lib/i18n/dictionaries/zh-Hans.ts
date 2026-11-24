@@ -510,6 +510,7 @@ export const zhHans = {
   'backup.ostWrongParentType': 'OST 节点「{title}」类型链不合法：{type} 的父节点必须是 {parentType}。',
   'backup.ostParentCycle': 'OST 节点「{title}」的父节点链存在环。',
   'backup.reportMissingProject': '报告「{title}…」引用的项目不在文件内。',
+  'backup.decisionMissingProject': '决策「{title}…」引用的项目不在文件内。',
   'backup.capacity': '导入后项目总数将超过上限 {limit}，请减少导入范围。',
 
   // ---- 概览 ----
