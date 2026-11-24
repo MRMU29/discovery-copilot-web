@@ -1,5 +1,5 @@
 import { confirmCustomEndpoint } from '@/lib/endpoint-guard'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import {
   AIError,
@@ -16,6 +16,7 @@ import { RelayPanel } from '@/components/relay/RelayPanel'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
 import { resolveAiRoute } from '@/lib/ai-mode'
+import { diffLines, mergeSections, splitSections } from '@/lib/diff'
 import { renderMarkdown } from '@/lib/markdown'
 import type { ProviderConfigRow, Report } from '@/schemas/entities'
 import { listAssumptionsByProject } from '@/services/assumptions'
@@ -75,6 +76,11 @@ export function AIReportDialog({ projectId, projectName, targetReport, onClose, 
   const [aiMode, setAiMode] = useState<'byok' | 'relay' | 'hybrid'>('relay')
   const [context, setContext] = useState('')
   const [draft, setDraft] = useState<ReportDraft | null>(null)
+  // Regeneration produces a candidate instead of overwriting: the user picks.
+  const [previousDraft, setPreviousDraft] = useState<ReportDraft | null>(null)
+  const [pendingDraft, setPendingDraft] = useState<ReportDraft | null>(null)
+  const [mergeMode, setMergeMode] = useState(false)
+  const [mergePicks, setMergePicks] = useState<boolean[]>([])
   const [origin, setOrigin] = useState<DraftOrigin>('byok')
   const [renderView, setRenderView] = useState<'render' | 'source'>('render')
   const [busy, setBusy] = useState(false)
@@ -203,6 +209,9 @@ export function AIReportDialog({ projectId, projectName, targetReport, onClose, 
     if (!selected || !ensureKey()) return
     const ctx = await ensureContext()
     if (!ctx) return
+    // Snapshot before the await: regenerating must compare against what the
+    // user was looking at, not against the incoming result.
+    const previous = draft
     const controller = new AbortController()
     abortRef.current = controller
     setOrigin('byok')
@@ -226,7 +235,14 @@ export function AIReportDialog({ projectId, projectName, targetReport, onClose, 
         createAiProvider(selected, { getApiKey: () => getSessionKey(selected.id) }),
         { projectId, projectName, context: ctx, signal: controller.signal, budgetConfirmed },
       )
-      setDraft(result.data)
+      if (previous) {
+        setPreviousDraft(previous)
+        setPendingDraft(result.data)
+        setMergeMode(false)
+        setMergePicks([])
+      } else {
+        setDraft(result.data)
+      }
       setRenderView('render')
       setStage('preview')
     } catch (err) {
@@ -238,6 +254,8 @@ export function AIReportDialog({ projectId, projectName, targetReport, onClose, 
         setError(err instanceof Error ? err.message : String(err))
       }
       setStage('config')
+      setPreviousDraft(null)
+      setPendingDraft(null)
     } finally {
       abortRef.current = null
       setBusy(false)
@@ -280,6 +298,58 @@ export function AIReportDialog({ projectId, projectName, targetReport, onClose, 
   }
 
   const derivedSections = draft ? deriveSections(draft.content) : []
+
+  // Regeneration compare state (§roadmap 5.2): the new draft waits in
+  // `pendingDraft` until the user picks a side.
+  const comparing = previousDraft !== null && pendingDraft !== null
+  const pendingDiff = useMemo(
+    () =>
+      previousDraft && pendingDraft
+        ? diffLines(previousDraft.content, pendingDraft.content)
+        : null,
+    [previousDraft, pendingDraft],
+  )
+  const previousSections = useMemo(
+    () => (previousDraft ? splitSections(previousDraft.content) : []),
+    [previousDraft],
+  )
+  const pendingSections = useMemo(
+    () => (pendingDraft ? splitSections(pendingDraft.content) : []),
+    [pendingDraft],
+  )
+
+  function acceptPending() {
+    if (!pendingDraft) return
+    setDraft(pendingDraft)
+    setPreviousDraft(null)
+    setPendingDraft(null)
+    setMergeMode(false)
+  }
+
+  function keepPrevious() {
+    setPreviousDraft(null)
+    setPendingDraft(null)
+    setMergeMode(false)
+  }
+
+  function startMerge() {
+    setMergePicks(pendingSections.map(() => true))
+    setMergeMode(true)
+  }
+
+  function applyMerge() {
+    if (!previousDraft || !pendingDraft) return
+    const merged = mergeSections(previousDraft.content, pendingDraft.content, mergePicks)
+    const sections = deriveSections(merged)
+    setDraft({
+      ...pendingDraft,
+      content: merged,
+      sections: sections.length > 0 ? sections : pendingDraft.sections,
+    })
+    setPreviousDraft(null)
+    setPendingDraft(null)
+    setMergeMode(false)
+  }
 
   return (
     <Dialog
@@ -520,13 +590,109 @@ export function AIReportDialog({ projectId, projectName, targetReport, onClose, 
           onApply={(data) => {
             setOrigin('relay')
             setDraft(data)
+            setPreviousDraft(null)
+            setPendingDraft(null)
             setRenderView('render')
             setStage('preview')
           }}
         />
       )}
 
-      {stage === 'preview' && draft && (
+      {stage === 'preview' && draft && (comparing && previousDraft && pendingDraft ? (
+        <div className="space-y-4">
+          <p className="text-caption text-ink-muted">{t('ai.report.diff.compareTitle')}</p>
+          {pendingDiff && (
+            <p className="text-body-sm text-ink-secondary">
+              {t('ai.report.diff.summary', {
+                added: pendingDiff.lines.filter((line) => line.type === 'added').length,
+                removed: pendingDiff.lines.filter((line) => line.type === 'removed').length,
+                unchanged: pendingDiff.lines.filter((line) => line.type === 'same').length,
+              })}
+            </p>
+          )}
+          {pendingDiff?.truncated && (
+            <p className="text-caption text-warning">{t('ai.report.diff.truncated')}</p>
+          )}
+
+          {mergeMode ? (
+            <div className="space-y-3">
+              <p className="text-caption text-ink-muted">{t('ai.report.diff.mergeHint')}</p>
+              <p className="text-caption text-ink-faint">{t('ai.report.diff.preambleNote')}</p>
+              <ul className="space-y-1">
+                {pendingSections.map((section, index) =>
+                  index === 0 ? null : (
+                    <li key={`${section.heading}-${index}`}>
+                      <label className="flex min-h-11 items-center gap-2 rounded-btn border border-hairline px-3 text-body-sm text-ink">
+                        <input
+                          type="checkbox"
+                          checked={mergePicks[index] !== false}
+                          onChange={(e) =>
+                            setMergePicks((current) => {
+                              const next = [...current]
+                              next[index] = e.target.checked
+                              return next
+                            })
+                          }
+                          className="size-4 accent-accent"
+                        />
+                        <span className="min-w-0 flex-1">{section.heading}</span>
+                        {!previousSections.some((old) => old.heading === section.heading) && (
+                          <span className="rounded-full border border-hairline bg-surface-2 px-1.5 text-caption text-ink-faint">
+                            {t('ai.report.diff.newSection')}
+                          </span>
+                        )}
+                      </label>
+                    </li>
+                  ),
+                )}
+              </ul>
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={applyMerge}>{t('ai.report.diff.applyMerge')}</Button>
+                <Button variant="ghost" onClick={() => setMergeMode(false)}>
+                  {t('common.cancel')}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <ol className="max-h-[46dvh] overflow-auto rounded-lg border border-hairline font-mono text-caption">
+                {(pendingDiff?.lines ?? []).map((line, index) => (
+                  <li
+                    key={index}
+                    className={
+                      line.type === 'added'
+                        ? 'flex gap-2 bg-success/5 px-3 text-success'
+                        : line.type === 'removed'
+                          ? 'flex gap-2 bg-danger/5 px-3 text-danger'
+                          : 'flex gap-2 px-3 text-ink-secondary'
+                    }
+                  >
+                    <span aria-hidden className="w-4 shrink-0 select-none">
+                      {line.type === 'added' ? '+' : line.type === 'removed' ? '−' : ' '}
+                    </span>
+                    <span className="whitespace-pre-wrap break-words">{line.text || ' '}</span>
+                  </li>
+                ))}
+              </ol>
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={acceptPending}>{t('ai.report.diff.keepNew')}</Button>
+                <Button variant="secondary" onClick={keepPrevious}>
+                  {t('ai.report.diff.keepOld')}
+                </Button>
+                <Button variant="ghost" onClick={startMerge}>
+                  {t('ai.report.diff.mergeBySection')}
+                </Button>
+              </div>
+            </>
+          )}
+
+          {error && (
+            <p role="alert" className="text-body-sm text-danger">
+              {error}
+            </p>
+          )}
+        </div>
+      ) : (
         <div className="space-y-4">
           <p className="text-caption text-ink-muted">
             {t('ai.report.reviewHint')}
@@ -603,7 +769,7 @@ export function AIReportDialog({ projectId, projectName, targetReport, onClose, 
             backLabel={t('ai.report.backLabel')}
           />
         </div>
-      )}
+      ))}
     </Dialog>
   )
 }
