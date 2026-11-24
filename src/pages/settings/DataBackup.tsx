@@ -393,6 +393,7 @@ export default function DataBackup() {
           {t('settings.dataBackup.snapshotBudget', {
             size: (snapshotBytes / 1024 / 1024).toFixed(1),
             budget: Math.round(SNAPSHOT_BUDGET_BYTES / 1024 / 1024),
+            keep: SNAPSHOT_KEEP,
           })}
         </p>
         <div className="mt-3">

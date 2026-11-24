@@ -59,3 +59,30 @@ test('renames a project and archives it reversibly', async ({ page }) => {
   await expect(page.getByText(/^已归档（/)).toHaveCount(0)
   await expect(page.getByRole('link', { name: /烟测-整理-改/ })).toBeVisible()
 })
+
+test('records a decision and can mark it superseded', async ({ page }) => {
+  page.on('dialog', (dialog) => void dialog.accept())
+  const url = await createProject(page, '烟测-决策')
+  await page.goto(url.replace(/overview\/?$/, 'decisions'))
+  await page.waitForTimeout(600)
+
+  await page.getByRole('button', { name: '记录决策' }).click()
+  const dialog = page.getByRole('dialog')
+  await expect(dialog).toBeVisible()
+  await dialog.getByLabel('决策内容').fill('先做假门测试，再决定是否开发完整产品')
+  await dialog.getByRole('button', { name: '保存决策' }).click()
+  await expect(page.getByText('先做假门测试，再决定是否开发完整产品')).toBeVisible()
+
+  await page.getByRole('button', { name: '标记为已推翻' }).click()
+  await expect(page.getByText(/推翻于/)).toBeVisible()
+})
+
+test('runs the data self-check and reports a clean database', async ({ page }) => {
+  await createProject(page, '烟测-自检')
+  await bootApp(page)
+  await page.goto('/settings/data-backup')
+  await page.waitForTimeout(600)
+
+  await page.getByRole('button', { name: '开始扫描' }).click()
+  await expect(page.getByText(/未发现问题/)).toBeVisible()
+})

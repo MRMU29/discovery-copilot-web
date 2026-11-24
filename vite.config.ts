@@ -58,6 +58,11 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['tests/**/*.test.{ts,tsx}'],
+    // Windows note: one worker per test file (50+) intermittently timed out at
+    // worker startup ("Timeout waiting for worker to respond") under load.
+    // Capping forks trades a few seconds for a deterministic local gate; CI is
+    // unaffected because the cap is far above its core count.
+    poolOptions: { forks: { maxForks: 6 } },
     // §9.2: schemas/db/ai line coverage must not drop below 80% (command 11 gate).
     coverage: {
       provider: 'v8',

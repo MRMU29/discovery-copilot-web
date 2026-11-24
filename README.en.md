@@ -6,7 +6,7 @@
 
 An account-free, local-first (IndexedDB), BYOK product discovery workspace that migrates across devices via `.dcopilot` files.
 
-[![Version](https://img.shields.io/badge/version-v0.2.2-2b4ea8?style=for-the-badge)](./package.json)
+[![Version](https://img.shields.io/badge/version-v0.2.3-2b4ea8?style=for-the-badge)](./package.json)
 [![License](https://img.shields.io/badge/license-MIT-227b70?style=for-the-badge)](LICENSE)
 [![Node](https://img.shields.io/badge/Node.js-22%2B-43853d?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-12-227b70?style=for-the-badge&logo=pnpm&logoColor=white)](https://pnpm.io/)
@@ -47,13 +47,14 @@ To use AI, add a provider and enter your own API Key under Settings → AI Provi
 | What you want to do | What the workspace provides |
 | --- | --- |
 | Manage projects | Create / rename / archive (reversible, data kept) / delete (30-day recycle bin) / one-click sample project |
-| Work through key assumptions | Eight risk categories, Impact × Risk × (1 − Confidence) prioritization, Recharts priority matrix (with an equivalent table view) |
-| Plan experiments | Generate from assumptions → review → save → status & result write-back |
+| Work through key assumptions | Eight risk categories, Impact × Risk × (1 − Confidence) prioritization, Recharts priority matrix (with an equivalent table view); bulk paste one per line; experiment outcomes shown on each assumption |
+| Plan experiments | Generate from assumptions → review → save; four-column board (drag or keyboard to change status) plus outcome (supported / refuted / inconclusive), metric and actual value |
+| Record decisions | Append-only decision log: what you chose, why, and which assumption or experiment it rests on; superseded decisions keep their original text |
 | Draw an opportunity solution tree (OST) | Drag & drop + pinch zoom + keyboard equivalents + table view + viewport culling |
-| Use AI assistance | Three modes: BYOK direct calls (OpenAI-compatible / Gemini), Prompt Relay (zero-setup copy & paste), and Hybrid; identify / experiment / report tasks; review-first workflow (preview / apply / reject / regenerate / cancel) |
+| Use AI assistance | Three modes: BYOK direct calls (OpenAI-compatible / Gemini), Prompt Relay (zero-setup copy & paste), and Hybrid; identify / experiment / report tasks; review-first workflow (preview / apply / reject / regenerate / cancel); output language follows the UI language |
 | Keep AI costs in check | Pre-request token & cost estimates, budget circuit breakers (per-request + monthly), daily usage view; models with unknown pricing are neither estimated nor gated |
-| Produce discovery reports | AI-generated or hand-written, AI vs. user-confirmed content distinguished; HTML (faithful, recommended) / Markdown (re-editable) / JSON (programmatic) / PNG (best-effort) export |
-| Back up and migrate | `.dcopilot` export (all / single project), import (six-scenario validation, conflict strategies, rollback on failure), automatic pre-overwrite snapshots (3 kept) |
+| Produce discovery reports | AI-generated or hand-written, AI vs. user-confirmed content distinguished; regeneration shows a line diff first (use new / keep old / merge by section); HTML (faithful, recommended) / Markdown (re-editable) / JSON (programmatic) / PNG (best-effort) export |
+| Back up and migrate | `.dcopilot` export (all / single project), import (six-scenario validation, conflict strategies, rollback on failure), automatic pre-overwrite snapshots (3 kept); a data self-check finds orphan rows, broken links and OST cycles and repairs them one at a time |
 | Tune appearance & language | Light / dark / follow-system themes (no first-frame flash), launch-screen animation, 8 interface languages (zh-Hans / zh-Hant / en / ja / ko / ru / de / fr, migrating with `.dcopilot`) |
 | Protect privacy & observability | Data stays local, de-identified diagnostics export |
 
@@ -82,7 +83,7 @@ pnpm build            # type check + production build
 pnpm test             # full Vitest suite (~10s)
 pnpm test:coverage    # coverage gate (schemas/db/ai >= 80%, services included)
 pnpm test:stress      # 20 MB import stress probe (excluded by default: slow, load-sensitive)
-pnpm test:e2e         # 4 Playwright smoke flows: create / record / export / rename+archive (local Edge)
+pnpm test:e2e         # 6 Playwright smoke flows: create / record / export / rename+archive / decision / self-check (local Edge)
 pnpm lint && pnpm typecheck
 pnpm preview          # preview the production build locally
 pnpm probe:provider-cors   # provider direct-call CORS matrix (no key needed)
@@ -174,11 +175,12 @@ On the GitHub side: `.github/dependabot.yml` (weekly npm / GitHub Actions checks
 1. Score audit trail (score_events) does not migrate with `.dcopilot` (no key in the §7.2 format); current assumption scores migrate fully.
 2. PNG report export is best-effort (html-to-image may drift on complex gradients/custom fonts) — **use HTML export for faithful sharing**.
 3. Session-memory API keys mean re-entry after every refresh / browser restart. "Save for this session" in Settings only keeps the key in the current page's memory for AI dialogs; it does not survive a refresh.
-4. Capacity limits (§5.4): <= 50 local projects, <= 200 assumptions / 300 OST nodes / 100 experiments / 20 reports per project; imports <= 20 MB per file.
-5. BYOK direct calls depend on each provider's CORS policy — use a compatible proxy for providers that block browsers (`pnpm probe:provider-cors` probes without a key).
-6. No auto-sync: **local data is the only copy** — export `.dcopilot` backups regularly (deleted projects are restorable from the recycle bin for 30 days).
-7. No Service Worker / offline manifest: the first visit needs a network connection to load static assets; offline use later depends on the browser cache and is not guaranteed.
-8. Models with unknown pricing are neither cost-estimated nor budget-gated by design; the gate applies only to models with known pricing.
+4. Capacity limits (§5.4): <= 50 local projects, <= 200 assumptions / 300 OST nodes / 100 experiments / 20 reports / 200 decisions per project; imports <= 20 MB per file.
+5. The `.dcopilot` format is v2 (adds the decision log); older app versions refuse v2 files, while v1 files are upgraded automatically on import. AI output follows the UI language, but the built-in few-shot examples remain Chinese (they only demonstrate format).
+6. BYOK direct calls depend on each provider's CORS policy — use a compatible proxy for providers that block browsers (`pnpm probe:provider-cors` probes without a key).
+7. No auto-sync: **local data is the only copy** — export `.dcopilot` backups regularly (deleted projects are restorable from the recycle bin for 30 days).
+8. No Service Worker / offline manifest: the first visit needs a network connection to load static assets; offline use later depends on the browser cache and is not guaranteed.
+9. Models with unknown pricing are neither cost-estimated nor budget-gated by design; the gate applies only to models with known pricing.
 
 ## Tests
 
@@ -190,7 +192,7 @@ Three layers:
 | --- | --- | --- |
 | Static | `pnpm lint` / `pnpm typecheck` | ESLint (incl. react-hooks) + `tsc --noEmit` |
 | Regression | `pnpm test` / `pnpm test:coverage` | The 20 MB import stress probe is excluded from the default run (slow and load-sensitive); use `pnpm test:stress` |
-| End-to-end | `pnpm test:e2e` | Playwright + local Edge, four smoke flows: create project → record assumption → export `.dcopilot` → rename & archive |
+| End-to-end | `pnpm test:e2e` | Playwright + local Edge, six smoke flows: create project → record assumption → export `.dcopilot` → rename & archive → record a decision → data self-check |
 
 CI (`.github/workflows/ci.yml`) runs lint + typecheck + test + `security:check` on push / PR; the E2E suite needs a browser and runs locally.
 
