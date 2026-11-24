@@ -1,6 +1,7 @@
 import { db } from './db'
 import type {
   Assumption,
+  Decision,
   Experiment,
   OstNode,
   Project,
@@ -133,6 +134,24 @@ export const reportsRepo = {
   },
 }
 
+export const decisionsRepo = {
+  get(id: string) {
+    return db.decisions.get(id)
+  },
+  put(row: Decision) {
+    return db.decisions.put(row)
+  },
+  delete(id: string) {
+    return db.decisions.delete(id)
+  },
+  byProject(projectId: string) {
+    return db.decisions.where('projectId').equals(projectId).toArray()
+  },
+  countByProject(projectId: string) {
+    return db.decisions.where('projectId').equals(projectId).count()
+  },
+}
+
 export const scoreEventsRepo = {
   async add(event: ScoreEvent) {
     await db.score_events.add(event)
@@ -204,6 +223,7 @@ export async function deleteProjectChildren(projectId: string): Promise<void> {
     db.experiments.where('projectId').equals(projectId).delete(),
     db.ost_nodes.where('projectId').equals(projectId).delete(),
     db.reports.where('projectId').equals(projectId).delete(),
+    db.decisions.where('projectId').equals(projectId).delete(),
     db.score_events.where('projectId').equals(projectId).delete(),
   ])
 }

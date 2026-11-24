@@ -29,7 +29,7 @@ describe('buildDiagnosticReport (§6.4)', () => {
     const report = await buildDiagnosticReport()
     expect(report.kind).toBe('discovery-copilot-diagnostics')
     expect(report.appVersion.length).toBeGreaterThan(0)
-    expect(report.formatVersion).toBe(1)
+    expect(report.formatVersion).toBe(2)
     expect(report.generatedAt).toBeTruthy()
     expect(typeof report.userAgent).toBe('string')
     expect(report.providerHosts).toEqual([])

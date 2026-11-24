@@ -7,6 +7,8 @@ export const CAPS = {
   ostNodes: 300,
   experiments: 100,
   reports: 20,
+  /** 每项目决策日志条数；由 decisions service 在写入口拦截。 */
+  decisions: 200,
 } as const
 
 /** Recycle-bin retention before purge (plan §7.6: 30 days). */

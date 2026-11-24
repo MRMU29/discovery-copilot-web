@@ -1,4 +1,5 @@
 import type { z } from 'zod'
+import { decisionsRepo } from '@/db/repositories'
 import { nowIso } from '@/lib/clock'
 import { createAssumption, type ScoreChangeActor } from './assumptions'
 import { createExperiment } from './experiments'
@@ -31,6 +32,10 @@ type SampleExperiment = {
   successCriteria: string
   status: z.infer<typeof experimentSchema>['status']
   result: string | null
+  /** 可选：仅示例中已完成的那条带结论，让新用户一进来就看到看板效果。 */
+  outcome?: z.infer<typeof experimentSchema>['outcome']
+  metric?: string
+  actualValue?: string
 }
 
 const ASSUMPTIONS: SampleAssumption[] = [
@@ -127,6 +132,9 @@ const EXPERIMENTS: SampleExperiment[] = [
     successCriteria: '12 人中 ≥ 9 人在 3 分钟内完成且无需帮助',
     status: 'completed',
     result: '12 人中 10 人在 3 分钟内完成（83%），卡点集中在过敏原筛选——已反馈菜单结构。',
+    outcome: 'supported',
+    metric: '3 分钟内完成首单的人数',
+    actualValue: '10 / 12（83%）',
   },
 ]
 
@@ -167,6 +175,9 @@ export async function loadSampleProject(): Promise<SampleProjectRefs> {
       status: e.status,
       result: e.result,
       assumptionId: assumptionIds[e.assumptionKey],
+      ...(e.outcome ? { outcome: e.outcome } : {}),
+      ...(e.metric ? { metric: e.metric } : {}),
+      ...(e.actualValue ? { actualValue: e.actualValue } : {}),
     })
     experimentIds[e.key] = row.id
   }
@@ -178,6 +189,36 @@ export async function loadSampleProject(): Promise<SampleProjectRefs> {
     content: SAMPLE_REPORT,
     generatedSections: ['背景', '假设优先级', '实验计划', '结论与下一步'],
     generatedAt: nowIso(),
+  })
+
+  // 决策日志的 service（含容量、被推翻语义）属 C 任务；示例数据只需要两条可回的种子行，
+  // 因此直接走 repo，避免在 A 任务里提前造一套 service 再被 C 重写。
+  const ts = nowIso()
+  await decisionsRepo.put({
+    id: crypto.randomUUID(),
+    projectId: project.id,
+    statement: '先用假门测试验证付费意愿，再决定是否投入产品开发',
+    rationale: '价值假设的验证成本最低；若付费意愿不成立，后续菜单与供应链投入全部作废。',
+    decidedAt: ts,
+    linkedAssumptionIds: [assumptionIds['value-willingness']],
+    linkedExperimentIds: [experimentIds['exp-fake-door']],
+    status: 'active',
+    supersededAt: null,
+    createdAt: ts,
+    updatedAt: ts,
+  })
+  await decisionsRepo.put({
+    id: crypto.randomUUID(),
+    projectId: project.id,
+    statement: '首期只做微信小程序，不开发原生 App',
+    rationale: '开发资源有限，小程序足够验证下单与订阅流程。',
+    decidedAt: ts,
+    linkedAssumptionIds: [],
+    linkedExperimentIds: [],
+    status: 'superseded',
+    supersededAt: ts,
+    createdAt: ts,
+    updatedAt: ts,
   })
 
   return { project, assumptionIds, experimentIds }

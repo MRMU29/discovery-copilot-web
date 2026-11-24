@@ -163,6 +163,9 @@ describe('applySuggestedExperiments (command 6)', () => {
       successCriteria: null,
       status: 'planned' as const,
       result: null,
+      outcome: null,
+      metric: '',
+      actualValue: '',
       createdAt: now,
       updatedAt: now,
     }))

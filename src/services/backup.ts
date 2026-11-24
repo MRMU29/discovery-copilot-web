@@ -13,6 +13,7 @@ import { fileNameSlug } from '@/lib/report-export'
 import { CAPS } from '@/lib/limits'
 import {
   assumptionSchema,
+  decisionSchema,
   experimentSchema,
   ostNodeSchema,
   projectSchema,
@@ -20,6 +21,7 @@ import {
   settingsRowSchema,
   snapshotSchema,
   type Assumption,
+  type Decision,
   type Experiment,
   type OstNode,
   type Project,
@@ -43,7 +45,7 @@ import { REQUIRED_PARENT } from './ost'
  */
 
 export const DCOPILT_FORMAT = 'discovery-copilot'
-export const DCOPILT_FORMAT_VERSION = 1
+export const DCOPILT_FORMAT_VERSION = 2
 export const DCOPILT_MAX_BYTES = 20 * 1024 * 1024
 
 export const dcopilotFileSchema = z.object({
@@ -56,6 +58,7 @@ export const dcopilotFileSchema = z.object({
   experiments: z.array(experimentSchema),
   ostNodes: z.array(ostNodeSchema),
   reports: z.array(reportSchema),
+  decisions: z.array(decisionSchema),
   settings: settingsRowSchema.omit({ key: true }).nullable(),
 })
 
@@ -76,6 +79,11 @@ const MIGRATIONS: MigrationStep[] = [
   {
     from: 0,
     migrate: (raw) => ({ reports: [], settings: null, ...raw, formatVersion: 1 }),
+  },
+  {
+    from: 1,
+    // v2 只新增可选能力：老文件补一个空决策表即可，绝不改写既有行。
+    migrate: (raw) => ({ ...raw, decisions: [], formatVersion: 2 }),
   },
 ]
 
@@ -126,11 +134,12 @@ export async function buildDcopilotFile(scope: 'all' | string): Promise<Dcopilot
     throw new DomainError('NOT_FOUND', translate('backup.projectNotFound', { id: scope }))
   }
   const ids = new Set(projects.map((p) => p.id))
-  const [assumptions, experiments, ostNodes, reports, settings] = await Promise.all([
+  const [assumptions, experiments, ostNodes, reports, decisions, settings] = await Promise.all([
     db.assumptions.toArray(),
     db.experiments.toArray(),
     db.ost_nodes.toArray(),
     db.reports.toArray(),
+    db.decisions.toArray(),
     getSettings(),
   ])
   return dcopilotFileSchema.parse({
@@ -143,6 +152,7 @@ export async function buildDcopilotFile(scope: 'all' | string): Promise<Dcopilot
     experiments: experiments.filter((e) => ids.has(e.projectId)),
     ostNodes: ostNodes.filter((n) => ids.has(n.projectId)),
     reports: reports.filter((r) => ids.has(r.projectId)),
+    decisions: decisions.filter((d) => ids.has(d.projectId)),
     // Backup age is device-local: exporting it would make a restored file claim a
     // freshness it does not have.
     settings: settings ? { ...settings, lastBackupAt: null } : null,
@@ -209,6 +219,7 @@ export function parseDcopilotFile(
     ['experiments', file.experiments],
     ['ostNodes', file.ostNodes],
     ['reports', file.reports],
+    ['decisions', file.decisions],
   ]
   for (const [label, rows] of tables) {
     const seen = new Set<string>()
@@ -297,6 +308,17 @@ function validateIntegrity(file: DcopilotFile): string[] {
     if (!projectIds.has(row.projectId))
       issues.push(translate('backup.reportMissingProject', { title: row.title.slice(0, 16) }))
   }
+  for (const row of file.decisions) {
+    // 决策必须有所属项目；引用悬空不在这里阻断（见 sanitizeDecision）。
+    if (!projectIds.has(row.projectId)) {
+      issues.push(
+        translate('common.fieldIssue', {
+          field: 'decisions.projectId',
+          message: `${row.id} references a missing project`,
+        }),
+      )
+    }
+  }
   return issues
 }
 
@@ -317,7 +339,9 @@ export interface ImportItem {
 export interface ImportSummary {
   items: ImportItem[]
   counts: { new: number; conflict: number; duplicate: number }
-  totals: { assumptions: number; experiments: number; ostNodes: number; reports: number }
+  totals: { assumptions: number; experiments: number; ostNodes: number; reports: number; decisions: number }
+  /** 导入时被清理的悬空决策引用条数（链接被过滤，决策本体保留）。 */
+  cleanedReferences: number
   hasSettings: boolean
 }
 
@@ -326,14 +350,41 @@ interface ProjectChildren {
   experiments: Experiment[]
   ostNodes: OstNode[]
   reports: Report[]
+  decisions: Decision[]
+}
+
+/**
+ * 悬空引用只清理链接、保留决策本体：删假设/实验本来就会让历史引用失效，
+ * 一条决策不应因为引用失效而从备份里消失。
+ */
+function sanitizeDecision(
+  decision: Decision,
+  assumptionIds: Set<string>,
+  experimentIds: Set<string>,
+): Decision {
+  const linkedAssumptionIds = decision.linkedAssumptionIds.filter((id) => assumptionIds.has(id))
+  const linkedExperimentIds = decision.linkedExperimentIds.filter((id) => experimentIds.has(id))
+  if (
+    linkedAssumptionIds.length === decision.linkedAssumptionIds.length &&
+    linkedExperimentIds.length === decision.linkedExperimentIds.length
+  ) {
+    return decision
+  }
+  return { ...decision, linkedAssumptionIds, linkedExperimentIds }
 }
 
 function childrenOfInFile(file: DcopilotFile, projectId: string): ProjectChildren {
+  const assumptionIds = new Set(file.assumptions.filter((a) => a.projectId === projectId).map((a) => a.id))
+  const experimentIds = new Set(file.experiments.filter((e) => e.projectId === projectId).map((e) => e.id))
   return {
     assumptions: file.assumptions.filter((a) => a.projectId === projectId).sort((a, b) => a.id.localeCompare(b.id)),
     experiments: file.experiments.filter((e) => e.projectId === projectId).sort((a, b) => a.id.localeCompare(b.id)),
     ostNodes: file.ostNodes.filter((n) => n.projectId === projectId).sort((a, b) => a.id.localeCompare(b.id)),
     reports: file.reports.filter((r) => r.projectId === projectId).sort((a, b) => a.id.localeCompare(b.id)),
+    decisions: file.decisions
+      .filter((d) => d.projectId === projectId)
+      .map((d) => sanitizeDecision(d, assumptionIds, experimentIds))
+      .sort((a, b) => a.id.localeCompare(b.id)),
   }
 }
 
@@ -343,19 +394,22 @@ function projectDigest(project: Project, children: ProjectChildren): string {
 }
 
 export async function summarizeImport(file: DcopilotFile): Promise<ImportSummary> {
-  const [localProjects, localAssumptions, localExperiments, localNodes, localReports] = await Promise.all([
-    db.projects.toArray(),
-    db.assumptions.toArray(),
-    db.experiments.toArray(),
-    db.ost_nodes.toArray(),
-    db.reports.toArray(),
-  ])
+  const [localProjects, localAssumptions, localExperiments, localNodes, localReports, localDecisions] =
+    await Promise.all([
+      db.projects.toArray(),
+      db.assumptions.toArray(),
+      db.experiments.toArray(),
+      db.ost_nodes.toArray(),
+      db.reports.toArray(),
+      db.decisions.toArray(),
+    ])
   const localById = new Map(localProjects.map((p) => [p.id, p] as const))
   const localChildrenOf = (projectId: string): ProjectChildren => ({
     assumptions: localAssumptions.filter((a) => a.projectId === projectId).sort((a, b) => a.id.localeCompare(b.id)),
     experiments: localExperiments.filter((e) => e.projectId === projectId).sort((a, b) => a.id.localeCompare(b.id)),
     ostNodes: localNodes.filter((n) => n.projectId === projectId).sort((a, b) => a.id.localeCompare(b.id)),
     reports: localReports.filter((r) => r.projectId === projectId).sort((a, b) => a.id.localeCompare(b.id)),
+    decisions: localDecisions.filter((d) => d.projectId === projectId).sort((a, b) => a.id.localeCompare(b.id)),
   })
 
   const items: ImportItem[] = file.projects.map((project) => {
@@ -369,6 +423,21 @@ export async function summarizeImport(file: DcopilotFile): Promise<ImportSummary
     return { project, status: incomingDigest === localDigest ? 'duplicate' : 'conflict', sameName: false }
   })
 
+  const cleanedReferences = file.decisions.reduce((sum, decision) => {
+    const assumptionIds = new Set(
+      file.assumptions.filter((a) => a.projectId === decision.projectId).map((a) => a.id),
+    )
+    const experimentIds = new Set(
+      file.experiments.filter((e) => e.projectId === decision.projectId).map((e) => e.id),
+    )
+    const clean = sanitizeDecision(decision, assumptionIds, experimentIds)
+    return (
+      sum +
+      (decision.linkedAssumptionIds.length - clean.linkedAssumptionIds.length) +
+      (decision.linkedExperimentIds.length - clean.linkedExperimentIds.length)
+    )
+  }, 0)
+
   return {
     items,
     counts: {
@@ -381,7 +450,9 @@ export async function summarizeImport(file: DcopilotFile): Promise<ImportSummary
       experiments: file.experiments.length,
       ostNodes: file.ostNodes.length,
       reports: file.reports.length,
+      decisions: file.decisions.length,
     },
+    cleanedReferences,
     hasSettings: file.settings !== null,
   }
 }
@@ -432,7 +503,7 @@ export async function applyImport(file: DcopilotFile, options: ImportOptions): P
   await db.transaction(
     'rw',
     // score_events joins because deleteProjectChildren (overwrite path) clears it.
-    [db.projects, db.assumptions, db.experiments, db.ost_nodes, db.reports, db.score_events, db.settings],
+    [db.projects, db.assumptions, db.experiments, db.ost_nodes, db.reports, db.decisions, db.score_events, db.settings],
     async () => {
       for (const item of summary.items) {
         const incoming = childrenOfInFile(file, item.project.id)
@@ -474,6 +545,7 @@ async function bulkPutChildren(children: ProjectChildren): Promise<void> {
   if (children.experiments.length > 0) await db.experiments.bulkPut(children.experiments)
   if (children.ostNodes.length > 0) await db.ost_nodes.bulkPut(children.ostNodes)
   if (children.reports.length > 0) await db.reports.bulkPut(children.reports)
+  if (children.decisions.length > 0) await db.decisions.bulkPut(children.decisions)
 }
 
 function remapProjectCopy(
@@ -482,7 +554,13 @@ function remapProjectCopy(
 ): { project: Project; children: ProjectChildren } {
   const projectId = crypto.randomUUID()
   const idMap = new Map<string, string>()
-  for (const row of [...children.assumptions, ...children.experiments, ...children.ostNodes, ...children.reports]) {
+  for (const row of [
+    ...children.assumptions,
+    ...children.experiments,
+    ...children.ostNodes,
+    ...children.reports,
+    ...children.decisions,
+  ]) {
     idMap.set(row.id, crypto.randomUUID())
   }
   const remap = (id: string | null): string | null => (id ? (idMap.get(id) ?? null) : null)
@@ -505,6 +583,17 @@ function remapProjectCopy(
         linkedExperimentId: remap(n.linkedExperimentId),
       })),
       reports: children.reports.map((r) => ({ ...r, id: remap(r.id)!, projectId })),
+      decisions: children.decisions.map((d) => ({
+        ...d,
+        id: remap(d.id)!,
+        projectId,
+        linkedAssumptionIds: d.linkedAssumptionIds
+          .map((id) => idMap.get(id))
+          .filter((id): id is string => Boolean(id)),
+        linkedExperimentIds: d.linkedExperimentIds
+          .map((id) => idMap.get(id))
+          .filter((id): id is string => Boolean(id)),
+      })),
     },
   }
 }

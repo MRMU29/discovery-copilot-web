@@ -32,7 +32,7 @@ describe('.dcopilot export is secret-free by construction', () => {
     expect(json).not.toMatch(/"(?:apiKey|secret|password|token|credential)"/i)
     expect(Object.keys(file).sort()).toEqual(
       ['format', 'formatVersion', 'appVersion', 'exportedAt', 'projects', 'assumptions',
-       'experiments', 'ostNodes', 'reports', 'settings'].sort(),
+       'experiments', 'ostNodes', 'reports', 'decisions', 'settings'].sort(),
     )
     const settingKeys = Object.keys(file.settings ?? {})
     expect(settingKeys.some((k) => /key|secret|token|password|credential/i.test(k))).toBe(false)

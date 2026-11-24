@@ -2,6 +2,7 @@ import Dexie, { type Table } from 'dexie'
 import type {
   AiRequest,
   Assumption,
+  Decision,
   Experiment,
   OstNode,
   Project,
@@ -28,6 +29,7 @@ export class DiscoveryDb extends Dexie {
   projects!: Table<Project, string>
   assumptions!: Table<Assumption, string>
   experiments!: Table<Experiment, string>
+  decisions!: Table<Decision, string>
   ost_nodes!: Table<OstNode, string>
   reports!: Table<Report, string>
   score_events!: Table<ScoreEvent, number>
@@ -58,6 +60,10 @@ export class DiscoveryDb extends Dexie {
     // Command 10: pre-overwrite-import local snapshots (§7.6, keep latest 3).
     this.version(4).stores({
       snapshots: 'id, createdAt',
+    })
+    // v0.2.3: decision log — append-only rows that reference assumptions/experiments.
+    this.version(5).stores({
+      decisions: 'id, projectId, status, [projectId+status]',
     })
   }
 }

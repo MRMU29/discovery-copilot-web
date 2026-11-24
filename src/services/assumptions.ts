@@ -111,7 +111,7 @@ export async function listAssumptionsByProject(projectId: string): Promise<Assum
 export async function deleteAssumption(id: string): Promise<void> {
   await db.transaction(
     'rw',
-    [db.assumptions, db.score_events, db.experiments, db.ost_nodes],
+    [db.assumptions, db.score_events, db.experiments, db.ost_nodes, db.decisions],
     async () => {
       const raw = await assumptionsRepo.get(id)
       if (!raw) throw new DomainError('NOT_FOUND', `假设不存在: ${id}`)
@@ -119,6 +119,17 @@ export async function deleteAssumption(id: string): Promise<void> {
       await scoreEventsRepo.deleteByAssumption(id)
       await assumptionsRepo.unlinkAssumption(id)
       await ostRepo.unlinkAssumption(id)
+      // 决策引用该假设时只摘掉链接：决策本体与“为什么”必须留在日志里。
+      const decisions = await db.decisions.where('projectId').equals(raw.projectId).toArray()
+      const ts = nowIso()
+      for (const decision of decisions) {
+        if (!decision.linkedAssumptionIds.includes(id)) continue
+        await db.decisions.put({
+          ...decision,
+          linkedAssumptionIds: decision.linkedAssumptionIds.filter((x) => x !== id),
+          updatedAt: ts,
+        })
+      }
     },
   )
 }

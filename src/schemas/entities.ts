@@ -73,6 +73,12 @@ export const experimentSchema = z.object({
   successCriteria: z.string().max(2000).nullable().default(null),
   status: z.enum(['planned', 'running', 'completed', 'dropped']).default('planned'),
   result: z.string().max(5000).nullable().default(null),
+  /** 实验结论：null = 尚未评估（与 assumption.confidence 的 null 语义一致）。 */
+  outcome: z.enum(['supported', 'refuted', 'inconclusive']).nullable().default(null),
+  /** 观测指标名，如「首次导入耗时」；空串 = 未填。 */
+  metric: z.string().max(200).default(''),
+  /** 实测值，自由文本（保留「12 分钟」「快了 40%」这类非数值写法）。 */
+  actualValue: z.string().max(200).default(''),
   createdAt: z.string(),
   updatedAt: z.string(),
 })
@@ -108,6 +114,30 @@ export const reportSchema = z.object({
  * secret-shaped fields structurally impossible; the settings service also
  * rejects secret-looking keys explicitly for a readable error.
  */
+/**
+ * 决策日志（v0.2.3）：只追加、可标注被推翻，不提供改正文的能力。
+ * 它引用假设/实验而不是嵌入它们——删除假设时只清理引用，决策本体保留。
+ */
+export const DECISION_STATUS = ['active', 'superseded'] as const
+
+export const decisionSchema = z.object({
+  id: z.string(),
+  projectId: z.string(),
+  /** 决策本身，一句话。 */
+  statement: z.string().min(1).max(200),
+  /** 依据（可引用假设/实验的结论）。 */
+  rationale: z.string().max(2000).default(''),
+  /** 决策日期，ISO 字符串；创建时取 nowIso()，本版本不提供改期 UI。 */
+  decidedAt: z.string(),
+  linkedAssumptionIds: z.array(z.string()).default([]),
+  linkedExperimentIds: z.array(z.string()).default([]),
+  /** 只追加不修改：被推翻时置 superseded，不删行。 */
+  status: z.enum(DECISION_STATUS).default('active'),
+  supersededAt: z.string().nullable().default(null),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+})
+
 export const settingsSchema = z.strictObject({
   theme: z.enum(['dark', 'light', 'system']).default('system'),
   /** UI locale (src/lib/i18n). Old rows/backup files without it fall back to zh-Hans. */
@@ -204,5 +234,6 @@ export type ScoreEvent = z.infer<typeof scoreEventSchema>
 export type Experiment = z.infer<typeof experimentSchema>
 export type OstNode = z.infer<typeof ostNodeSchema>
 export type Report = z.infer<typeof reportSchema>
+export type Decision = z.infer<typeof decisionSchema>
 export type Settings = z.infer<typeof settingsSchema>
 export type SettingsRow = z.infer<typeof settingsRowSchema>

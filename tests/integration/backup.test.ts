@@ -81,6 +81,7 @@ const newProjectFile = (): DcopilotFile =>
     experiments: [],
     ostNodes: [],
     reports: [],
+    decisions: [],
     settings: null,
   }) as DcopilotFile
 
@@ -109,7 +110,7 @@ describe('buildDcopilotFile (导出 · AC-08)', () => {
 
     const file = await buildDcopilotFile('all')
     expect(file.format).toBe('discovery-copilot')
-    expect(file.formatVersion).toBe(1)
+    expect(file.formatVersion).toBe(2)
     expect(file.appVersion.length).toBeGreaterThan(0)
     expect(file.projects).toHaveLength(1)
     expect(file.assumptions).toHaveLength(1)

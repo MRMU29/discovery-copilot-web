@@ -18,6 +18,7 @@ const PRODUCT_TABLES = [
   db.experiments,
   db.ost_nodes,
   db.reports,
+  db.decisions,
   db.score_events,
 ] as const
 

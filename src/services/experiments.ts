@@ -82,10 +82,21 @@ export async function listExperimentsByProject(projectId: string): Promise<Exper
 
 /** Unlinks OST nodes pointing at this experiment before removal. */
 export async function deleteExperiment(id: string): Promise<void> {
-  await db.transaction('rw', [db.experiments, db.ost_nodes], async () => {
+  await db.transaction('rw', [db.experiments, db.ost_nodes, db.decisions], async () => {
     const raw = await experimentsRepo.get(id)
     if (!raw) throw new DomainError('NOT_FOUND', `实验不存在: ${id}`)
     await ostRepo.unlinkExperiment(id)
     await experimentsRepo.delete(id)
+    // 同假设删除：决策只失去链接，不失去行。
+    const decisions = await db.decisions.where('projectId').equals(raw.projectId).toArray()
+    const ts = nowIso()
+    for (const decision of decisions) {
+      if (!decision.linkedExperimentIds.includes(id)) continue
+      await db.decisions.put({
+        ...decision,
+        linkedExperimentIds: decision.linkedExperimentIds.filter((x) => x !== id),
+        updatedAt: ts,
+      })
+    }
   })
 }

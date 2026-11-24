@@ -136,12 +136,12 @@ describe('parseDcopilotFile', () => {
   })
 
   it('rejects files from a newer app version', () => {
-    const result = parseDcopilotFile(JSON.stringify({ ...validFile, formatVersion: 2 }))
+    const result = parseDcopilotFile(JSON.stringify({ ...validFile, formatVersion: 3 }))
     expect(result.ok).toBe(false)
     if (!result.ok) expect(result.issues.join()).toContain('升级')
   })
 
-  it('migrates a v0 file (no reports/settings keys) to v1 (旧版本)', () => {
+  it('migrates a v0 file (no reports/settings keys) through v1 to v2 (旧版本)', () => {
     const v0: Record<string, unknown> = {
       format: DCOPILT_FORMAT,
       formatVersion: 0,
@@ -155,9 +155,10 @@ describe('parseDcopilotFile', () => {
     const result = parseDcopilotFile(JSON.stringify(v0))
     expect(result.ok).toBe(true)
     if (result.ok) {
-      expect(result.file.formatVersion).toBe(1)
+      expect(result.file.formatVersion).toBe(2)
       expect(result.file.reports).toEqual([])
       expect(result.file.settings).toBeNull()
+      expect(result.file.decisions).toEqual([])
     }
   })
 

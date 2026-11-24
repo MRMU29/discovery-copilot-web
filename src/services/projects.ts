@@ -91,7 +91,7 @@ export async function listDeletedProjects(): Promise<Project[]> {
 export async function deleteProjectCascade(id: string): Promise<void> {
   await db.transaction(
     'rw',
-    [db.projects, db.assumptions, db.experiments, db.ost_nodes, db.reports, db.score_events],
+    [db.projects, db.assumptions, db.experiments, db.ost_nodes, db.reports, db.decisions, db.score_events],
     async () => {
       const existing = await projectsRepo.get(id)
       if (!existing) throw new DomainError('NOT_FOUND', `项目不存在: ${id}`)
