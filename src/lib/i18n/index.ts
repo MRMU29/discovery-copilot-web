@@ -34,7 +34,8 @@ export const LOCALE_LABELS: Record<Locale, string> = {
   fr: 'Français',
 }
 
-const HTML_LANG: Record<Locale, string> = {
+/** BCP-47 tag per locale — also what <html lang> and exported documents use. */
+export const LOCALE_TAGS: Record<Locale, string> = {
   'zh-Hans': 'zh-CN',
   'zh-Hant': 'zh-TW',
   en: 'en',
@@ -60,7 +61,7 @@ export function getLocale(): Locale {
 export function setLocale(locale: Locale): void {
   if (locale === currentLocale) return
   currentLocale = locale
-  if (typeof document !== 'undefined') document.documentElement.lang = HTML_LANG[locale]
+  if (typeof document !== 'undefined') document.documentElement.lang = LOCALE_TAGS[locale]
   for (const listener of listeners) listener()
 }
 

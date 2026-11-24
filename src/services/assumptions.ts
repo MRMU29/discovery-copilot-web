@@ -99,12 +99,6 @@ export async function updateAssumption(
   })
 }
 
-export async function getAssumption(id: string): Promise<Assumption> {
-  const raw = await assumptionsRepo.get(id)
-  if (!raw) throw new DomainError('NOT_FOUND', `假设不存在: ${id}`)
-  return normalize(raw)
-}
-
 /** Highest score first; ties break by recency. */
 export async function listAssumptionsByProject(projectId: string): Promise<Assumption[]> {
   const rows = await assumptionsRepo.byProject(projectId)

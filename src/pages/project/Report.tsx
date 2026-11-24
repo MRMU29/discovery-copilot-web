@@ -225,7 +225,7 @@ export default function Report({ projectId }: { projectId: string }) {
           )}
           <div className="flex gap-2">
             <Button onClick={() => void handleCreate()} disabled={creating || !newTitle.trim()}>
-              {creating ? t('common.saving2') : t('report.create')}
+              {creating ? t('common.saving') : t('report.create')}
             </Button>
             <Button variant="ghost" onClick={() => setNewOpen(false)}>
               {t('common.cancel')}

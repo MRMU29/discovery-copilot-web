@@ -6,7 +6,7 @@
 
 无需账号 · IndexedDB 本地存储 · BYOK · `.dcopilot` 文件跨设备迁移的产品发现工作台
 
-[![Version](https://img.shields.io/badge/version-v0.2.0-2b4ea8?style=for-the-badge)](./package.json)
+[![Version](https://img.shields.io/badge/version-v0.2.1-2b4ea8?style=for-the-badge)](./package.json)
 [![License](https://img.shields.io/badge/license-MIT-227b70?style=for-the-badge)](LICENSE)
 [![Node](https://img.shields.io/badge/Node.js-22%2B-43853d?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-12-227b70?style=for-the-badge&logo=pnpm&logoColor=white)](https://pnpm.io/)
@@ -106,6 +106,9 @@ location / {
   add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src *; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
   add_header X-Content-Type-Options "nosniff" always;
   add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+  add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+  add_header Cross-Origin-Opener-Policy "same-origin" always;
+  add_header X-Frame-Options "DENY" always;
 }
 ```
 
@@ -177,7 +180,7 @@ GitHub 仓库端：本仓库已配置 `.github/dependabot.yml`（npm / GitHub Ac
 
 ## 测试
 
-单元 + 集成测试（Vitest，fake-indexeddb 覆盖 IndexedDB 事务与迁移；以 `pnpm test` 输出为准），导入「合法 / 非法 / 损坏 / 旧版本 / 冲突 / 回滚」六类场景均有专测；覆盖率门槛 schemas/db/ai 行覆盖 ≥ 80%。
+单元 + 集成测试（Vitest，fake-indexeddb 覆盖 IndexedDB 事务与迁移；以 `pnpm test` 输出为准），导入「合法 / 非法 / 损坏 / 旧版本 / 冲突 / 回滚」六类场景均有专测；覆盖率门槛 schemas/db/ai 行覆盖 ≥ 80%。`pnpm test` 不包含 20 MB 级导入压力探针（单例耗时随机器负载波动，会拖垮默认回归），需要时单独跑 `pnpm test:stress`。
 
 ## 许可证与致谢
 

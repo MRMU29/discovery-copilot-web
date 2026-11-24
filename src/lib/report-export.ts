@@ -1,5 +1,6 @@
 import { renderMarkdown } from './markdown'
 import { BRAND_ICON_URL } from './brand'
+import { LOCALE_TAGS, getLocale, translate } from './i18n'
 
 /**
  * Report export + shared report display helpers (AC-07 / AC-13). HTML export
@@ -23,7 +24,7 @@ export function isUserEdited(report: ReportDisplayFields): boolean {
 }
 
 export function formatWhen(iso: string): string {
-  return new Date(iso).toLocaleString('zh-CN', {
+  return new Date(iso).toLocaleString(LOCALE_TAGS[getLocale()], {
     year: 'numeric',
     month: 'numeric',
     day: 'numeric',
@@ -32,15 +33,23 @@ export function formatWhen(iso: string): string {
   })
 }
 
-/** One-line provenance for the detail page header and the exported document. */
+/**
+ * One-line provenance, in the *current UI locale* (§audit: the exported
+ * document used to be hard-coded Chinese even with an English interface).
+ */
 export function reportMetaLine(report: ReportDisplayFields): string {
-  const edited = isUserEdited(report) ? ` · 你已编辑于 ${formatWhen(report.updatedAt)}` : ''
+  const edited = isUserEdited(report)
+    ? translate('report.meta.edited', { when: formatWhen(report.updatedAt) })
+    : ''
   if (report.generatedAt) {
+    const listSeparator = getLocale().startsWith('zh') ? '、' : ', '
     const sections =
-      report.generatedSections.length > 0 ? `（节：${report.generatedSections.join('、')}）` : ''
-    return `AI 生成于 ${formatWhen(report.generatedAt)}${sections}${edited}`
+      report.generatedSections.length > 0
+        ? translate('report.meta.sections', { list: report.generatedSections.join(listSeparator) })
+        : ''
+    return `${translate('report.meta.aiGenerated', { when: formatWhen(report.generatedAt) })}${sections}${edited}`
   }
-  return `手动创建于 ${formatWhen(report.createdAt)}${edited}`
+  return `${translate('report.meta.manual', { when: formatWhen(report.createdAt) })}${edited}`
 }
 
 /** Filesystem-safe name segment; CJK is kept (Windows/Android handle it fine). */
@@ -128,11 +137,10 @@ export function buildReportHtmlDocument(input: ReportExportInput, logoDataUrl?: 
     ? `<img src="${logoDataUrl}" alt="Discovery Copilot" />`
     : ''
   const title = escapeHtml(input.title)
-  const projectName = escapeHtml(input.projectName)
   const meta = escapeHtml(reportMetaLine(input))
   const body = renderMarkdown(input.content)
   return `<!doctype html>
-<html lang="zh-CN">
+<html lang="${LOCALE_TAGS[getLocale()]}">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -145,14 +153,14 @@ export function buildReportHtmlDocument(input: ReportExportInput, logoDataUrl?: 
 <article class="doc">
 <div class="brand">${brand}<span>DISCOVERY REPORT</span></div>
 <h1>${title}</h1>
-<p class="meta">项目：${projectName}</p>
+<p class="meta">${escapeHtml(translate('report.export.project', { name: input.projectName }))}</p>
 <p class="meta">${meta}</p>
 <hr class="rule" />
 <div class="doc-body">
 ${body}
 </div>
 </article>
-<p class="footer">由 Discovery Copilot 导出 · 本地优先产品发现工作台</p>
+<p class="footer">${escapeHtml(translate('report.export.footer'))}</p>
 </div>
 </body>
 </html>

@@ -4,6 +4,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { purgeExpiredProjects } from '@/services/projects'
 import { getSettings, updateSettings } from '@/services/settings'
 import { getOnboarding } from '@/services/onboarding'
+import { pruneOldAiRequests } from '@/ai/usage'
 import { PageSkeleton } from '@/components/common/states'
 import { WelcomeDialog } from '@/components/onboarding/WelcomeDialog'
 import { SETTINGS_PATHS } from '@/app/nav'
@@ -78,6 +79,8 @@ export default function AppShell() {
 
   useEffect(() => {
     void purgeExpiredProjects().catch(() => undefined)
+    // Cost ledger retention (§audit P1-5): keep 12 months, drop the rest.
+    void pruneOldAiRequests().catch(() => undefined)
   }, [])
 
   // 路由变化时收起抽屉：渲染期同步状态，避免 effect 内 setState 触发级联渲染。

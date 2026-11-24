@@ -9,8 +9,3 @@ export const EXPERIMENT_STATUS_META: Record<ExperimentStatus, { labelKey: string
   completed: { labelKey: 'experiment.status.completed', badgeClass: 'bg-success/15 text-success border border-success/30' },
   dropped: { labelKey: 'experiment.status.dropped', badgeClass: 'bg-surface-3 text-ink-faint border border-hairline' },
 }
-
-/** Truncate a linked assumption statement for the badge line. */
-export function truncateStatement(statement: string, max = 24): string {
-  return statement.length > max ? `${statement.slice(0, max)}…` : statement
-}

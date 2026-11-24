@@ -7,6 +7,7 @@ import {
   reportMetaLine,
 } from '@/lib/report-export'
 import { renderMarkdown } from '@/lib/markdown'
+import { setLocale } from '@/lib/i18n'
 
 const base = {
   title: '自动对账助手 · 发现报告',
@@ -101,5 +102,22 @@ describe('buildReportHtmlDocument', () => {
   it('omits the logo when none is available', () => {
     const html = buildReportHtmlDocument(base, null)
     expect(html).not.toContain('<img')
+  })
+})
+
+describe('export follows the active UI locale', () => {
+  it('writes English provenance, project label, lang and footer under en', () => {
+    setLocale('en')
+    try {
+      const html = buildReportHtmlDocument(base)
+      expect(html).toContain('<html lang="en">')
+      expect(html).toContain('AI generated on')
+      expect(html).toContain('Project: 自动对账助手')
+      expect(html).toContain('Exported from Discovery Copilot')
+      expect(html).not.toContain('AI 生成于')
+      expect(reportMetaLine(base)).toContain('sections:')
+    } finally {
+      setLocale('zh-Hans')
+    }
   })
 })

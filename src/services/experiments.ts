@@ -80,11 +80,6 @@ export async function listExperimentsByProject(projectId: string): Promise<Exper
   return rows.map(normalize).sort((a, b) => b.createdAt.localeCompare(a.createdAt))
 }
 
-export async function listExperimentsByAssumption(assumptionId: string): Promise<Experiment[]> {
-  const rows = await experimentsRepo.byAssumption(assumptionId)
-  return rows.map(normalize).sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-}
-
 /** Unlinks OST nodes pointing at this experiment before removal. */
 export async function deleteExperiment(id: string): Promise<void> {
   await db.transaction('rw', [db.experiments, db.ost_nodes], async () => {

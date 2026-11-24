@@ -1,10 +1,8 @@
-import { lazy } from 'react'
+import { Suspense, lazy } from 'react'
 import { Navigate, RouterProvider, createBrowserRouter } from 'react-router-dom'
 import AppShell from '@/components/layout/AppShell'
 import ProjectPage from '@/components/layout/ProjectPage'
 import SettingsLayout from '@/components/layout/SettingsLayout'
-import { ExportProbe } from '@/dev/ExportProbe'
-import { TokensPreview } from '@/app/TokensPreview'
 
 const Dashboard = lazy(() => import('@/pages/Dashboard'))
 const AiProvider = lazy(() => import('@/pages/settings/AiProvider'))
@@ -15,13 +13,42 @@ const About = lazy(() => import('@/pages/settings/About'))
 const Product = lazy(() => import('@/pages/settings/Product'))
 const Terms = lazy(() => import('@/pages/settings/Terms'))
 
+const ExportProbe = lazy(() => import('@/dev/ExportProbe').then((m) => ({ default: m.ExportProbe })))
+const TokensPreview = lazy(() => import('@/app/TokensPreview').then((m) => ({ default: m.TokensPreview })))
+
+/**
+ * Development probes are dev-only (§audit P0-2): `import.meta.env.DEV` is a
+ * statically-replaced literal, so in a production build this branch collapses to
+ * `[]` and the lazy imports (ExportProbe pulls in html-to-image) are tree-shaken
+ * out of the bundle entirely. In dev they stay lazy to keep the first paint cheap.
+ */
+const devRoutes = import.meta.env.DEV
+  ? [
+      {
+        path: '/dev/export-probe',
+        element: (
+          <Suspense>
+            <ExportProbe />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/dev/tokens',
+        element: (
+          <Suspense>
+            <TokensPreview />
+          </Suspense>
+        ),
+      },
+    ]
+  : []
+
 /**
  * §3.1 contract: /project/:projectId/<section> flat children, ≤3 segments;
  * unknown section renders overview in place (ProjectPage handles it).
  */
 const router = createBrowserRouter([
-  { path: '/dev/export-probe', element: <ExportProbe /> },
-  { path: '/dev/tokens', element: <TokensPreview /> },
+  ...devRoutes,
   {
     path: '/',
     element: <AppShell />,

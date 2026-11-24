@@ -164,7 +164,9 @@ export function parseDcopilotFile(
   options?: { maxBytes?: number },
 ): DcopilotParseResult {
   const maxBytes = options?.maxBytes ?? DCOPILT_MAX_BYTES
-  if (text.length > maxBytes) {
+  // 字节而非 UTF-16 码元：纯中文文本 1 字 = 3 字节，用 text.length 会把 60 MB
+  // 的中文文件当成 20 MB 放进来，与 UI/README 的「≤20 MB」口径不符。
+  if (new TextEncoder().encode(text).byteLength > maxBytes) {
     return {
       ok: false,
       issues: [translate('backup.tooLarge', { limit: Math.round(maxBytes / 1024 / 1024) })],
@@ -521,8 +523,4 @@ export async function createSnapshot(): Promise<Snapshot> {
   await snapshotsRepo.put(row)
   await snapshotsRepo.prune(3)
   return row
-}
-
-export async function listSnapshots(): Promise<Snapshot[]> {
-  return snapshotsRepo.list()
 }

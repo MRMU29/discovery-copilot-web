@@ -125,41 +125,6 @@ export function CompassIcon(props: IconProps) {
   )
 }
 
-/** 空状态：假设矩阵散点。 */
-export function MatrixGlyphIcon(props: IconProps) {
-  return (
-    <Svg size={props.size ?? 32} {...props}>
-      <path d="M5 4v15h15" />
-      <circle cx="10" cy="14" r="1.6" fill="currentColor" stroke="none" />
-      <circle cx="14" cy="9" r="2.4" fill="currentColor" stroke="none" opacity={0.7} />
-      <circle cx="17" cy="13" r="1.2" fill="currentColor" stroke="none" opacity={0.5} />
-    </Svg>
-  )
-}
-
-/** 空状态：OST 树枝。 */
-export function TreeGlyphIcon(props: IconProps) {
-  return (
-    <Svg size={props.size ?? 32} {...props}>
-      <circle cx="12" cy="5" r="2.2" />
-      <circle cx="6" cy="18" r="2.2" />
-      <circle cx="18" cy="18" r="2.2" />
-      <path d="M12 7.5v4M12 11.5 7 15.8M12 11.5l5 4.3" />
-    </Svg>
-  )
-}
-
-/** 空状态：报告文档。 */
-export function ReportGlyphIcon(props: IconProps) {
-  return (
-    <Svg size={props.size ?? 32} {...props}>
-      <path d="M6 3h8l4 4v14H6V3Z" />
-      <path d="M14 3v4h4" />
-      <path d="M9 12h6M9 16h4" />
-    </Svg>
-  )
-}
-
 /** 链接入口箭头——设置内文档/政策条目跳转。 */
 export function ChevronRightIcon(props: IconProps) {
   return (

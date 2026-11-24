@@ -6,7 +6,7 @@
 
 An account-free, local-first (IndexedDB), BYOK product discovery workspace that migrates across devices via `.dcopilot` files.
 
-[![Version](https://img.shields.io/badge/version-v0.2.0-2b4ea8?style=for-the-badge)](./package.json)
+[![Version](https://img.shields.io/badge/version-v0.2.1-2b4ea8?style=for-the-badge)](./package.json)
 [![License](https://img.shields.io/badge/license-MIT-227b70?style=for-the-badge)](LICENSE)
 [![Node](https://img.shields.io/badge/Node.js-22%2B-43853d?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-12-227b70?style=for-the-badge&logo=pnpm&logoColor=white)](https://pnpm.io/)
@@ -106,6 +106,9 @@ location / {
   add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src *; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
   add_header X-Content-Type-Options "nosniff" always;
   add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+  add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+  add_header Cross-Origin-Opener-Policy "same-origin" always;
+  add_header X-Frame-Options "DENY" always;
 }
 ```
 
@@ -177,7 +180,7 @@ On the GitHub side: `.github/dependabot.yml` (weekly npm / GitHub Actions checks
 
 ## Tests
 
-Unit + integration tests (Vitest, fake-indexeddb covering IndexedDB transactions and migrations; see `pnpm test` for the current count); dedicated tests for all six import scenarios (valid / invalid / corrupted / legacy / conflict / rollback); coverage gate at schemas/db/ai lines >= 80%.
+Unit + integration tests (Vitest, fake-indexeddb covering IndexedDB transactions and migrations; see `pnpm test` for the current count); dedicated tests for all six import scenarios (valid / invalid / corrupted / legacy / conflict / rollback); coverage gate at schemas/db/ai lines >= 80%. `pnpm test` excludes the 20 MB import stress probe (its runtime swings with machine load and would dominate the default run); run it explicitly with `pnpm test:stress`.
 
 ## License & credits
 
