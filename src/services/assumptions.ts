@@ -7,7 +7,7 @@ import { CAPS } from '@/lib/limits'
 import { computePriorityScore } from '@/lib/priority'
 import { assumptionSchema, type Assumption } from '@/schemas/entities'
 
-type AssumptionInput = Omit<
+export type AssumptionInput = Omit<
   z.input<typeof assumptionSchema>,
   'id' | 'projectId' | 'priorityScore' | 'createdAt' | 'updatedAt'
 >
@@ -65,8 +65,52 @@ export async function createAssumption(
   })
 }
 
-export async function updateAssumption(
-  id: string,
+/**
+ * Bulk create (§roadmap 4.3): one transaction, one all-or-nothing batch. The
+ * dialog trims to the remaining capacity first; this check is the defence
+ * against a second tab racing the same limit.
+ */
+export async function createAssumptions(
+  projectId: string,
+  inputs: AssumptionInput[],
+  opts: { changedBy?: ScoreChangeActor } = {},
+): Promise<Assumption[]> {
+  if (inputs.length === 0) return []
+  return db.transaction('rw', [db.projects, db.assumptions, db.score_events], async () => {
+    const project = await projectsRepo.get(projectId)
+    if (!project || project.deletedAt) {
+      throw new DomainError('NOT_FOUND', `项目不存在或已在回收站: ${projectId}`)
+    }
+    const count = await assumptionsRepo.countByProject(projectId)
+    if (count + inputs.length > CAPS.assumptions) {
+      throw new DomainError(
+        'CAPACITY_LIMIT',
+        `单项目假设数将超过上限（现有 ${count}，上限 ${CAPS.assumptions}）`,
+      )
+    }
+    const ts = nowIso()
+    const created: Assumption[] = []
+    for (const input of inputs) {
+      const base = assumptionSchema
+        .omit({ priorityScore: true })
+        .parse({ ...input, id: crypto.randomUUID(), projectId, createdAt: ts, updatedAt: ts })
+      const row = assumptionSchema.parse({ ...base, priorityScore: computePriorityScore(base) })
+      await assumptionsRepo.put(row)
+      await scoreEventsRepo.add({
+        assumptionId: row.id,
+        projectId,
+        changedBy: opts.changedBy ?? 'user',
+        changedAt: ts,
+        before: null,
+        after: snapshotOf(row),
+      })
+      created.push(row)
+    }
+    return created
+  })
+}
+
+export async function updateAssumption(  id: string,
   patch: AssumptionPatch,
   opts: { changedBy?: ScoreChangeActor } = {},
 ): Promise<Assumption> {

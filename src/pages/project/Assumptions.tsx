@@ -7,16 +7,21 @@ import { EmptyState, PageSkeleton } from '@/components/common/states'
 import { useT } from '@/lib/i18n'
 import { getProject } from '@/services/projects'
 import { listAssumptionsByProject } from '@/services/assumptions'
+import { listExperimentsByProject } from '@/services/experiments'
 import { AIIdentifyDialog } from './assumptions/AIIdentifyDialog'
 import { AssumptionCard } from './assumptions/AssumptionCard'
 import { AssumptionForm } from './assumptions/AssumptionForm'
+import { BatchAssumptionDialog } from './assumptions/BatchAssumptionDialog'
 import { MatrixTable, PriorityMatrix } from './assumptions/PriorityMatrix'
 
 type View = 'matrix' | 'table'
 
+type OutcomeSummary = { supported: number; refuted: number; inconclusive: number }
+
 export default function Assumptions({ projectId }: { projectId: string }) {
   const t = useT()
   const assumptions = useLiveQuery(() => listAssumptionsByProject(projectId), [projectId])
+  const experiments = useLiveQuery(() => listExperimentsByProject(projectId), [projectId])
   const project = useLiveQuery(async () => {
     try {
       const p = await getProject(projectId)
@@ -28,6 +33,7 @@ export default function Assumptions({ projectId }: { projectId: string }) {
   const [searchParams, setSearchParams] = useSearchParams()
   const [formOpen, setFormOpen] = useState(false)
   const [aiOpen, setAiOpen] = useState(false)
+  const [batchOpen, setBatchOpen] = useState(false)
   const [showArchived, setShowArchived] = useState(false)
   const [highlightId, setHighlightId] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
@@ -36,7 +42,20 @@ export default function Assumptions({ projectId }: { projectId: string }) {
   const setView = (next: View) =>
     setSearchParams(next === 'table' ? { view: 'table' } : {}, { replace: true })
 
-  if (assumptions === undefined) return <PageSkeleton />
+  if (assumptions === undefined || experiments === undefined) return <PageSkeleton />
+
+  // Derived, never stored: how many experiments support/refute each assumption.
+  const outcomeSummary = new Map<string, OutcomeSummary>()
+  for (const experiment of experiments) {
+    if (!experiment.assumptionId || !experiment.outcome) continue
+    const current = outcomeSummary.get(experiment.assumptionId) ?? {
+      supported: 0,
+      refuted: 0,
+      inconclusive: 0,
+    }
+    current[experiment.outcome] += 1
+    outcomeSummary.set(experiment.assumptionId, current)
+  }
 
   const notArchived = assumptions.filter((a) => a.status !== 'archived')
   const visible = showArchived ? assumptions : notArchived
@@ -58,6 +77,9 @@ export default function Assumptions({ projectId }: { projectId: string }) {
         </div>
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => setAiOpen(true)}>{t('assumptions.aiCta')}</Button>
+          <Button variant="secondary" onClick={() => setBatchOpen(true)}>
+            {t('assumptions.batch.cta')}
+          </Button>
           <Button variant="secondary" onClick={() => setFormOpen(true)}>
             {t('assumptions.add')}
           </Button>
@@ -125,7 +147,12 @@ export default function Assumptions({ projectId }: { projectId: string }) {
               <p className="text-body-sm text-ink-faint">{t('assumptions.noneVisible')}</p>
             ) : (
               visible.map((a) => (
-                <AssumptionCard key={a.id} assumption={a} highlighted={highlightId === a.id} />
+                <AssumptionCard
+                  key={a.id}
+                  assumption={a}
+                  highlighted={highlightId === a.id}
+                  experimentSummary={outcomeSummary.get(a.id)}
+                />
               ))
             )}
           </section>
@@ -139,6 +166,17 @@ export default function Assumptions({ projectId }: { projectId: string }) {
           onCancel={() => setFormOpen(false)}
         />
       </Dialog>
+
+      <BatchAssumptionDialog
+        open={batchOpen}
+        projectId={projectId}
+        existingCount={assumptions.length}
+        onClose={() => setBatchOpen(false)}
+        onDone={(created) => {
+          setBatchOpen(false)
+          setNotice(t('assumptions.batch.done', { count: created }))
+        }}
+      />
 
       {aiOpen && (
         <AIIdentifyDialog

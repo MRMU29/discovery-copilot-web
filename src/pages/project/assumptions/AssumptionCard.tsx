@@ -14,9 +14,12 @@ const STATUS_OPTIONS = Object.entries(STATUS_META)
 export function AssumptionCard({
   assumption,
   highlighted,
+  experimentSummary,
 }: {
   assumption: Assumption
   highlighted: boolean
+  /** Derived from the project's experiments; undefined = no experiments linked. */
+  experimentSummary?: { supported: number; refuted: number; inconclusive: number }
 }) {
   const t = useT()
   const [pane, setPane] = useState<Pane>('none')
@@ -72,6 +75,20 @@ export function AssumptionCard({
       </div>
 
       <p className="mt-2 text-body text-ink">{assumption.statement}</p>
+
+      {experimentSummary && (
+        <p className="mt-1 text-caption text-ink-muted">
+          {t('assumptions.outcomeSummary')}{' '}
+          {[
+            [experimentSummary.supported, 'assumptions.outcome.supported'],
+            [experimentSummary.refuted, 'assumptions.outcome.refuted'],
+            [experimentSummary.inconclusive, 'assumptions.outcome.inconclusive'],
+          ]
+            .filter(([count]) => Number(count) > 0)
+            .map(([count, key]) => `${t(String(key))} ${count}`)
+            .join(' · ')}
+        </p>
+      )}
 
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-caption text-ink-muted">
         <span>{t('assumption.impactLabel', { value: assumption.impact })}</span>
