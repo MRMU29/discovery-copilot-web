@@ -1,3 +1,4 @@
+import { getLocale, type Locale } from '@/lib/i18n'
 import { zhHans } from '@/lib/i18n/dictionaries/zh-Hans'
 import {
   DESIGN_EXPERIMENTS_PROMPT,
@@ -26,6 +27,27 @@ export interface PromptBundle {
 
 const OUTPUT_RULE = '只输出一个 JSON 对象，不要任何解释、Markdown 代码块或额外文本。'
 
+/**
+ * Prompt 语言名（模型比英文名更可靠地遵循带母语括注的指令）。
+ * 只影响 P1.1.0 模板里的 {{language}}；few-shot 示例仍为中文，
+ * 它只承担"字段格式示范"，本轮不翻译。
+ */
+const PROMPT_LANGUAGES: Record<Locale, string> = {
+  'zh-Hans': 'Simplified Chinese (简体中文)',
+  'zh-Hant': 'Traditional Chinese (繁體中文)',
+  en: 'English',
+  ja: 'Japanese (日本語)',
+  ko: 'Korean (한국어)',
+  ru: 'Russian (Русский)',
+  de: 'German (Deutsch)',
+  fr: 'French (Français)',
+}
+
+/** 模板里的 {{language}} 在组装时解析，不在注册表里固化——版本仍需可复现。 */
+function localize(template: string): string {
+  return template.replaceAll('{{language}}', PROMPT_LANGUAGES[getLocale()])
+}
+
 function composeRelayText(instruction: string, inputBlock: string, example: string): string {
   return [
     instruction,
@@ -46,7 +68,7 @@ export interface IdentifyPromptInput {
 }
 
 export function buildIdentifyPrompt(input: IdentifyPromptInput): PromptBundle {
-  const instruction = IDENTIFY_ASSUMPTIONS_PROMPT.template
+  const instruction = localize(IDENTIFY_ASSUMPTIONS_PROMPT.template)
   const parts: string[] = []
   if (input.projectName) parts.push(`项目名称：${input.projectName}`)
   parts.push(`项目背景与想法：\n${input.context.trim().slice(0, 8000)}`)
@@ -79,7 +101,9 @@ export interface ExperimentPromptInput {
 }
 
 export function buildExperimentPrompt(input: ExperimentPromptInput): PromptBundle {
-  const instruction = getPrompt(DESIGN_EXPERIMENTS_PROMPT.id, DESIGN_EXPERIMENTS_PROMPT.version).template
+  const instruction = localize(
+    getPrompt(DESIGN_EXPERIMENTS_PROMPT.id, DESIGN_EXPERIMENTS_PROMPT.version).template,
+  )
   const a = input.assumption
   const lines = [
     `假设陈述：${a.statement}`,
@@ -111,7 +135,9 @@ export interface ReportPromptInput {
 }
 
 export function buildReportPrompt(input: ReportPromptInput): PromptBundle {
-  const instruction = getPrompt(GENERATE_REPORT_PROMPT.id, GENERATE_REPORT_PROMPT.version).template
+  const instruction = localize(
+    getPrompt(GENERATE_REPORT_PROMPT.id, GENERATE_REPORT_PROMPT.version).template,
+  )
   const parts: string[] = []
   if (input.projectName) parts.push(`项目名称：${input.projectName}`)
   parts.push(`## 项目发现数据\n${input.context.trim().slice(0, 8000)}`)
