@@ -167,8 +167,61 @@ ${body}
 `
 }
 
-let logoCache: string | null | undefined
+/**
+ * Plain-Markdown export (§roadmap 3.4): the fidelity path for re-editing in
+ * Obsidian/Typora rather than for pixel-perfect sharing. Front matter is
+ * deliberately avoided — YAML with arbitrary user titles is easy to break —
+ * so provenance lives in a blockquote instead.
+ */
+export function buildReportMarkdown(input: ReportExportInput): string {
+  const body = input.content.trim()
+  return [
+    `# ${input.title}`,
+    '',
+    `> ${translate('report.export.project', { name: input.projectName })}`,
+    `> ${reportMetaLine(input)}`,
+    '',
+    '---',
+    '',
+    body,
+    '',
+  ].join('\n')
+}
 
+export interface ReportJsonInput extends ReportExportInput {
+  id: string
+  projectId: string
+}
+
+/**
+ * Machine-readable export: the `report` key is a verbatim `reportSchema` row,
+ * so the file round-trips through the same validation as a `.dcopilot` row
+ * instead of inventing a second shape. `exportedAt` is the only derived field.
+ */
+export function buildReportJson(input: ReportJsonInput): string {
+  return JSON.stringify(
+    {
+      format: 'discovery-copilot.report',
+      formatVersion: 1,
+      exportedAt: new Date().toISOString(),
+      projectName: input.projectName,
+      report: {
+        id: input.id,
+        projectId: input.projectId,
+        title: input.title,
+        content: input.content,
+        generatedAt: input.generatedAt,
+        generatedSections: input.generatedSections,
+        createdAt: input.createdAt,
+        updatedAt: input.updatedAt,
+      },
+    },
+    null,
+    2,
+  )
+}
+
+let logoCache: string | null | undefined
 /** Inlines the app brand icon into the exported HTML; failures degrade to text-only. */
 export async function loadBrandLogoDataUrl(): Promise<string | null> {
   if (logoCache !== undefined) return logoCache

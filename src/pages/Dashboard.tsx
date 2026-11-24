@@ -1,17 +1,28 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { createProject, deleteProjectCascade, listActiveProjects, listDeletedProjects, restoreProject, softDeleteProject } from '@/services/projects'
+import {
+  createProject,
+  deleteProjectCascade,
+  listActiveProjects,
+  listDeletedProjects,
+  renameProject,
+  restoreProject,
+  setProjectArchived,
+  softDeleteProject,
+} from '@/services/projects'
 import { SAMPLE_PROJECT_NAME, loadSampleProject } from '@/services/sample-project'
 import { getOnboarding, markOnboardingDone } from '@/services/onboarding'
 import { getSettings } from '@/services/settings'
 import { storageEstimate, type QuotaReport } from '@/db/quota'
 import { RETENTION_MS } from '@/lib/limits'
 import { Button } from '@/components/ui/Button'
+import { Dialog } from '@/components/ui/Dialog'
 import { EmptyState, ErrorState, PageSkeleton } from '@/components/common/states'
 import { FieldHint } from '@/components/onboarding/FieldHint'
 import { projectPath } from '@/app/nav'
 import { useT } from '@/lib/i18n'
+import type { Project } from '@/schemas/entities'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 /** Nudge when the only copy has not been exported for this long. */
@@ -30,18 +41,24 @@ export default function Dashboard() {
   const [loadingSample, setLoadingSample] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [quota, setQuota] = useState<QuotaReport | null>(null)
+  const [renameTarget, setRenameTarget] = useState<Project | null>(null)
+  const [renameValue, setRenameValue] = useState('')
+  const [renaming, setRenaming] = useState(false)
   const onboarding = useLiveQuery(() => getOnboarding(), [])
   const hintsHighlighted = onboarding !== undefined && !onboarding.fieldHints
 
   const data = useLiveQuery(async () => {
-    const [active, deleted, settings] = await Promise.all([
+    const [projects, deleted, settings] = await Promise.all([
       listActiveProjects(),
       listDeletedProjects(),
       getSettings(),
     ])
     const now = Date.now() // impure call kept out of render (react-hooks/purity)
     return {
-      active,
+      // Archived projects are a reversible filter, so they are split here and
+      // never removed from the DB (all their assumptions/OST stay queryable).
+      active: projects.filter((p) => p.status !== 'archived'),
+      archived: projects.filter((p) => p.status === 'archived'),
       deleted: deleted.map((p) => ({
         ...p,
         daysLeft: Math.max(0, Math.ceil((Date.parse(p.deletedAt!) + RETENTION_MS - now) / DAY_MS)),
@@ -87,7 +104,9 @@ export default function Dashboard() {
   async function handleLoadSample() {
     if (loadingSample) return
     // 已有示例项目时直接跳过去，不再重复创建（避免堆积多个同名示例）。
-    const existing = data?.active.find((p) => p.name === SAMPLE_PROJECT_NAME)
+    const existing = [...(data?.active ?? []), ...(data?.archived ?? [])].find(
+      (p) => p.name === SAMPLE_PROJECT_NAME,
+    )
     if (existing) {
       navigate(projectPath(existing.id))
       return
@@ -124,7 +143,44 @@ export default function Dashboard() {
     }
   }
 
+  function openRename(project: Project) {
+    setError(null)
+    setRenameTarget(project)
+    setRenameValue(project.name)
+  }
+
+  async function handleRename(event: React.FormEvent) {
+    event.preventDefault()
+    const target = renameTarget
+    const trimmed = renameValue.trim()
+    if (!target || !trimmed || renaming) return
+    setRenaming(true)
+    setError(null)
+    try {
+      await renameProject(target.id, trimmed)
+      setRenameTarget(null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setRenaming(false)
+    }
+  }
+
+  async function handleArchive(project: Project, archived: boolean) {
+    setError(null)
+    try {
+      await setProjectArchived(project.id, archived)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    }
+  }
+
   if (data === undefined) return <PageSkeleton />
+
+  const totalProjects = data.active.length + data.archived.length
+  const showBackupReminder =
+    totalProjects > 0 &&
+    (data.backupAgeDays === null || data.backupAgeDays >= BACKUP_REMINDER_DAYS)
 
   const nameInput = (
     <input
@@ -215,7 +271,7 @@ export default function Dashboard() {
         Backup health (§7.3): the browser holds the only copy, so a stale (or
         missing) export deserves a nudge that the previous UI never gave.
       */}
-      {data.active.length > 0 && (data.backupAgeDays === null || data.backupAgeDays >= BACKUP_REMINDER_DAYS) && (
+      {showBackupReminder && (
         <section
           aria-label={t('dashboard.backupHeading')}
           className="flex flex-col gap-3 rounded-lg border border-warning/40 bg-surface-1 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
@@ -234,7 +290,7 @@ export default function Dashboard() {
         </section>
       )}
 
-      {data.active.length === 0 ? (
+      {data.active.length === 0 && data.archived.length === 0 ? (
         <EmptyState
           title={t('dashboard.emptyTitle')}
           description={t('dashboard.emptyDesc')}
@@ -242,26 +298,79 @@ export default function Dashboard() {
       ) : (
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {data.active.map((p) => (
-            <li key={p.id} className="relative">
-              <Link
-                to={projectPath(p.id)}
-                className="block rounded-lg border border-hairline bg-surface-1 p-4 pr-12 shadow-card transition-all hover:-translate-y-0.5 hover:border-hairline-strong hover:shadow-pop sm:p-5"
-              >
-                <p className="text-subhead text-ink sm:text-card-title">{p.name}</p>
-                {p.description && <p className="mt-1.5 line-clamp-2 text-body-sm text-ink-muted">{p.description}</p>}
-                <p className="mt-4 text-caption text-ink-faint">{t('dashboard.updatedAt', { date: p.updatedAt.slice(0, 10) })}</p>
-              </Link>
-              <button
-                type="button"
-                aria-label={t('dashboard.deleteAria', { name: p.name })}
-                onClick={() => void handleSoftDelete(p.id)}
-                className="absolute right-2 top-2 min-h-11 min-w-11 rounded-btn px-2 text-caption text-ink-faint hover:bg-danger/10 hover:text-danger"
-              >
-                {t('common.delete')}
-              </button>
+            <li key={p.id} className="flex flex-col">
+              <div className="flex h-full flex-col rounded-lg border border-hairline bg-surface-1 shadow-card transition-all hover:-translate-y-0.5 hover:border-hairline-strong hover:shadow-pop">
+                <Link to={projectPath(p.id)} className="block flex-1 p-4 sm:p-5">
+                  <p className="text-subhead text-ink sm:text-card-title">{p.name}</p>
+                  {p.description && <p className="mt-1.5 line-clamp-2 text-body-sm text-ink-muted">{p.description}</p>}
+                  <p className="mt-4 text-caption text-ink-faint">{t('dashboard.updatedAt', { date: p.updatedAt.slice(0, 10) })}</p>
+                </Link>
+                {/*
+                  Actions live in their own row (not as an overlay) so each one
+                  keeps a 44px target and a name for screen readers, and so the
+                  row still fits a 375px card.
+                */}
+                <div className="flex flex-wrap items-center justify-end gap-1 border-t border-hairline px-2 py-1">
+                  <button
+                    type="button"
+                    aria-label={t('dashboard.renameAria', { name: p.name })}
+                    onClick={() => openRename(p)}
+                    className="min-h-11 rounded-btn px-2.5 text-caption text-ink-faint hover:bg-surface-2 hover:text-ink"
+                  >
+                    {t('dashboard.rename')}
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={t('dashboard.archiveAria', { name: p.name })}
+                    onClick={() => void handleArchive(p, true)}
+                    className="min-h-11 rounded-btn px-2.5 text-caption text-ink-faint hover:bg-surface-2 hover:text-ink"
+                  >
+                    {t('dashboard.archive')}
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={t('dashboard.deleteAria', { name: p.name })}
+                    onClick={() => void handleSoftDelete(p.id)}
+                    className="min-h-11 rounded-btn px-2.5 text-caption text-ink-faint hover:bg-danger/10 hover:text-danger"
+                  >
+                    {t('common.delete')}
+                  </button>
+                </div>
+              </div>
             </li>
           ))}
         </ul>
+      )}
+
+      {data.archived.length > 0 && (
+        <details className="rounded-lg border border-hairline bg-surface-1 px-4 py-3">
+          <summary className="min-h-11 cursor-pointer text-eyebrow text-ink-muted">
+            {t('dashboard.archivedHeading', { count: data.archived.length })}
+          </summary>
+          <p className="mt-1 text-caption text-ink-faint">{t('dashboard.archivedNote')}</p>
+          <ul className="mt-3 space-y-2">
+            {data.archived.map((p) => (
+              <li
+                key={p.id}
+                className="flex flex-col items-start gap-2 rounded-lg border border-hairline bg-surface-2/40 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <Link to={projectPath(p.id)} className="min-w-0 flex-1 text-body-sm text-ink-secondary hover:text-ink">
+                  {p.name}
+                  <span className="ml-2 text-caption text-ink-faint">
+                    {t('dashboard.updatedAt', { date: p.updatedAt.slice(0, 10) })}
+                  </span>
+                </Link>
+                <Button
+                  variant="secondary"
+                  aria-label={t('dashboard.unarchiveAria', { name: p.name })}
+                  onClick={() => void handleArchive(p, false)}
+                >
+                  {t('dashboard.unarchive')}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </details>
       )}
 
       {data.deleted.length > 0 && (
@@ -290,6 +399,35 @@ export default function Dashboard() {
           </ul>
         </section>
       )}
+
+      <Dialog
+        open={renameTarget !== null}
+        title={t('dashboard.renameTitle')}
+        onClose={() => setRenameTarget(null)}
+      >
+        <form onSubmit={handleRename} className="space-y-3">
+          <div>
+            <label htmlFor="rename-project-name" className="text-caption text-ink-muted">
+              {t('dashboard.nameLabel')}
+            </label>
+            <input
+              id="rename-project-name"
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              maxLength={120}
+              className="mt-1 min-h-11 w-full rounded-btn border border-hairline-strong bg-surface-1 px-3 py-2 text-body text-ink focus:border-accent-focus focus:outline-none"
+            />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button type="submit" disabled={!renameValue.trim() || renaming}>
+              {renaming ? t('common.saving') : t('common.save')}
+            </Button>
+            <Button variant="ghost" onClick={() => setRenameTarget(null)}>
+              {t('common.cancel')}
+            </Button>
+          </div>
+        </form>
+      </Dialog>
     </div>
   )
 }

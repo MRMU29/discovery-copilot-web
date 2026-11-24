@@ -6,7 +6,7 @@
 
 An account-free, local-first (IndexedDB), BYOK product discovery workspace that migrates across devices via `.dcopilot` files.
 
-[![Version](https://img.shields.io/badge/version-v0.2.1-2b4ea8?style=for-the-badge)](./package.json)
+[![Version](https://img.shields.io/badge/version-v0.2.2-2b4ea8?style=for-the-badge)](./package.json)
 [![License](https://img.shields.io/badge/license-MIT-227b70?style=for-the-badge)](LICENSE)
 [![Node](https://img.shields.io/badge/Node.js-22%2B-43853d?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-12-227b70?style=for-the-badge&logo=pnpm&logoColor=white)](https://pnpm.io/)
@@ -46,13 +46,13 @@ To use AI, add a provider and enter your own API Key under Settings → AI Provi
 
 | What you want to do | What the workspace provides |
 | --- | --- |
-| Manage projects | Create / edit / delete (30-day recycle bin) / one-click sample project |
+| Manage projects | Create / rename / archive (reversible, data kept) / delete (30-day recycle bin) / one-click sample project |
 | Work through key assumptions | Eight risk categories, Impact × Risk × (1 − Confidence) prioritization, Recharts priority matrix (with an equivalent table view) |
 | Plan experiments | Generate from assumptions → review → save → status & result write-back |
 | Draw an opportunity solution tree (OST) | Drag & drop + pinch zoom + keyboard equivalents + table view + viewport culling |
 | Use AI assistance | Three modes: BYOK direct calls (OpenAI-compatible / Gemini), Prompt Relay (zero-setup copy & paste), and Hybrid; identify / experiment / report tasks; review-first workflow (preview / apply / reject / regenerate / cancel) |
 | Keep AI costs in check | Pre-request token & cost estimates, budget circuit breakers (per-request + monthly), daily usage view; models with unknown pricing are neither estimated nor gated |
-| Produce discovery reports | AI-generated or hand-written, AI vs. user-confirmed content distinguished; HTML (faithful, recommended) / PNG (best-effort) export |
+| Produce discovery reports | AI-generated or hand-written, AI vs. user-confirmed content distinguished; HTML (faithful, recommended) / Markdown (re-editable) / JSON (programmatic) / PNG (best-effort) export |
 | Back up and migrate | `.dcopilot` export (all / single project), import (six-scenario validation, conflict strategies, rollback on failure), automatic pre-overwrite snapshots (3 kept) |
 | Tune appearance & language | Light / dark / follow-system themes (no first-frame flash), launch-screen animation, 8 interface languages (zh-Hans / zh-Hant / en / ja / ko / ru / de / fr, migrating with `.dcopilot`) |
 | Protect privacy & observability | Data stays local, de-identified diagnostics export |
@@ -82,7 +82,7 @@ pnpm build            # type check + production build
 pnpm test             # full Vitest suite (~10s)
 pnpm test:coverage    # coverage gate (schemas/db/ai >= 80%, services included)
 pnpm test:stress      # 20 MB import stress probe (excluded by default: slow, load-sensitive)
-pnpm test:e2e         # 3 Playwright smoke flows: create / record / export (local Edge)
+pnpm test:e2e         # 4 Playwright smoke flows: create / record / export / rename+archive (local Edge)
 pnpm lint && pnpm typecheck
 pnpm preview          # preview the production build locally
 pnpm probe:provider-cors   # provider direct-call CORS matrix (no key needed)
@@ -190,7 +190,7 @@ Three layers:
 | --- | --- | --- |
 | Static | `pnpm lint` / `pnpm typecheck` | ESLint (incl. react-hooks) + `tsc --noEmit` |
 | Regression | `pnpm test` / `pnpm test:coverage` | The 20 MB import stress probe is excluded from the default run (slow and load-sensitive); use `pnpm test:stress` |
-| End-to-end | `pnpm test:e2e` | Playwright + local Edge, three smoke flows: create project → record assumption → export `.dcopilot` |
+| End-to-end | `pnpm test:e2e` | Playwright + local Edge, four smoke flows: create project → record assumption → export `.dcopilot` → rename & archive |
 
 CI (`.github/workflows/ci.yml`) runs lint + typecheck + test + `security:check` on push / PR; the E2E suite needs a browser and runs locally.
 

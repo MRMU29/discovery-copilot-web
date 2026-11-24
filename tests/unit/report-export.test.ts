@@ -2,12 +2,15 @@
 import { describe, expect, it } from 'vitest'
 import {
   buildReportHtmlDocument,
+  buildReportJson,
+  buildReportMarkdown,
   isUserEdited,
   reportFileName,
   reportMetaLine,
 } from '@/lib/report-export'
 import { renderMarkdown } from '@/lib/markdown'
 import { setLocale } from '@/lib/i18n'
+import { reportSchema } from '@/schemas/entities'
 
 const base = {
   title: '自动对账助手 · 发现报告',
@@ -102,6 +105,64 @@ describe('buildReportHtmlDocument', () => {
   it('omits the logo when none is available', () => {
     const html = buildReportHtmlDocument(base, null)
     expect(html).not.toContain('<img')
+  })
+})
+
+describe('buildReportMarkdown', () => {
+  it('keeps the title, provenance and body as editable plain Markdown', () => {
+    const md = buildReportMarkdown(base)
+    expect(md.startsWith('# 自动对账助手 · 发现报告\n')).toBe(true)
+    expect(md).toContain('> 项目：自动对账助手')
+    expect(md).toContain('> AI 生成于')
+    expect(md).toContain('## 背景')
+    expect(md).toContain('## 结论与下一步')
+    // Markdown is the edit path: no HTML wrapper may leak into the file.
+    expect(md).not.toContain('<!doctype')
+    expect(md).not.toContain('<style>')
+  })
+
+  it('trims trailing blank lines in the body', () => {
+    const md = buildReportMarkdown({ ...base, content: '## 背景\n\n\n' })
+    expect(md.endsWith('## 背景\n')).toBe(true)
+  })
+})
+
+describe('buildReportJson', () => {
+  const withIds = { ...base, id: 'report-1', projectId: 'project-1' }
+
+  it('wraps a report row that reportSchema still accepts', () => {
+    const parsed = JSON.parse(buildReportJson(withIds)) as {
+      format: string
+      formatVersion: number
+      exportedAt: string
+      projectName: string
+      report: unknown
+    }
+    expect(parsed.format).toBe('discovery-copilot.report')
+    expect(parsed.formatVersion).toBe(1)
+    expect(Number.isNaN(Date.parse(parsed.exportedAt))).toBe(false)
+    expect(parsed.projectName).toBe('自动对账助手')
+
+    const row = reportSchema.parse(parsed.report)
+    expect(row.id).toBe('report-1')
+    expect(row.projectId).toBe('project-1')
+    expect(row.content).toBe(base.content)
+    expect(row.generatedSections).toEqual(['背景', '结论与下一步'])
+  })
+
+  it('is pretty-printed with stable keys for diffing', () => {
+    const raw = buildReportJson(withIds)
+    expect(raw).toContain('\n  "format": "discovery-copilot.report"')
+    expect(Object.keys(JSON.parse(raw).report)).toEqual([
+      'id',
+      'projectId',
+      'title',
+      'content',
+      'generatedAt',
+      'generatedSections',
+      'createdAt',
+      'updatedAt',
+    ])
   })
 })
 

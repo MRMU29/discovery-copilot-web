@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { toPng } from 'html-to-image'
 import { Button } from '@/components/ui/Button'
+import { Dialog } from '@/components/ui/Dialog'
 import { downloadDataUrl, downloadFile } from '@/lib/download'
 import { clearReportDraft, loadReportDraft, saveReportDraft } from '@/lib/report-draft'
 import { renderMarkdown } from '@/lib/markdown'
 import {
   buildReportHtmlDocument,
+  buildReportJson,
+  buildReportMarkdown,
   loadBrandLogoDataUrl,
   reportFileName,
   reportMetaLine,
@@ -35,7 +38,8 @@ export function ReportDetail({ report, projectName, onBack, onAiRewrite }: Repor
   const [editTitle, setEditTitle] = useState(report.title)
   const [editContent, setEditContent] = useState(report.content)
   const [saving, setSaving] = useState(false)
-  const [busyExport, setBusyExport] = useState<'html' | 'png' | null>(null)
+  const [exportOpen, setExportOpen] = useState(false)
+  const [busyExport, setBusyExport] = useState<'html' | 'png' | 'md' | 'json' | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -97,15 +101,53 @@ export function ReportDetail({ report, projectName, onBack, onAiRewrite }: Repor
     }
   }
 
+  /** All four formats share the same provenance input (project name fallback included). */
+  function exportInput() {
+    return { ...report, projectName: projectName ?? t('report.unnamedProject') }
+  }
+
   async function handleExportHtml() {
     setBusyExport('html')
     setError(null)
     setNotice(null)
     try {
       const logo = await loadBrandLogoDataUrl()
-      const html = buildReportHtmlDocument({ ...report, projectName: projectName ?? t('report.unnamedProject') }, logo)
+      const html = buildReportHtmlDocument(exportInput(), logo)
       downloadFile(reportFileName(report.title, 'html'), html, 'text/html;charset=utf-8')
+      setExportOpen(false)
       setNotice(t('report.exportedHtml'))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setBusyExport(null)
+    }
+  }
+
+  function handleExportMarkdown() {
+    setBusyExport('md')
+    setError(null)
+    setNotice(null)
+    try {
+      const md = buildReportMarkdown(exportInput())
+      downloadFile(reportFileName(report.title, 'md'), md, 'text/markdown;charset=utf-8')
+      setExportOpen(false)
+      setNotice(t('report.exportedMarkdown'))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setBusyExport(null)
+    }
+  }
+
+  function handleExportJson() {
+    setBusyExport('json')
+    setError(null)
+    setNotice(null)
+    try {
+      const json = buildReportJson(exportInput())
+      downloadFile(reportFileName(report.title, 'json'), json, 'application/json;charset=utf-8')
+      setExportOpen(false)
+      setNotice(t('report.exportedJson'))
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -122,6 +164,7 @@ export function ReportDetail({ report, projectName, onBack, onAiRewrite }: Repor
     try {
       const dataUrl = await toPng(node, { pixelRatio: 2, cacheBust: true })
       downloadDataUrl(reportFileName(report.title, 'png'), dataUrl)
+      setExportOpen(false)
       setNotice(t('report.exportedPng'))
     } catch (err) {
       setError(t('report.exportPngFailed') + (err instanceof Error ? err.message : String(err)))
@@ -137,16 +180,12 @@ export function ReportDetail({ report, projectName, onBack, onAiRewrite }: Repor
           ← {t('report.backList')}
         </Button>
         <div className="ml-auto flex flex-wrap gap-2">
-          <Button variant="secondary" onClick={() => void handleExportHtml()} disabled={busyExport !== null || editing}>
-            {busyExport === 'html' ? t('report.exporting') : t('report.exportHtml')}
-          </Button>
           <Button
             variant="secondary"
-            onClick={() => void handleExportPng()}
+            onClick={() => setExportOpen(true)}
             disabled={busyExport !== null || editing}
-            title={t('report.pngTitle')}
           >
-            {busyExport === 'png' ? t('report.exporting') : t('report.exportPng')}
+            {busyExport !== null ? t('report.exporting') : t('report.exportMenu')}
           </Button>
           <Button
             variant="secondary"
@@ -241,6 +280,40 @@ export function ReportDetail({ report, projectName, onBack, onAiRewrite }: Repor
           />
         </div>
       )}
+
+      {/*
+        One entry point for all four formats (§roadmap 3.4): the toolbar used to
+        grow a button per format, which does not fit a 375px screen and made the
+        fidelity differences invisible. The dialog states them once.
+      */}
+      <Dialog
+        open={exportOpen}
+        title={t('report.exportDialogTitle')}
+        onClose={() => setExportOpen(false)}
+      >
+        <div className="space-y-4">
+          <p className="text-body-sm text-ink-muted">{t('report.exportDialogIntro')}</p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Button variant="secondary" onClick={() => void handleExportHtml()} disabled={busyExport !== null}>
+              {busyExport === 'html' ? t('report.exporting') : t('report.exportHtml')}
+            </Button>
+            <Button variant="secondary" onClick={handleExportMarkdown} disabled={busyExport !== null}>
+              {busyExport === 'md' ? t('report.exporting') : t('report.exportMarkdown')}
+            </Button>
+            <Button variant="secondary" onClick={handleExportJson} disabled={busyExport !== null}>
+              {busyExport === 'json' ? t('report.exporting') : t('report.exportJson')}
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => void handleExportPng()}
+              disabled={busyExport !== null}
+              title={t('report.pngTitle')}
+            >
+              {busyExport === 'png' ? t('report.exporting') : t('report.exportPng')}
+            </Button>
+          </div>
+        </div>
+      </Dialog>
     </div>
   )
 }

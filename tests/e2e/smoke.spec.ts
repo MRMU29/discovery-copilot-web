@@ -39,3 +39,23 @@ test('exports a .dcopilot backup and never includes the API key', async ({ page 
   ])
   expect(download.suggestedFilename()).toMatch(/\.dcopilot$/)
 })
+
+test('renames a project and archives it reversibly', async ({ page }) => {
+  await createProject(page, '烟测-整理')
+  await bootApp(page)
+
+  await page.getByRole('button', { name: /^重命名项目「烟测-整理」/ }).click()
+  const dialog = page.getByRole('dialog')
+  await expect(dialog).toBeVisible()
+  await dialog.getByRole('textbox').fill('烟测-整理-改')
+  await dialog.getByRole('button', { name: '保存' }).click()
+  await expect(page.getByRole('link', { name: /烟测-整理-改/ })).toBeVisible()
+
+  await page.getByRole('button', { name: /^归档项目「烟测-整理-改」/ }).click()
+  // The card leaves the main grid but stays in the archived section.
+  await expect(page.getByRole('button', { name: /^归档项目/ })).toHaveCount(0)
+  await page.getByText('已归档（1）').click()
+  await page.getByRole('button', { name: /^取消归档「烟测-整理-改」/ }).click()
+  await expect(page.getByText(/^已归档（/)).toHaveCount(0)
+  await expect(page.getByRole('link', { name: /烟测-整理-改/ })).toBeVisible()
+})

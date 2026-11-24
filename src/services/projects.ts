@@ -32,6 +32,22 @@ export async function updateProject(id: string, patch: ProjectPatch): Promise<Pr
   })
 }
 
+/**
+ * Rename keeps the row id (and therefore the URL, backups and OST links)
+ * stable — only the display name changes (§roadmap 4.4: the missing UI entry
+ * for `updateProject` was the product gap, not the service).
+ */
+export async function renameProject(id: string, name: string): Promise<Project> {
+  const trimmed = name.trim()
+  if (!trimmed) throw new DomainError('INVALID_INPUT', '项目名称不能为空')
+  return updateProject(id, { name: trimmed })
+}
+
+/** Archive is a reversible filter, not a delete: every row stays untouched. */
+export async function setProjectArchived(id: string, archived: boolean): Promise<Project> {
+  return updateProject(id, { status: archived ? 'archived' : 'active' })
+}
+
 export async function getProject(id: string): Promise<Project> {
   const row = await projectsRepo.get(id)
   if (!row) throw new DomainError('NOT_FOUND', `项目不存在: ${id}`)
