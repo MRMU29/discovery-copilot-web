@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
+import { useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
 import { EmptyState, PageSkeleton } from '@/components/common/states'
@@ -9,8 +10,11 @@ import { listAssumptionsByProject } from '@/services/assumptions'
 import { getProject } from '@/services/projects'
 import { listExperimentsByProject } from '@/services/experiments'
 import { AIExperimentDialog } from './experiments/AIExperimentDialog'
+import { ExperimentBoard } from './experiments/ExperimentBoard'
 import { ExperimentCard } from './experiments/ExperimentCard'
 import { ExperimentForm } from './experiments/ExperimentForm'
+
+type View = 'board' | 'list'
 
 export default function Experiments({ projectId }: { projectId: string }) {
   const t = useT()
@@ -27,6 +31,12 @@ export default function Experiments({ projectId }: { projectId: string }) {
   const [formOpen, setFormOpen] = useState(false)
   const [aiOpen, setAiOpen] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  // Same URL-param convention as the assumptions matrix/table switch.
+  const view: View = searchParams.get('view') === 'list' ? 'list' : 'board'
+  const setView = (next: View) =>
+    setSearchParams(next === 'list' ? { view: 'list' } : {}, { replace: true })
 
   if (experiments === undefined || assumptions === undefined) return <PageSkeleton />
   const projectName = project?.name
@@ -58,11 +68,35 @@ export default function Experiments({ projectId }: { projectId: string }) {
         </div>
       )}
 
+      <div className="flex flex-wrap gap-1" role="group" aria-label={t('experiments.board.viewAria')}>
+        {(['board', 'list'] as const).map((option) => (
+          <button
+            key={option}
+            type="button"
+            aria-pressed={view === option}
+            onClick={() => setView(option)}
+            className={`min-h-11 rounded-btn px-3 text-body-sm transition-colors ${
+              view === option
+                ? 'bg-accent-soft font-semibold text-accent'
+                : 'text-ink-muted hover:bg-surface-2 hover:text-ink'
+            }`}
+          >
+            {option === 'board' ? t('experiments.board.viewBoard') : t('experiments.board.viewList')}
+          </button>
+        ))}
+      </div>
+
       {experiments.length === 0 ? (
         <EmptyState
           title={t('experiments.emptyTitle')}
           description={t('experiments.emptyDesc')}
           action={<Button onClick={() => setAiOpen(true)}>{t('experiments.emptyCta')}</Button>}
+        />
+      ) : view === 'board' ? (
+        <ExperimentBoard
+          experiments={experiments}
+          assumptions={assumptions}
+          assumptionById={assumptionById}
         />
       ) : (
         <section aria-label={t('experiments.listAria')} className="space-y-3">

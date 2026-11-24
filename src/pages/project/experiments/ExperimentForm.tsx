@@ -4,6 +4,7 @@ import { ASSUMPTION_TYPE_META } from '@/lib/assumption-meta'
 import type { Assumption, Experiment } from '@/schemas/entities'
 import { createExperiment, updateExperiment } from '@/services/experiments'
 import { useT } from '@/lib/i18n'
+import { OUTCOME_META, type ExperimentOutcome } from './experiment-meta'
 
 interface ExperimentFormProps {
   /** Required when creating; editing passes `initial` instead. */
@@ -24,6 +25,9 @@ export function ExperimentForm({ projectId, initial, assumptions, onDone, onCanc
   const [method, setMethod] = useState(initial?.method ?? '')
   const [successCriteria, setSuccessCriteria] = useState(initial?.successCriteria ?? '')
   const [assumptionId, setAssumptionId] = useState(initial?.assumptionId ?? '')
+  const [outcome, setOutcome] = useState<ExperimentOutcome | ''>(initial?.outcome ?? '')
+  const [metric, setMetric] = useState(initial?.metric ?? '')
+  const [actualValue, setActualValue] = useState(initial?.actualValue ?? '')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const editing = initial !== undefined
@@ -41,6 +45,9 @@ export function ExperimentForm({ projectId, initial, assumptions, onDone, onCanc
       method: method.trim(),
       successCriteria: successCriteria.trim() || null,
       assumptionId: assumptionId || null,
+      outcome: outcome || null,
+      metric: metric.trim(),
+      actualValue: actualValue.trim(),
     }
     try {
       if (editing && initial) {
@@ -101,6 +108,53 @@ export function ExperimentForm({ projectId, initial, assumptions, onDone, onCanc
           placeholder={t('experiment.criteriaPlaceholder')}
           className={inputClass}
         />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor="experiment-outcome" className="text-caption text-ink-muted">
+            {t('experiments.outcome.label')}
+          </label>
+          <select
+            id="experiment-outcome"
+            value={outcome}
+            onChange={(e) => setOutcome(e.target.value as ExperimentOutcome | '')}
+            className={`${inputClass} min-h-11`}
+          >
+            <option value="">{t('experiments.outcome.none')}</option>
+            {(Object.keys(OUTCOME_META) as ExperimentOutcome[]).map((value) => (
+              <option key={value} value={value}>
+                {t(OUTCOME_META[value].labelKey)}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="experiment-metric" className="text-caption text-ink-muted">
+            {t('experiments.outcome.metric')}
+          </label>
+          <input
+            id="experiment-metric"
+            value={metric}
+            onChange={(e) => setMetric(e.target.value)}
+            maxLength={200}
+            placeholder={t('experiments.outcome.metricPlaceholder')}
+            className={inputClass}
+          />
+        </div>
+        <div className="sm:col-span-2">
+          <label htmlFor="experiment-actual-value" className="text-caption text-ink-muted">
+            {t('experiments.outcome.actualValue')}
+          </label>
+          <input
+            id="experiment-actual-value"
+            value={actualValue}
+            onChange={(e) => setActualValue(e.target.value)}
+            maxLength={200}
+            placeholder={t('experiments.outcome.actualValuePlaceholder')}
+            className={inputClass}
+          />
+        </div>
       </div>
 
       <div>
