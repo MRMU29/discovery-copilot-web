@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/Button'
 import type { Assumption, Experiment } from '@/schemas/entities'
 import { deleteExperiment, updateExperiment } from '@/services/experiments'
 import { useT } from '@/lib/i18n'
-import { EXPERIMENT_STATUS_META, type ExperimentStatus } from './experiment-meta'
+import { EXPERIMENT_STATUS_META, OUTCOME_META, type ExperimentOutcome, type ExperimentStatus } from './experiment-meta'
 import { ExperimentForm } from './ExperimentForm'
 
 type Pane = 'none' | 'edit' | 'result'
@@ -21,9 +21,13 @@ export function ExperimentCard({ experiment, assumption, assumptions }: Experime
   const t = useT()
   const [pane, setPane] = useState<Pane>('none')
   const [resultDraft, setResultDraft] = useState(experiment.result ?? '')
+  const [outcomeDraft, setOutcomeDraft] = useState<ExperimentOutcome | ''>(experiment.outcome ?? '')
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const statusMeta = EXPERIMENT_STATUS_META[experiment.status]
+  const outcomeMeta = experiment.outcome ? OUTCOME_META[experiment.outcome] : null
+  const pendingResult =
+    experiment.status === 'completed' && !experiment.result?.trim() && experiment.outcome === null
 
   async function handleStatus(status: ExperimentStatus) {
     setError(null)
@@ -37,7 +41,10 @@ export function ExperimentCard({ experiment, assumption, assumptions }: Experime
   async function handleSaveResult() {
     setError(null)
     try {
-      await updateExperiment(experiment.id, { result: resultDraft.trim() || null })
+      await updateExperiment(experiment.id, {
+        result: resultDraft.trim() || null,
+        outcome: outcomeDraft || null,
+      })
       setPane('none')
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
@@ -57,7 +64,14 @@ export function ExperimentCard({ experiment, assumption, assumptions }: Experime
     }
   }
 
-  const toggle = (target: Pane) => setPane((cur) => (cur === target ? 'none' : target))
+  const toggle = (target: Pane) => {
+    if (target === 'result') {
+      // The full form may have changed these since the card mounted.
+      setResultDraft(experiment.result ?? '')
+      setOutcomeDraft(experiment.outcome ?? '')
+    }
+    setPane((cur) => (cur === target ? 'none' : target))
+  }
 
   return (
     <article className="rounded-lg border border-hairline bg-surface-1 p-4 shadow-card">
@@ -65,6 +79,16 @@ export function ExperimentCard({ experiment, assumption, assumptions }: Experime
         <span className={`rounded-full px-2 py-0.5 text-caption ${statusMeta.badgeClass}`}>
           {t(statusMeta.labelKey)}
         </span>
+        {outcomeMeta && (
+          <span className={`rounded-full px-2 py-0.5 text-caption ${outcomeMeta.badgeClass}`}>
+            {t(outcomeMeta.labelKey)}
+          </span>
+        )}
+        {pendingResult && (
+          <span className="rounded-full border border-warning/40 bg-tint-yellow px-2 py-0.5 text-caption text-ink">
+            {t('experiments.board.pendingResult')}
+          </span>
+        )}
         {assumption ? (
           <span className="rounded-full bg-tint-blue px-2 py-0.5 text-caption text-reading-ink" title={assumption.statement}>
             {t('experiment.assumptionBadge', {
@@ -89,6 +113,16 @@ export function ExperimentCard({ experiment, assumption, assumptions }: Experime
           <div>
             <dt className="inline text-ink-faint">{t('experiment.criteriaLabel')}</dt>
             <dd className="inline">{experiment.successCriteria}</dd>
+          </div>
+        )}
+        {(experiment.metric || experiment.actualValue) && (
+          <div>
+            <dt className="inline text-ink-faint">{t('experiments.outcome.metricValueLabel')}</dt>
+            <dd className="inline">
+              {experiment.metric}
+              {experiment.metric && experiment.actualValue ? ' = ' : ''}
+              {experiment.actualValue}
+            </dd>
           </div>
         )}
         {experiment.result && (
@@ -147,6 +181,22 @@ export function ExperimentCard({ experiment, assumption, assumptions }: Experime
       )}
       {pane === 'result' && (
         <div className="mt-4 space-y-2 border-t border-hairline pt-4">
+          <label htmlFor={`experiment-result-outcome-${experiment.id}`} className="text-caption text-ink-muted">
+            {t('experiments.outcome.label')}
+          </label>
+          <select
+            id={`experiment-result-outcome-${experiment.id}`}
+            value={outcomeDraft}
+            onChange={(e) => setOutcomeDraft(e.target.value as ExperimentOutcome | '')}
+            className="min-h-11 w-full rounded-btn border border-hairline-strong bg-surface-1 px-3 text-body text-ink focus:border-accent-focus focus:outline-none"
+          >
+            <option value="">{t('experiments.outcome.none')}</option>
+            {(Object.keys(OUTCOME_META) as ExperimentOutcome[]).map((value) => (
+              <option key={value} value={value}>
+                {t(OUTCOME_META[value].labelKey)}
+              </option>
+            ))}
+          </select>
           <label htmlFor={`experiment-result-${experiment.id}`} className="text-caption text-ink-muted">
             {t('experiment.resultFieldLabel')}
           </label>
