@@ -170,6 +170,14 @@ export const aiRequestSchema = z.object({
   kind: z.enum(['text', 'json']),
   promptId: z.string(),
   promptVersion: z.string(),
+  /** Effective prompt parameters (§v0.2.4). Absent on rows recorded before 1.2.0. */
+  promptOptions: z
+    .object({
+      tone: z.enum(['neutral', 'direct', 'warm']),
+      detail: z.enum(['brief', 'standard', 'deep']),
+      language: z.string(),
+    })
+    .optional(),
   inputTokens: z.number().int().nonnegative(),
   outputTokens: z.number().int().nonnegative(),
   estimatedUsd: z.number().nullable().default(null),

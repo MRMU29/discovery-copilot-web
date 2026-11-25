@@ -185,7 +185,7 @@ describe('generateReport (command 9)', () => {
     const requests = await db.ai_requests.toArray()
     expect(requests).toHaveLength(1)
     expect(requests[0]!.promptId).toBe('generate-report')
-    expect(requests[0]!.promptVersion).toBe('1.1.0')
+    expect(requests[0]!.promptVersion).toBe('1.2.0')
     expect(requests[0]!.kind).toBe('json')
     expect(requests[0]!.status).toBe('ok')
   })

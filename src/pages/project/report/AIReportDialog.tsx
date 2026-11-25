@@ -11,7 +11,9 @@ import {
 } from '@/ai'
 import { resolvePricing } from '@/ai/pricing'
 import { buildReportPrompt } from '@/ai/prompts/builders'
+import { DEFAULT_PROMPT_OPTIONS, type PromptOptions } from '@/ai/prompts/options'
 import { AIReviewActions } from '@/components/ai/AIReviewActions'
+import { PromptOptionsControl } from '@/components/ai/PromptOptionsControl'
 import { RelayPanel } from '@/components/relay/RelayPanel'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
@@ -79,6 +81,7 @@ export function AIReportDialog({ projectId, projectName, targetReport, onClose, 
   // Regeneration produces a candidate instead of overwriting: the user picks.
   const [previousDraft, setPreviousDraft] = useState<ReportDraft | null>(null)
   const [pendingDraft, setPendingDraft] = useState<ReportDraft | null>(null)
+  const [promptOptions, setPromptOptions] = useState<PromptOptions>(DEFAULT_PROMPT_OPTIONS)
   const [mergeMode, setMergeMode] = useState(false)
   const [mergePicks, setMergePicks] = useState<boolean[]>([])
   const [origin, setOrigin] = useState<DraftOrigin>('byok')
@@ -221,7 +224,7 @@ export function AIReportDialog({ projectId, projectName, targetReport, onClose, 
     setBudgetError(null)
     // §6.4 请求前预估（输入侧）：报告输出较长，按 maxTokens 4096 计。
     const pricing = resolvePricing(selected.model)
-    const bundle = buildReportPrompt({ projectName, context: ctx })
+    const bundle = buildReportPrompt({ projectName, context: ctx }, promptOptions)
     const inputTokens = estimateMessagesTokens([
       { content: bundle.instruction },
       { content: bundle.inputBlock },
@@ -233,7 +236,7 @@ export function AIReportDialog({ projectId, projectName, targetReport, onClose, 
     try {
       const result = await generateReport(
         createAiProvider(selected, { getApiKey: () => getSessionKey(selected.id) }),
-        { projectId, projectName, context: ctx, signal: controller.signal, budgetConfirmed },
+        { projectId, projectName, context: ctx, signal: controller.signal, budgetConfirmed, promptOptions },
       )
       if (previous) {
         setPreviousDraft(previous)
@@ -386,6 +389,8 @@ export function AIReportDialog({ projectId, projectName, targetReport, onClose, 
             )}
             <p className="mt-1 text-ink-faint">{t('ai.report.noFabrication')}</p>
           </div>
+
+          <PromptOptionsControl value={promptOptions} onChange={setPromptOptions} disabled={busy} />
 
           {route === 'byok' &&
             (providers.length > 0 && !showNewProvider ? (
@@ -583,7 +588,8 @@ export function AIReportDialog({ projectId, projectName, targetReport, onClose, 
 
       {stage === 'relay' && context && (
         <RelayPanel
-          promptText={buildReportPrompt({ projectName, context }).relayText}
+          key={`${promptOptions.tone}-${promptOptions.detail}`}
+          promptText={buildReportPrompt({ projectName, context }, promptOptions).relayText}
           schema={reportResultSchema}
           schemaDescription='{"title":"报告标题","sections":["背景","假设优先级","结论与下一步"],"content":"## 背景\\n……\\n## 结论与下一步\\n……"}（content 为完整 Markdown 正文，2–6 个「## 」节）'
           taskType="generate-report"

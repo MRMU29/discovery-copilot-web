@@ -956,4 +956,12 @@ export const en: Dict = {
   'palette.toggleTheme': 'Toggle light / dark theme',
   'palette.projectHint': 'Project',
   'palette.footerHint': '↑↓ to select · Enter to run · Esc to close',
+  'ai.prompt.tone.label': 'Tone',
+  'ai.prompt.tone.neutral': 'Neutral',
+  'ai.prompt.tone.direct': 'Direct',
+  'ai.prompt.tone.warm': 'Warm',
+  'ai.prompt.detail.label': 'Detail',
+  'ai.prompt.detail.brief': 'Brief',
+  'ai.prompt.detail.standard': 'Standard',
+  'ai.prompt.detail.deep': 'Deep',
 }

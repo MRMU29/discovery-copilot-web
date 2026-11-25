@@ -119,7 +119,7 @@ describe('suggestExperiments (command 6, BYOK)', () => {
     const requests = await db.ai_requests.toArray()
     expect(requests).toHaveLength(1)
     expect(requests[0].promptId).toBe('design-experiments')
-    expect(requests[0].promptVersion).toBe('1.1.0')
+    expect(requests[0].promptVersion).toBe('1.2.0')
     expect(requests[0].kind).toBe('json')
     expect(requests[0].status).toBe('ok')
     expect(requests[0].projectId).toBe(project.id)

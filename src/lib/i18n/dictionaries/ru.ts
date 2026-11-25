@@ -956,4 +956,12 @@ export const ru: Dict = {
   'palette.toggleTheme': 'Переключить светлую / тёмную тему',
   'palette.projectHint': 'Проект',
   'palette.footerHint': '↑↓ выбрать · Enter выполнить · Esc закрыть',
+  'ai.prompt.tone.label': 'Тон',
+  'ai.prompt.tone.neutral': 'Нейтральный',
+  'ai.prompt.tone.direct': 'Прямой',
+  'ai.prompt.tone.warm': 'Тёплый',
+  'ai.prompt.detail.label': 'Детализация',
+  'ai.prompt.detail.brief': 'Кратко',
+  'ai.prompt.detail.standard': 'Стандарт',
+  'ai.prompt.detail.deep': 'Подробно',
 }

@@ -20,7 +20,7 @@ const assumption = {
   confidence: null,
 }
 
-describe('prompt 语言注入（1.1.0）', () => {
+describe('prompt 语言注入（1.1.0 / 1.2.0）', () => {
   // 每个用例结束复位：i18n 是模块级单例，泄漏会让其他文件的断言飘。
   afterEach(() => setLocale('zh-Hans'))
 
@@ -49,16 +49,16 @@ describe('prompt 语言注入（1.1.0）', () => {
     expect(instruction).not.toContain('{{language}}')
   })
 
-  it('注册表：1.0.0 仍可取，latest 已是 1.1.0', () => {
+  it('注册表：1.0.0 / 1.1.0 仍可取，latest 已是 1.2.0', () => {
     expect(getPrompt('identify-assumptions', '1.0.0').template).toContain('简体中文')
-    expect(latestPromptVersion('identify-assumptions')).toBe('1.1.0')
-    expect(latestPromptVersion('design-experiments')).toBe('1.1.0')
-    expect(latestPromptVersion('generate-report')).toBe('1.1.0')
+    expect(latestPromptVersion('identify-assumptions')).toBe('1.2.0')
+    expect(latestPromptVersion('design-experiments')).toBe('1.2.0')
+    expect(latestPromptVersion('generate-report')).toBe('1.2.0')
   })
 
-  it('三个 builder 都写 1.1.0，账本不会记成旧版', () => {
-    expect(buildIdentifyPrompt({ context: 'x'.repeat(20) }).version).toBe('1.1.0')
-    expect(buildExperimentPrompt({ assumption }).version).toBe('1.1.0')
-    expect(buildReportPrompt({ context: 'x'.repeat(20) }).version).toBe('1.1.0')
+  it('三个 builder 都写 1.2.0，账本不会记成旧版', () => {
+    expect(buildIdentifyPrompt({ context: 'x'.repeat(20) }).version).toBe('1.2.0')
+    expect(buildExperimentPrompt({ assumption }).version).toBe('1.2.0')
+    expect(buildReportPrompt({ context: 'x'.repeat(20) }).version).toBe('1.2.0')
   })
 })

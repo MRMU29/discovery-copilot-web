@@ -122,6 +122,7 @@ describe('identifyAssumptions (command 5)', () => {
       projectId: project.id,
       projectName: project.name,
       context: CONTEXT,
+      promptOptions: { tone: 'direct', detail: 'deep' },
     })
 
     expect(result.data).toHaveLength(3)
@@ -136,7 +137,12 @@ describe('identifyAssumptions (command 5)', () => {
     const requests = await db.ai_requests.toArray()
     expect(requests).toHaveLength(1)
     expect(requests[0].promptId).toBe('identify-assumptions')
-    expect(requests[0].promptVersion).toBe('1.1.0')
+    expect(requests[0].promptVersion).toBe('1.2.0')
+    expect(requests[0].promptOptions).toEqual({
+      tone: 'direct',
+      detail: 'deep',
+      language: 'zh-Hans',
+    })
     expect(requests[0].kind).toBe('json')
     expect(requests[0].status).toBe('ok')
   })

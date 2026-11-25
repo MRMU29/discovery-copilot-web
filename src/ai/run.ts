@@ -19,6 +19,12 @@ export interface RunAiOptions extends GenerateOptions {
   /** Usage-ledger overrides for feature prompts; defaults: chat / chat-json v1.0.0. */
   promptId?: string
   promptVersion?: string
+  /** Tone/detail/language actually used; recorded so a request is reproducible. */
+  promptOptions?: {
+    tone: 'neutral' | 'direct' | 'warm'
+    detail: 'brief' | 'standard' | 'deep'
+    language: string
+  }
   projectId?: string
   /** §6.4 熔断确认后的绕过标记（单次有效）。 */
   budgetConfirmed?: boolean
@@ -65,6 +71,7 @@ export async function runAi(
       kind: options.kind,
       promptId: options.promptId ?? (options.kind === 'json' ? 'chat-json' : 'chat'),
       promptVersion: options.promptVersion ?? '1.0.0',
+      promptOptions: options.promptOptions,
       inputTokens: result.usage.inputTokens,
       outputTokens: result.usage.outputTokens,
       estimatedUsd: cost?.totalUsd ?? null,
@@ -84,6 +91,7 @@ export async function runAi(
         kind: options.kind,
         promptId: options.promptId ?? (options.kind === 'json' ? 'chat-json' : 'chat'),
         promptVersion: options.promptVersion ?? '1.0.0',
+      promptOptions: options.promptOptions,
         // Failed calls may still have consumed tokens (JSON repair attempts);
         // record them so the monthly cost view is not silently optimistic.
         inputTokens: aiError.usage?.inputTokens ?? 0,

@@ -6,6 +6,13 @@ import {
   IDENTIFY_ASSUMPTIONS_PROMPT,
   getPrompt,
 } from './index'
+import {
+  DEFAULT_PROMPT_OPTIONS,
+  detailFragment,
+  toneFragment,
+  type PromptOptions,
+  type PromptOptionValues,
+} from './options'
 
 /**
  * Prompt builder（Prompt Relay 需求「模板三共享」）：BYOK 与 Relay 共用同一
@@ -23,6 +30,8 @@ export interface PromptBundle {
   inputBlock: string
   /** Relay 全文：指令 + 输入数据 + 输出规则 + few-shot 示例。 */
   relayText: string
+  /** Effective options, recorded in the usage ledger for reproducibility. */
+  options: PromptOptionValues
 }
 
 const OUTPUT_RULE = '只输出一个 JSON 对象，不要任何解释、Markdown 代码块或额外文本。'
@@ -43,9 +52,16 @@ const PROMPT_LANGUAGES: Record<Locale, string> = {
   fr: 'French (Français)',
 }
 
-/** 模板里的 {{language}} 在组装时解析，不在注册表里固化——版本仍需可复现。 */
-function localize(template: string): string {
-  return template.replaceAll('{{language}}', PROMPT_LANGUAGES[getLocale()])
+/** 模板里的 {{language}}/{{tone}}/{{detail}} 在组装时解析，不在注册表里固化——版本仍需可复现。 */
+function localize(template: string, options: PromptOptions): string {
+  return template
+    .replaceAll('{{language}}', PROMPT_LANGUAGES[getLocale()])
+    .replaceAll('{{tone}}', toneFragment(options.tone))
+    .replaceAll('{{detail}}', detailFragment(options.detail))
+}
+
+function optionValues(options: PromptOptions): PromptOptionValues {
+  return { tone: options.tone, detail: options.detail, language: getLocale() }
 }
 
 function composeRelayText(instruction: string, inputBlock: string, example: string): string {
@@ -67,8 +83,11 @@ export interface IdentifyPromptInput {
   context: string
 }
 
-export function buildIdentifyPrompt(input: IdentifyPromptInput): PromptBundle {
-  const instruction = localize(IDENTIFY_ASSUMPTIONS_PROMPT.template)
+export function buildIdentifyPrompt(
+  input: IdentifyPromptInput,
+  options: PromptOptions = DEFAULT_PROMPT_OPTIONS,
+): PromptBundle {
+  const instruction = localize(IDENTIFY_ASSUMPTIONS_PROMPT.template, options)
   const parts: string[] = []
   if (input.projectName) parts.push(`项目名称：${input.projectName}`)
   parts.push(`项目背景与想法：\n${input.context.trim().slice(0, 8000)}`)
@@ -83,6 +102,7 @@ export function buildIdentifyPrompt(input: IdentifyPromptInput): PromptBundle {
       inputBlock,
       '{"assumptions":[{"statement":"自由职业者愿意为自动报税整理支付每月 10 元","type":"value","rationale":"付费意愿未经验证","suggestedImpact":4,"suggestedRisk":4}]}',
     ),
+    options: optionValues(options),
   }
 }
 
@@ -100,9 +120,13 @@ export interface ExperimentPromptInput {
   context?: string
 }
 
-export function buildExperimentPrompt(input: ExperimentPromptInput): PromptBundle {
+export function buildExperimentPrompt(
+  input: ExperimentPromptInput,
+  options: PromptOptions = DEFAULT_PROMPT_OPTIONS,
+): PromptBundle {
   const instruction = localize(
     getPrompt(DESIGN_EXPERIMENTS_PROMPT.id, DESIGN_EXPERIMENTS_PROMPT.version).template,
+    options,
   )
   const a = input.assumption
   const lines = [
@@ -125,6 +149,7 @@ export function buildExperimentPrompt(input: ExperimentPromptInput): PromptBundl
       inputBlock,
       '{"experiments":[{"hypothesis":"若提供一键导入模板，则 60% 以上用户能在 5 分钟内完成首次导入","method":"假门测试：引导页放置「一键导入」入口，运行 7 天记录展示与点击","successCriteria":"入口点击率 ≥ 25%"}]}',
     ),
+    options: optionValues(options),
   }
 }
 
@@ -134,9 +159,13 @@ export interface ReportPromptInput {
   context: string
 }
 
-export function buildReportPrompt(input: ReportPromptInput): PromptBundle {
+export function buildReportPrompt(
+  input: ReportPromptInput,
+  options: PromptOptions = DEFAULT_PROMPT_OPTIONS,
+): PromptBundle {
   const instruction = localize(
     getPrompt(GENERATE_REPORT_PROMPT.id, GENERATE_REPORT_PROMPT.version).template,
+    options,
   )
   const parts: string[] = []
   if (input.projectName) parts.push(`项目名称：${input.projectName}`)
@@ -152,5 +181,6 @@ export function buildReportPrompt(input: ReportPromptInput): PromptBundle {
       inputBlock,
       '{"title":"宠物鲜食外卖 · 发现报告","sections":["背景","假设优先级","结论与下一步"],"content":"## 背景\\n面向城市养宠家庭的鲜食外卖订阅……\\n## 假设优先级\\n- 付费意愿（价值，优先分 20.0）……\\n## 结论与下一步\\n价值假设仍是最大缺口……"}',
     ),
+    options: optionValues(options),
   }
 }

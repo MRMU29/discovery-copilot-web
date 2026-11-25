@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { buildIdentifyPrompt } from '@/ai/prompts/builders'
+import type { PromptOptions } from '@/ai/prompts/options'
 import { resolvePricing } from '@/ai/pricing'
 import { runAi } from '@/ai/run'
 import type { AIProvider, GenerateJSONResult } from '@/ai/types'
@@ -35,6 +36,8 @@ export interface IdentifyOptions {
   projectName?: string
   /** User-provided background: product idea, audience, constraints (max ~8k chars). */
   context: string
+  /** 语气/详略由调用方选择；缺省与 1.1.0 行为一致。 */
+  promptOptions?: PromptOptions
   signal?: AbortSignal
   /** §6.4 熔断确认后的单次绕过（UI「本次继续」）。 */
   budgetConfirmed?: boolean
@@ -51,7 +54,7 @@ export async function identifyAssumptions(
 
   // Prompt Relay「模板三共享」：BYOK system=instruction、user=inputBlock，
   // Relay 路径由 UI 用同一 bundle 的 relayText 走复制-粘贴。
-  const bundle = buildIdentifyPrompt({ projectName: options.projectName, context })
+  const bundle = buildIdentifyPrompt({ projectName: options.projectName, context }, options.promptOptions)
 
   const result = await runAi(provider, {
     kind: 'json',
@@ -59,6 +62,7 @@ export async function identifyAssumptions(
     systemPrompt: bundle.instruction,
     promptId: 'identify-assumptions',
     promptVersion: bundle.version,
+    promptOptions: bundle.options,
     messages: [{ role: 'user', content: bundle.inputBlock }],
     temperature: 0.7,
     maxTokens: 2048,

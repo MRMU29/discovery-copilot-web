@@ -941,4 +941,12 @@ export const ko: Dict = {
   'palette.toggleTheme': '라이트 / 다크 테마 전환',
   'palette.projectHint': '프로젝트',
   'palette.footerHint': '↑↓ 선택 · Enter 실행 · Esc 닫기',
+  'ai.prompt.tone.label': '어조',
+  'ai.prompt.tone.neutral': '중립',
+  'ai.prompt.tone.direct': '직접적',
+  'ai.prompt.tone.warm': '부드러움',
+  'ai.prompt.detail.label': '상세 수준',
+  'ai.prompt.detail.brief': '간략',
+  'ai.prompt.detail.standard': '표준',
+  'ai.prompt.detail.deep': '상세',
 }

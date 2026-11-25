@@ -926,4 +926,12 @@ export const zhHant: Dict = {
   'palette.toggleTheme': '切換淺色 / 深色主題',
   'palette.projectHint': '專案',
   'palette.footerHint': '↑↓ 選擇 · Enter 執行 · Esc 關閉',
+  'ai.prompt.tone.label': '語氣',
+  'ai.prompt.tone.neutral': '中性',
+  'ai.prompt.tone.direct': '直接',
+  'ai.prompt.tone.warm': '溫和',
+  'ai.prompt.detail.label': '詳略',
+  'ai.prompt.detail.brief': '簡略',
+  'ai.prompt.detail.standard': '標準',
+  'ai.prompt.detail.deep': '詳盡',
 }

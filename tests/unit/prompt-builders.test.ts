@@ -8,7 +8,7 @@ describe('buildIdentifyPrompt', () => {
 
   it('produces a versioned bundle with all three shared fields', () => {
     expect(bundle.id).toBe('identify-assumptions')
-    expect(bundle.version).toBe('1.1.0')
+    expect(bundle.version).toBe('1.2.0')
     expect(bundle.instruction.trim()).not.toBe('')
     expect(bundle.inputBlock.trim()).not.toBe('')
     expect(bundle.relayText.trim()).not.toBe('')
@@ -52,7 +52,7 @@ describe('buildExperimentPrompt', () => {
 
   it('registers under design-experiments with all three fields', () => {
     expect(bundle.id).toBe('design-experiments')
-    expect(bundle.version).toBe('1.1.0')
+    expect(bundle.version).toBe('1.2.0')
     expect(bundle.instruction).toContain('{"experiments":[')
     expect(bundle.relayText).toContain(bundle.inputBlock)
   })

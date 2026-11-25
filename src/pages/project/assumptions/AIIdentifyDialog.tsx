@@ -11,7 +11,9 @@ import {
 } from '@/ai'
 import { resolvePricing } from '@/ai/pricing'
 import { buildIdentifyPrompt } from '@/ai/prompts/builders'
+import { DEFAULT_PROMPT_OPTIONS, type PromptOptions } from '@/ai/prompts/options'
 import { AIReviewActions } from '@/components/ai/AIReviewActions'
+import { PromptOptionsControl } from '@/components/ai/PromptOptionsControl'
 import { RelayPanel } from '@/components/relay/RelayPanel'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
@@ -70,6 +72,7 @@ export function AIIdentifyDialog({
 }: AIIdentifyDialogProps) {
   const t = useT()
   const [stage, setStage] = useState<Stage>('config')
+  const [promptOptions, setPromptOptions] = useState<PromptOptions>(DEFAULT_PROMPT_OPTIONS)
   const [providers, setProviders] = useState<ProviderConfigRow[]>([])
   const [selectedId, setSelectedId] = useState('')
   const [apiKey, setApiKey] = useState('')
@@ -191,7 +194,7 @@ export function AIIdentifyDialog({
     // §6.4 请求前预估（输入侧）：上下文 + 系统指令，按内置参考价折算。
     const pricing = resolvePricing(selected.model)
     const inputTokens = estimateMessagesTokens([
-      { content: buildIdentifyPrompt({ projectName, context }).instruction },
+      { content: buildIdentifyPrompt({ projectName, context }, promptOptions).instruction },
       { content: context },
     ])
     setEstimate({
@@ -201,7 +204,7 @@ export function AIIdentifyDialog({
     try {
       const result = await identifyAssumptions(
         createAiProvider(selected, { getApiKey: () => getSessionKey(selected.id) }),
-        { projectId, projectName, context, signal: controller.signal, budgetConfirmed },
+        { projectId, projectName, context, signal: controller.signal, budgetConfirmed, promptOptions },
       )
       setPicks(result.data)
       setChecked(result.data.map(() => true))
@@ -260,6 +263,8 @@ export function AIIdentifyDialog({
             {t('ai.dialog.currentRoute')}
             {route === 'byok' ? t('ai.dialog.routeByok') : t('ai.dialog.routeRelay')}
           </p>
+
+          <PromptOptionsControl value={promptOptions} onChange={setPromptOptions} disabled={busy} />
 
           {route === 'byok' &&
             (providers.length > 0 && !showNewProvider ? (
@@ -486,7 +491,7 @@ export function AIIdentifyDialog({
 
       {stage === 'relay' && (
         <RelayPanel
-          promptText={buildIdentifyPrompt({ projectName, context }).relayText}
+          promptText={buildIdentifyPrompt({ projectName, context }, promptOptions).relayText}
           schema={identifyResultSchema}
           schemaDescription='{"assumptions":[{"statement":"一句话可证伪假设","type":"value|usability|feasibility|viability|go-to-market|strategy|team|legal","rationale":"判断错误为何损失重大","suggestedImpact":1-5,"suggestedRisk":1-5}]}，5–12 条'
           taskType="identify-assumptions"

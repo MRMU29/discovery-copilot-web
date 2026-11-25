@@ -958,4 +958,12 @@ export const de: Dict = {
   'palette.toggleTheme': 'Hell-/Dunkelmodus wechseln',
   'palette.projectHint': 'Projekt',
   'palette.footerHint': '↑↓ wählen · Enter ausführen · Esc schließen',
+  'ai.prompt.tone.label': 'Tonfall',
+  'ai.prompt.tone.neutral': 'Neutral',
+  'ai.prompt.tone.direct': 'Direkt',
+  'ai.prompt.tone.warm': 'Warm',
+  'ai.prompt.detail.label': 'Detailtiefe',
+  'ai.prompt.detail.brief': 'Kurz',
+  'ai.prompt.detail.standard': 'Standard',
+  'ai.prompt.detail.deep': 'Ausführlich',
 }

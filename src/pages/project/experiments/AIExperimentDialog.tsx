@@ -10,7 +10,9 @@ import {
 } from '@/ai'
 import { resolvePricing } from '@/ai/pricing'
 import { buildExperimentPrompt } from '@/ai/prompts/builders'
+import { DEFAULT_PROMPT_OPTIONS, type PromptOptions } from '@/ai/prompts/options'
 import { AIReviewActions } from '@/components/ai/AIReviewActions'
+import { PromptOptionsControl } from '@/components/ai/PromptOptionsControl'
 import { RelayPanel } from '@/components/relay/RelayPanel'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
@@ -56,6 +58,7 @@ export function AIExperimentDialog({
 }: AIExperimentDialogProps) {
   const t = useT()
   const [stage, setStage] = useState<Stage>('config')
+  const [promptOptions, setPromptOptions] = useState<PromptOptions>(DEFAULT_PROMPT_OPTIONS)
   const [providers, setProviders] = useState<ProviderConfigRow[]>([])
   const [selectedId, setSelectedId] = useState('')
   const [apiKey, setApiKey] = useState('')
@@ -135,6 +138,7 @@ export function AIExperimentDialog({
           context,
           signal: controller.signal,
           budgetConfirmed,
+          promptOptions,
         },
       )
       setPicks(result.data)
@@ -207,6 +211,8 @@ export function AIExperimentDialog({
             {t('ai.dialog.currentRoute')}
             {route === 'byok' ? t('ai.dialog.routeByok') : t('ai.dialog.routeRelay')}
           </p>
+
+          <PromptOptionsControl value={promptOptions} onChange={setPromptOptions} />
 
           <div>
             <label htmlFor="ai-exp-assumption" className="text-caption text-ink-muted">
@@ -353,17 +359,23 @@ export function AIExperimentDialog({
 
       {stage === 'relay' && assumption && (
         <RelayPanel
-          promptText={buildExperimentPrompt({
-            projectName,
-            assumption: {
-              statement: assumption.statement,
-              type: assumption.type,
-              impact: assumption.impact,
-              risk: assumption.risk,
-              confidence: assumption.confidence,
-            },
-            context,
-          }).relayText}
+          key={`${promptOptions.tone}-${promptOptions.detail}`}
+          promptText={
+            buildExperimentPrompt(
+              {
+                projectName,
+                assumption: {
+                  statement: assumption.statement,
+                  type: assumption.type,
+                  impact: assumption.impact,
+                  risk: assumption.risk,
+                  confidence: assumption.confidence,
+                },
+                context,
+              },
+              promptOptions,
+            ).relayText
+          }
           schema={experimentSuggestionSchema}
           schemaDescription='{"experiments":[{"hypothesis":"可证伪的实验假设","method":"实验方法与步骤","successCriteria":"含数字的成功阈值"}]，1–3 条'
           taskType="design-experiments"

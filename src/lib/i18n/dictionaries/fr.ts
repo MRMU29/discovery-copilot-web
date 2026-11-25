@@ -958,4 +958,12 @@ export const fr: Dict = {
   'palette.toggleTheme': 'Basculer clair / sombre',
   'palette.projectHint': 'Projet',
   'palette.footerHint': '↑↓ pour choisir · Entrée pour exécuter · Échap pour fermer',
+  'ai.prompt.tone.label': 'Ton',
+  'ai.prompt.tone.neutral': 'Neutre',
+  'ai.prompt.tone.direct': 'Direct',
+  'ai.prompt.tone.warm': 'Chaleureux',
+  'ai.prompt.detail.label': 'Niveau de détail',
+  'ai.prompt.detail.brief': 'Bref',
+  'ai.prompt.detail.standard': 'Standard',
+  'ai.prompt.detail.deep': 'Détaillé',
 }

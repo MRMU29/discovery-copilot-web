@@ -956,4 +956,12 @@ export const ja: Dict = {
   'palette.toggleTheme': 'ライト / ダークを切り替え',
   'palette.projectHint': 'プロジェクト',
   'palette.footerHint': '↑↓ 選択 · Enter 実行 · Esc 閉じる',
+  'ai.prompt.tone.label': 'トーン',
+  'ai.prompt.tone.neutral': 'ニュートラル',
+  'ai.prompt.tone.direct': '直接的',
+  'ai.prompt.tone.warm': '穏やか',
+  'ai.prompt.detail.label': '詳しさ',
+  'ai.prompt.detail.brief': '簡潔',
+  'ai.prompt.detail.standard': '標準',
+  'ai.prompt.detail.deep': '詳細',
 }

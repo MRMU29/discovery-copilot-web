@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { buildReportPrompt } from '@/ai/prompts/builders'
+import type { PromptOptions } from '@/ai/prompts/options'
 import { resolvePricing } from '@/ai/pricing'
 import { runAi } from '@/ai/run'
 import type { AIProvider, GenerateJSONResult } from '@/ai/types'
@@ -173,6 +174,8 @@ export interface ReportGenerateOptions {
   projectName?: string
   /** buildReportContext 产物（对话框与 BYOK/Relay 两条路径共享一次聚合）。 */
   context: string
+  /** 语气/详略由调用方选择；缺省与 1.1.0 行为一致。 */
+  promptOptions?: PromptOptions
   signal?: AbortSignal
   /** §6.4 熔断确认后的单次绕过（UI「本次继续」）。 */
   budgetConfirmed?: boolean
@@ -187,7 +190,10 @@ export async function generateReport(
     throw new Error('项目数据还太少：先录入假设或实验，再生成报告。')
   }
 
-  const bundle = buildReportPrompt({ projectName: options.projectName, context })
+  const bundle = buildReportPrompt(
+    { projectName: options.projectName, context },
+    options.promptOptions,
+  )
 
   const result = await runAi(provider, {
     kind: 'json',
@@ -195,6 +201,7 @@ export async function generateReport(
     systemPrompt: bundle.instruction,
     promptId: 'generate-report',
     promptVersion: bundle.version,
+    promptOptions: bundle.options,
     messages: [{ role: 'user', content: bundle.inputBlock }],
     temperature: 0.5,
     maxTokens: 4096,

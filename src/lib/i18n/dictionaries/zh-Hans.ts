@@ -968,4 +968,12 @@ export const zhHans = {
   'palette.toggleTheme': '切换浅色 / 深色主题',
   'palette.projectHint': '项目',
   'palette.footerHint': '↑↓ 选择 · Enter 执行 · Esc 关闭',
+  'ai.prompt.tone.label': '语气',
+  'ai.prompt.tone.neutral': '中性',
+  'ai.prompt.tone.direct': '直接',
+  'ai.prompt.tone.warm': '温和',
+  'ai.prompt.detail.label': '详略',
+  'ai.prompt.detail.brief': '简略',
+  'ai.prompt.detail.standard': '标准',
+  'ai.prompt.detail.deep': '详尽',
 } satisfies Record<string, string>

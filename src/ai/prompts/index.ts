@@ -60,6 +60,14 @@ function withLanguage(template: string): string {
   return template.replaceAll('简体中文', '{{language}}')
 }
 
+/** 1.2.0 adds exactly one "写作偏好" line (tone/detail) ahead of 输出要求. */
+function withStyle(template: string): string {
+  return withLanguage(template).replace(
+    '输出要求：',
+    '写作偏好：{{tone}}；{{detail}}。\n\n输出要求：',
+  )
+}
+
 const CHAT_TEMPLATE_V1 =
   '你是产品发现助手。基于给定的项目上下文回答，使用简体中文，输出面向产品决策者。'
 registerPrompt('chat', '1.0.0', CHAT_TEMPLATE_V1)
@@ -93,10 +101,11 @@ const IDENTIFY_ASSUMPTIONS_TEMPLATE_V1 = [
   '- 产出 5–12 条，覆盖尽可能多的类别，优先高风险高影响的。',
 ].join('\n')
 registerPrompt('identify-assumptions', '1.0.0', IDENTIFY_ASSUMPTIONS_TEMPLATE_V1)
+registerPrompt('identify-assumptions', '1.1.0', withLanguage(IDENTIFY_ASSUMPTIONS_TEMPLATE_V1))
 export const IDENTIFY_ASSUMPTIONS_PROMPT = registerPrompt(
   'identify-assumptions',
-  '1.1.0',
-  withLanguage(IDENTIFY_ASSUMPTIONS_TEMPLATE_V1),
+  '1.2.0',
+  withStyle(IDENTIFY_ASSUMPTIONS_TEMPLATE_V1),
 )
 
 const DESIGN_EXPERIMENTS_TEMPLATE_V1 = [
@@ -123,10 +132,11 @@ const DESIGN_EXPERIMENTS_TEMPLATE_V1 = [
   '- 产出 1–3 条，覆盖不同成本档位。',
 ].join('\n')
 registerPrompt('design-experiments', '1.0.0', DESIGN_EXPERIMENTS_TEMPLATE_V1)
+registerPrompt('design-experiments', '1.1.0', withLanguage(DESIGN_EXPERIMENTS_TEMPLATE_V1))
 export const DESIGN_EXPERIMENTS_PROMPT = registerPrompt(
   'design-experiments',
-  '1.1.0',
-  withLanguage(DESIGN_EXPERIMENTS_TEMPLATE_V1),
+  '1.2.0',
+  withStyle(DESIGN_EXPERIMENTS_TEMPLATE_V1),
 )
 
 const GENERATE_REPORT_TEMPLATE_V1 = [
@@ -145,8 +155,9 @@ const GENERATE_REPORT_TEMPLATE_V1 = [
   '- content：完整 Markdown 正文（含「## 」节标题，不含一级标题），用列表组织数据，长度 300–2000 字。',
 ].join('\n')
 registerPrompt('generate-report', '1.0.0', GENERATE_REPORT_TEMPLATE_V1)
+registerPrompt('generate-report', '1.1.0', withLanguage(GENERATE_REPORT_TEMPLATE_V1))
 export const GENERATE_REPORT_PROMPT = registerPrompt(
   'generate-report',
-  '1.1.0',
-  withLanguage(GENERATE_REPORT_TEMPLATE_V1),
+  '1.2.0',
+  withStyle(GENERATE_REPORT_TEMPLATE_V1),
 )

@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import type { ExperimentPromptAssumption } from '@/ai/prompts/builders'
 import { buildExperimentPrompt } from '@/ai/prompts/builders'
+import type { PromptOptions } from '@/ai/prompts/options'
 import { resolvePricing } from '@/ai/pricing'
 import { runAi } from '@/ai/run'
 import type { AIProvider, GenerateJSONResult } from '@/ai/types'
@@ -34,6 +35,8 @@ export interface SuggestExperimentsOptions {
   projectName?: string
   assumption: ExperimentPromptAssumption
   context?: string
+  /** 语气/详略由调用方选择；缺省与 1.1.0 行为一致。 */
+  promptOptions?: PromptOptions
   signal?: AbortSignal
   /** §6.4 熔断确认后的单次绕过（UI「本次继续」）。 */
   budgetConfirmed?: boolean
@@ -43,17 +46,21 @@ export async function suggestExperiments(
   provider: AIProvider,
   options: SuggestExperimentsOptions,
 ): Promise<GenerateJSONResult<SuggestedExperiment[]>> {
-  const bundle = buildExperimentPrompt({
-    projectName: options.projectName,
-    assumption: options.assumption,
-    context: options.context,
-  })
+  const bundle = buildExperimentPrompt(
+    {
+      projectName: options.projectName,
+      assumption: options.assumption,
+      context: options.context,
+    },
+    options.promptOptions,
+  )
   const result = await runAi(provider, {
     kind: 'json',
     schema: experimentSuggestionSchema,
     systemPrompt: bundle.instruction,
     promptId: 'design-experiments',
     promptVersion: bundle.version,
+    promptOptions: bundle.options,
     messages: [{ role: 'user', content: bundle.inputBlock }],
     temperature: 0.7,
     maxTokens: 2048,
