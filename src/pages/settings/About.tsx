@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { ChevronRightIcon } from '@/components/ui/icons'
 import { Dialog } from '@/components/ui/Dialog'
+import { confirmAction } from '@/lib/confirm'
 import { useT } from '@/lib/i18n'
 import { downloadFile } from '@/lib/download'
 import { resetOnboarding } from '@/services/onboarding'
@@ -55,8 +56,8 @@ export default function About() {
   }
 
   async function handleResetApp() {
-    if (!window.confirm(t('settings.about.resetConfirm1'))) return
-    if (!window.confirm(t('settings.about.resetConfirm2'))) return
+    if (!(await confirmAction({ title: t('confirm.resetTitle'), body: t('settings.about.resetConfirm1'), tone: 'danger' }))) return
+    if (!(await confirmAction({ title: t('confirm.resetTitle'), body: t('settings.about.resetConfirm2'), tone: 'danger' }))) return
     setWiping(true)
     setError(null)
     try {

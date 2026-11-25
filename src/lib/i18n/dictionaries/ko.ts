@@ -11,8 +11,15 @@ export const ko: Dict = {
   'shell.projectNotFound': '프로젝트를 찾을 수 없습니다',
   'shell.projectNotFoundDesc': '삭제되었거나 링크가 잘못되었을 수 있습니다.',
 
+  // ---- confirm ----
+  'confirm.confirmTitle': '확인',
+  'confirm.deleteTitle': '삭제',
+  'confirm.clearTitle': '데이터 삭제',
+  'confirm.resetTitle': '앱 초기화',
+
   // ---- common ----
   'common.cancel': '취소',
+  'common.confirm': '확인',
   'common.delete': '삭제',
   'common.save': '저장',
   'common.errorTitle': '오류가 발생했습니다',

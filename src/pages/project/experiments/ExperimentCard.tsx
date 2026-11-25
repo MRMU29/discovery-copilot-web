@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import type { Assumption, Experiment } from '@/schemas/entities'
 import { deleteExperiment, updateExperiment } from '@/services/experiments'
+import { confirmAction } from '@/lib/confirm'
 import { useT } from '@/lib/i18n'
 import { EXPERIMENT_STATUS_META, OUTCOME_META, type ExperimentOutcome, type ExperimentStatus } from './experiment-meta'
 import { ExperimentForm } from './ExperimentForm'
@@ -52,7 +53,7 @@ export function ExperimentCard({ experiment, assumption, assumptions }: Experime
   }
 
   async function handleDelete() {
-    if (!window.confirm(t('experiment.deleteConfirm'))) return
+    if (!(await confirmAction({ title: t('confirm.deleteTitle'), body: t('experiment.deleteConfirm'), tone: 'danger' }))) return
     setDeleting(true)
     setError(null)
     try {

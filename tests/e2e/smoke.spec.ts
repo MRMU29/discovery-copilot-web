@@ -61,7 +61,6 @@ test('renames a project and archives it reversibly', async ({ page }) => {
 })
 
 test('records a decision and can mark it superseded', async ({ page }) => {
-  page.on('dialog', (dialog) => void dialog.accept())
   const url = await createProject(page, '烟测-决策')
   await page.goto(url.replace(/overview\/?$/, 'decisions'))
   await page.waitForTimeout(600)
@@ -74,6 +73,8 @@ test('records a decision and can mark it superseded', async ({ page }) => {
   await expect(page.getByText('先做假门测试，再决定是否开发完整产品')).toBeVisible()
 
   await page.getByRole('button', { name: '标记为已推翻' }).click()
+  // In-app confirm dialog (window.confirm was replaced in v0.2.5-prep).
+  await page.getByRole('dialog').getByRole('button', { name: '确定' }).click()
   await expect(page.getByText(/推翻于/)).toBeVisible()
 })
 

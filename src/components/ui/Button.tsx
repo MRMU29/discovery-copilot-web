@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes } from 'react'
+import { forwardRef, type ButtonHTMLAttributes } from 'react'
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger'
 
@@ -13,13 +13,17 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant
 }
 
-/** 44px min touch target (安卓优先, plan §3). */
-export function Button({ variant = 'primary', className = '', type = 'button', ...rest }: ButtonProps) {
+/** 44px min touch target (安卓优先, plan §3). forwardRef：确认框需要把焦点放到「取消」。 */
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+  { variant = 'primary', className = '', type = 'button', ...rest },
+  ref,
+) {
   return (
     <button
+      ref={ref}
       type={type}
       className={`inline-flex min-h-11 max-w-full items-center justify-center break-words rounded-btn px-4 py-2.5 text-center text-button transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-focus focus-visible:ring-offset-2 focus-visible:ring-offset-canvas active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 ${VARIANTS[variant]} ${className}`}
       {...rest}
     />
   )
-}
+})

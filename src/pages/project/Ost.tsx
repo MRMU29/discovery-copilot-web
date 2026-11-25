@@ -9,6 +9,7 @@ import { listAssumptionsByProject } from '@/services/assumptions'
 import { listExperimentsByProject } from '@/services/experiments'
 import { deleteOstNode, listOstNodesByProject, moveOstNode } from '@/services/ost'
 import { descendantIds, ostTableRows } from './ost/ost-meta'
+import { confirmAction } from '@/lib/confirm'
 import { useT } from '@/lib/i18n'
 import { OstCanvas } from './ost/OstCanvas'
 import { OstNodeForm } from './ost/OstNodeForm'
@@ -71,7 +72,7 @@ export default function Ost({ projectId }: { projectId: string }) {
     if (!nodes) return
     const doomed = descendantIds(nodes, node.id)
     const count = doomed.size + 1
-    if (!window.confirm(t('ost.deleteConfirm', { count }))) return
+    if (!(await confirmAction({ title: t('confirm.deleteTitle'), body: t('ost.deleteConfirm', { count }), tone: 'danger' }))) return
     setError(null)
     try {
       const deleted = await deleteOstNode(node.id)

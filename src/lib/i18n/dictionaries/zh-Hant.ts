@@ -11,8 +11,15 @@ export const zhHant: Dict = {
   'shell.projectNotFound': '專案不存在',
   'shell.projectNotFoundDesc': '該專案可能已被刪除或連結有誤。',
 
+  // ---- confirm ----
+  'confirm.confirmTitle': '請確認',
+  'confirm.deleteTitle': '刪除',
+  'confirm.clearTitle': '清除資料',
+  'confirm.resetTitle': '初始化應用',
+
   // ---- common ----
   'common.cancel': '取消',
+  'common.confirm': '確定',
   'common.delete': '刪除',
   'common.save': '儲存',
   'common.errorTitle': '發生錯誤',

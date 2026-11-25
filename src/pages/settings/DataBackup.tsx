@@ -7,6 +7,7 @@ import { Dialog } from '@/components/ui/Dialog'
 import { PageSkeleton } from '@/components/common/states'
 import { downloadFile } from '@/lib/download'
 import { formatWhen } from '@/lib/report-export'
+import { confirmAction } from '@/lib/confirm'
 import { useT } from '@/lib/i18n'
 import {
   DCOPILT_MAX_BYTES,
@@ -136,7 +137,7 @@ export default function DataBackup() {
   }
 
   async function handleRepair(issue: HealthIssue) {
-    if (!window.confirm(t('settings.dataBackup.healthRepairConfirm'))) return
+    if (!(await confirmAction({ title: t('confirm.confirmTitle'), body: t('settings.dataBackup.healthRepairConfirm') }))) return
     const key = issueKey(issue)
     setRepairingKey(key)
     setHealthError(null)
@@ -154,8 +155,8 @@ export default function DataBackup() {
   }
 
   async function handleClearData() {
-    if (!window.confirm(t('settings.dataBackup.clearConfirm1'))) return
-    if (!window.confirm(t('settings.dataBackup.clearConfirm2'))) return
+    if (!(await confirmAction({ title: t('confirm.clearTitle'), body: t('settings.dataBackup.clearConfirm1'), tone: 'danger' }))) return
+    if (!(await confirmAction({ title: t('confirm.clearTitle'), body: t('settings.dataBackup.clearConfirm2'), tone: 'danger' }))) return
     setClearing(true)
     setError(null)
     try {
@@ -207,9 +208,10 @@ export default function DataBackup() {
     // The 4th snapshot silently dropped the oldest one (count *and* byte budget).
     // Warn first so the user can download it — a snapshot is a full backup.
     if ((snapshots?.length ?? 0) >= SNAPSHOT_KEEP) {
-      const confirmed = window.confirm(
-        t('settings.dataBackup.snapshotPruneConfirm', { keep: SNAPSHOT_KEEP }),
-      )
+      const confirmed = await confirmAction({
+        title: t('confirm.confirmTitle'),
+        body: t('settings.dataBackup.snapshotPruneConfirm', { keep: SNAPSHOT_KEEP }),
+      })
       if (!confirmed) return
     }
     setSnapshotting(true)
@@ -233,7 +235,7 @@ export default function DataBackup() {
   }
 
   async function handleDeleteSnapshot(id: string) {
-    if (!window.confirm(t('settings.dataBackup.snapshotDeleteConfirm'))) return
+    if (!(await confirmAction({ title: t('confirm.deleteTitle'), body: t('settings.dataBackup.snapshotDeleteConfirm'), tone: 'danger' }))) return
     setError(null)
     try {
       await snapshotsRepo.delete(id)

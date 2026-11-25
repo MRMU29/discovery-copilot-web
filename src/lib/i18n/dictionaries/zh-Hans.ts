@@ -19,8 +19,15 @@ export const zhHans = {
   'shell.projectNotFound': '项目不存在',
   'shell.projectNotFoundDesc': '该项目可能已被删除或链接有误。',
 
+  // ---- confirm ----
+  'confirm.confirmTitle': '请确认',
+  'confirm.deleteTitle': '删除',
+  'confirm.clearTitle': '清除数据',
+  'confirm.resetTitle': '初始化应用',
+
   // ---- common ----
   'common.cancel': '取消',
+  'common.confirm': '确定',
   'common.delete': '删除',
   'common.save': '保存',
   'common.errorTitle': '出错了',

@@ -15,6 +15,7 @@ import {
 } from '@/lib/report-export'
 import type { Report } from '@/schemas/entities'
 import { deleteReport, updateReport } from '@/services/reports'
+import { confirmAction } from '@/lib/confirm'
 import { useT } from '@/lib/i18n'
 
 interface ReportDetailProps {
@@ -92,7 +93,7 @@ export function ReportDetail({ report, projectName, onBack, onAiRewrite }: Repor
   }
 
   async function handleDelete() {
-    if (!window.confirm(t('report.deleteConfirm', { title: report.title }))) return
+    if (!(await confirmAction({ title: t('confirm.deleteTitle'), body: t('report.deleteConfirm', { title: report.title }), tone: 'danger' }))) return
     try {
       await deleteReport(report.id)
       clearReportDraft(report.id)

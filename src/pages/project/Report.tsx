@@ -7,6 +7,7 @@ import { reportMetaLine } from '@/lib/report-export'
 import type { Report } from '@/schemas/entities'
 import { getProject } from '@/services/projects'
 import { createReport, deleteReport, listReportsByProject } from '@/services/reports'
+import { confirmAction } from '@/lib/confirm'
 import { useT } from '@/lib/i18n'
 import { AIReportDialog } from './report/AIReportDialog'
 import { ReportDetail } from './report/ReportDetail'
@@ -79,7 +80,7 @@ export default function Report({ projectId }: { projectId: string }) {
   }
 
   async function handleDelete(report: Report) {
-    if (!window.confirm(t('report.deleteConfirm', { title: report.title }))) return
+    if (!(await confirmAction({ title: t('confirm.deleteTitle'), body: t('report.deleteConfirm', { title: report.title }), tone: 'danger' }))) return
     try {
       await deleteReport(report.id)
     } catch (err) {

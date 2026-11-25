@@ -11,8 +11,15 @@ export const ru: Dict = {
   'shell.projectNotFound': 'Проект не найден',
   'shell.projectNotFoundDesc': 'Возможно, проект был удалён или ссылка неверна.',
 
+  // ---- confirm ----
+  'confirm.confirmTitle': 'Подтвердите',
+  'confirm.deleteTitle': 'Удалить',
+  'confirm.clearTitle': 'Очистить данные',
+  'confirm.resetTitle': 'Сброс приложения',
+
   // ---- common ----
   'common.cancel': 'Отмена',
+  'common.confirm': 'Подтвердить',
   'common.delete': 'Удалить',
   'common.save': 'Сохранить',
   'common.errorTitle': 'Произошла ошибка',

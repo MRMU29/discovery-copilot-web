@@ -11,8 +11,9 @@ import type { AiRequest, ProviderConfigRow } from '@/schemas/entities'
 import { listActiveProjects } from '@/services/projects'
 import { createProvider, deleteProvider, listProviders, setDefaultProvider } from '@/services/ai-providers'
 import { getSettings, updateSettings } from '@/services/settings'
+import { confirmAction } from '@/lib/confirm'
 import { useT } from '@/lib/i18n'
-import { confirmCustomEndpoint } from '@/lib/endpoint-guard'
+import { requestCustomEndpointConfirm } from '@/lib/endpoint-guard'
 
 type ProviderKind = ProviderConfigRow['kind']
 
@@ -273,8 +274,8 @@ export default function AiProvider() {
     })
   }
 
-  function handleClearSessionKeys() {
-    if (!window.confirm(t('settings.aiProvider.clearSessionKeysConfirm'))) return
+  async function handleClearSessionKeys() {
+    if (!(await confirmAction({ title: t('confirm.confirmTitle'), body: t('settings.aiProvider.clearSessionKeysConfirm') }))) return
     clearSessionKeys()
     setKeyDrafts({})
     setKeySaved({})
@@ -284,7 +285,7 @@ export default function AiProvider() {
 
   async function handleAdd(event: React.FormEvent) {
     event.preventDefault()
-    if (!confirmCustomEndpoint(baseUrl.trim())) return
+    if (!(await requestCustomEndpointConfirm(baseUrl.trim()))) return
     setError(null)
     try {
       const row = await createProvider({ label: label.trim(), kind, baseUrl: baseUrl.trim(), model: model.trim() })
@@ -305,7 +306,7 @@ export default function AiProvider() {
   }
 
   async function handleDelete(id: string) {
-    if (!window.confirm(t('settings.aiProvider.deleteConfirm'))) return
+    if (!(await confirmAction({ title: t('confirm.deleteTitle'), body: t('settings.aiProvider.deleteConfirm'), tone: 'danger' }))) return
     setError(null)
     try {
       await deleteProvider(id)
@@ -332,7 +333,7 @@ export default function AiProvider() {
       setError(t('settings.aiProvider.keyTestNeedError'))
       return
     }
-    if (!confirmCustomEndpoint(row.baseUrl)) return
+    if (!(await requestCustomEndpointConfirm(row.baseUrl))) return
     setError(null)
     setKeyTesting((prev) => ({ ...prev, [row.id]: 'busy' }))
     try {

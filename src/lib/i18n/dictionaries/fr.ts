@@ -11,8 +11,15 @@ export const fr: Dict = {
   'shell.projectNotFound': 'Projet introuvable',
   'shell.projectNotFoundDesc': 'Le projet a peut-être été supprimé ou le lien est erroné.',
 
+  // ---- confirm ----
+  'confirm.confirmTitle': 'Confirmer',
+  'confirm.deleteTitle': 'Supprimer',
+  'confirm.clearTitle': 'Effacer les données',
+  'confirm.resetTitle': 'Réinitialiser l’app',
+
   // ---- common ----
   'common.cancel': 'Annuler',
+  'common.confirm': 'Confirmer',
   'common.delete': 'Supprimer',
   'common.save': 'Enregistrer',
   'common.errorTitle': 'Une erreur est survenue',

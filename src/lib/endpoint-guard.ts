@@ -1,4 +1,5 @@
 import { translate } from '@/lib/i18n'
+import { confirmAction } from '@/lib/confirm'
 
 /**
  * Shared guard for BYOK endpoints. Unknown hosts are still allowed — the app
@@ -24,9 +25,16 @@ function customEndpointHost(baseUrl: string): string | null {
   }
 }
 
-/** Returns true when the caller may proceed. */
-export function confirmCustomEndpoint(baseUrl: string): boolean {
+/**
+ * Resolves true when the caller may proceed. Named `request…` (not `assert…`)
+ * on purpose: a Promise<boolean> that is used without await is always truthy,
+ * so the async boundary must be impossible to miss at the call site.
+ */
+export function requestCustomEndpointConfirm(baseUrl: string): Promise<boolean> {
   const host = customEndpointHost(baseUrl)
-  if (!host) return true
-  return window.confirm(translate('settings.aiProvider.customEndpointConfirm', { host }))
+  if (!host) return Promise.resolve(true)
+  return confirmAction({
+    title: translate('confirm.confirmTitle'),
+    body: translate('settings.aiProvider.customEndpointConfirm', { host }),
+  })
 }

@@ -11,8 +11,15 @@ export const ja: Dict = {
   'shell.projectNotFound': 'プロジェクトが見つかりません',
   'shell.projectNotFoundDesc': '削除されたか、リンクが誤っている可能性があります。',
 
+  // ---- confirm ----
+  'confirm.confirmTitle': '確認',
+  'confirm.deleteTitle': '削除',
+  'confirm.clearTitle': 'データを消去',
+  'confirm.resetTitle': 'アプリを初期化',
+
   // ---- common ----
   'common.cancel': 'キャンセル',
+  'common.confirm': '確定',
   'common.delete': '削除',
   'common.save': '保存',
   'common.errorTitle': 'エラーが発生しました',

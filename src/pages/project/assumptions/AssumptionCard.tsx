@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { ASSUMPTION_TYPE_META, STATUS_META, type AssumptionStatus } from '@/lib/assumption-meta'
 import type { Assumption } from '@/schemas/entities'
+import { confirmAction } from '@/lib/confirm'
 import { useT } from '@/lib/i18n'
 import { deleteAssumption, updateAssumption } from '@/services/assumptions'
 import { AssumptionAudit } from './AssumptionAudit'
@@ -38,7 +39,7 @@ export function AssumptionCard({
   }
 
   async function handleDelete() {
-    if (!window.confirm(t('assumption.deleteConfirm'))) return
+    if (!(await confirmAction({ title: t('confirm.deleteTitle'), body: t('assumption.deleteConfirm'), tone: 'danger' }))) return
     setDeleting(true)
     setError(null)
     try {

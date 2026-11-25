@@ -8,6 +8,7 @@ import { pruneOldAiRequests } from '@/ai/usage'
 import { PageSkeleton } from '@/components/common/states'
 import { WelcomeDialog } from '@/components/onboarding/WelcomeDialog'
 import { CommandPalette } from '@/components/command/CommandPalette'
+import { ConfirmHost } from '@/components/ui/ConfirmHost'
 import { SETTINGS_PATHS } from '@/app/nav'
 import { applyThemePreference, useResolvedTheme } from '@/lib/theme'
 import { CloseIcon, CompassIcon, GridIcon, MenuIcon, MoonIcon, SettingsIcon, SunIcon } from '@/components/ui/icons'
@@ -301,6 +302,7 @@ export default function AppShell() {
       {showWelcome && <WelcomeDialog onClose={() => undefined} />}
       {/* Mounted per open so the search state resets without an effect. */}
       {paletteOpen && <CommandPalette onClose={() => setPaletteOpen(false)} />}
+      <ConfirmHost />
     </div>
   )
 }

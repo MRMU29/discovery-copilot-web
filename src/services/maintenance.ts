@@ -9,7 +9,7 @@ import { db } from '@/db/db'
  *   保留应用设置（AI 模式、默认 Provider）、Provider 配置、引导状态与用量账本。
  * - resetApp：回到首次打开状态——另清设置、Provider、引导标记与用量账本；
  *   会话 Key 是内存态，直接清空。
- * 两者的执行结果都不可恢复，调用方（设置页）必须先走 window.confirm。
+ * 两者的执行结果都不可恢复，调用方（设置页）必须先走 confirmAction()。
  */
 
 const PRODUCT_TABLES = [

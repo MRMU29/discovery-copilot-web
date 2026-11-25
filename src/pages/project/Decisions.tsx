@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Button } from '@/components/ui/Button'
 import { EmptyState, ErrorState, PageSkeleton } from '@/components/common/states'
+import { confirmAction } from '@/lib/confirm'
 import { useT } from '@/lib/i18n'
 import type { Decision } from '@/schemas/entities'
 import { listAssumptionsByProject } from '@/services/assumptions'
@@ -30,7 +31,7 @@ export default function Decisions({ projectId }: { projectId: string }) {
   if (data === undefined) return <PageSkeleton />
 
   async function handleSupersede(decision: Decision): Promise<void> {
-    if (!window.confirm(t('decisions.supersedeConfirm'))) return
+    if (!(await confirmAction({ title: t('confirm.confirmTitle'), body: t('decisions.supersedeConfirm') }))) return
     setError(null)
     try {
       await supersedeDecision(decision.id)

@@ -21,6 +21,7 @@ import { Dialog } from '@/components/ui/Dialog'
 import { EmptyState, ErrorState, PageSkeleton } from '@/components/common/states'
 import { FieldHint } from '@/components/onboarding/FieldHint'
 import { projectPath } from '@/app/nav'
+import { confirmAction } from '@/lib/confirm'
 import { useT } from '@/lib/i18n'
 import type { Project } from '@/schemas/entities'
 
@@ -124,7 +125,7 @@ export default function Dashboard() {
   }
 
   async function handleSoftDelete(id: string) {
-    if (!window.confirm(t('dashboard.confirmSoftDelete'))) return
+    if (!(await confirmAction({ title: t('confirm.confirmTitle'), body: t('dashboard.confirmSoftDelete') }))) return
     setError(null)
     try {
       await softDeleteProject(id)
@@ -134,7 +135,7 @@ export default function Dashboard() {
   }
 
   async function handleHardDelete(id: string, name: string) {
-    if (!window.confirm(t('dashboard.confirmHardDelete', { name }))) return
+    if (!(await confirmAction({ title: t('confirm.deleteTitle'), body: t('dashboard.confirmHardDelete', { name }), tone: 'danger' }))) return
     setError(null)
     try {
       await deleteProjectCascade(id)
