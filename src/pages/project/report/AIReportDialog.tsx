@@ -1,8 +1,7 @@
 import { requestCustomEndpointConfirm } from '@/lib/endpoint-guard'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import {
-  AIError,
   createProvider as createAiProvider,
   estimateCostUsd,
   estimateMessagesTokens,
@@ -13,6 +12,7 @@ import { resolvePricing } from '@/ai/pricing'
 import { buildReportPrompt } from '@/ai/prompts/builders'
 import { DEFAULT_PROMPT_OPTIONS, type PromptOptions } from '@/ai/prompts/options'
 import { AIReviewActions } from '@/components/ai/AIReviewActions'
+import { useAiRunFlow } from '@/components/ai/useAiRunFlow'
 import { PromptOptionsControl } from '@/components/ai/PromptOptionsControl'
 import { RelayPanel } from '@/components/relay/RelayPanel'
 import { Button } from '@/components/ui/Button'
@@ -41,7 +41,7 @@ import {
 import { getSettings } from '@/services/settings'
 import { useT } from '@/lib/i18n'
 
-type Stage = 'config' | 'running' | 'relay' | 'preview'
+type Stage = 'config' | 'relay' | 'preview'
 type ProviderKind = 'openai-compatible' | 'gemini'
 type DraftOrigin = 'byok' | 'relay'
 
@@ -86,12 +86,17 @@ export function AIReportDialog({ projectId, projectName, targetReport, onClose, 
   const [mergePicks, setMergePicks] = useState<boolean[]>([])
   const [origin, setOrigin] = useState<DraftOrigin>('byok')
   const [renderView, setRenderView] = useState<'render' | 'source'>('render')
-  const [busy, setBusy] = useState(false)
+  const [testBusy, setTestBusy] = useState(false)
   const [applying, setApplying] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [budgetError, setBudgetError] = useState<string | null>(null)
-  const [estimate, setEstimate] = useState<{ inputTokens: number; usd: number | null } | null>(null)
-  const abortRef = useRef<AbortController | null>(null)
+  const {
+    busy: running,
+    error,
+    budgetError,
+    estimate,
+    run,
+    cancel,
+    setError,
+  } = useAiRunFlow()
 
   const [showNewProvider, setShowNewProvider] = useState(false)
   const [npLabel, setNpLabel] = useState('')
@@ -133,8 +138,6 @@ export function AIReportDialog({ projectId, projectName, targetReport, onClose, 
       alive = false
     }
   }, [])
-
-  useEffect(() => () => abortRef.current?.abort(), [])
 
   const selected = providers.find((p) => p.id === selectedId) ?? null
   const route = resolveAiRoute(aiMode, providers.length > 0)
@@ -180,7 +183,7 @@ export function AIReportDialog({ projectId, projectName, targetReport, onClose, 
 
   async function handleTest() {
     if (!selected || !ensureKey()) return
-    setBusy(true)
+    setTestBusy(true)
     setError(null)
     setTestState('idle')
     try {
@@ -191,7 +194,7 @@ export function AIReportDialog({ projectId, projectName, targetReport, onClose, 
       setTestState('fail')
       setError(err instanceof Error ? err.message : String(err))
     } finally {
-      setBusy(false)
+      setTestBusy(false)
     }
   }
 
@@ -215,13 +218,7 @@ export function AIReportDialog({ projectId, projectName, targetReport, onClose, 
     // Snapshot before the await: regenerating must compare against what the
     // user was looking at, not against the incoming result.
     const previous = draft
-    const controller = new AbortController()
-    abortRef.current = controller
     setOrigin('byok')
-    setStage('running')
-    setBusy(true)
-    setError(null)
-    setBudgetError(null)
     // §6.4 请求前预估（输入侧）：报告输出较长，按 maxTokens 4096 计。
     const pricing = resolvePricing(selected.model)
     const bundle = buildReportPrompt({ projectName, context: ctx }, promptOptions)
@@ -229,40 +226,36 @@ export function AIReportDialog({ projectId, projectName, targetReport, onClose, 
       { content: bundle.instruction },
       { content: bundle.inputBlock },
     ])
-    setEstimate({
-      inputTokens,
-      usd: pricing ? estimateCostUsd(inputTokens, 4096, pricing) : null,
+    await run({
+      estimate: { inputTokens, usd: pricing ? estimateCostUsd(inputTokens, 4096, pricing) : null },
+      execute: (signal) =>
+        generateReport(createAiProvider(selected, { getApiKey: () => getSessionKey(selected.id) }), {
+          projectId,
+          projectName,
+          context: ctx,
+          signal,
+          budgetConfirmed,
+          promptOptions,
+        }),
+      onSuccess: (result) => {
+        if (previous) {
+          setPreviousDraft(previous)
+          setPendingDraft(result.data)
+          setMergeMode(false)
+          setMergePicks([])
+        } else {
+          setDraft(result.data)
+        }
+        setRenderView('render')
+        setStage('preview')
+      },
+      // 失败即丢弃半成品：旧草稿仍在 draft 里，合并态不能残留。
+      onError: () => {
+        setStage('config')
+        setPreviousDraft(null)
+        setPendingDraft(null)
+      },
     })
-    try {
-      const result = await generateReport(
-        createAiProvider(selected, { getApiKey: () => getSessionKey(selected.id) }),
-        { projectId, projectName, context: ctx, signal: controller.signal, budgetConfirmed, promptOptions },
-      )
-      if (previous) {
-        setPreviousDraft(previous)
-        setPendingDraft(result.data)
-        setMergeMode(false)
-        setMergePicks([])
-      } else {
-        setDraft(result.data)
-      }
-      setRenderView('render')
-      setStage('preview')
-    } catch (err) {
-      if (err instanceof AIError && err.code === 'ABORTED') {
-        setError(t('ai.dialog.cancelled'))
-      } else if (err instanceof AIError && err.code === 'BUDGET') {
-        setBudgetError(err.message)
-      } else {
-        setError(err instanceof Error ? err.message : String(err))
-      }
-      setStage('config')
-      setPreviousDraft(null)
-      setPendingDraft(null)
-    } finally {
-      abortRef.current = null
-      setBusy(false)
-    }
   }
 
   async function handleRelayPrompt() {
@@ -361,7 +354,7 @@ export function AIReportDialog({ projectId, projectName, targetReport, onClose, 
       onClose={onClose}
       size={stage === 'relay' ? 'lg' : 'md'}
     >
-      {stage === 'config' && (
+      {!running && stage === 'config' && (
         <div className="space-y-4">
           <p className="rounded-lg border border-hairline bg-surface-2 px-3 py-2 text-caption text-ink-secondary">
             {t('ai.dialog.currentRoute')}
@@ -390,7 +383,7 @@ export function AIReportDialog({ projectId, projectName, targetReport, onClose, 
             <p className="mt-1 text-ink-faint">{t('ai.report.noFabrication')}</p>
           </div>
 
-          <PromptOptionsControl value={promptOptions} onChange={setPromptOptions} disabled={busy} />
+          <PromptOptionsControl value={promptOptions} onChange={setPromptOptions} disabled={running || testBusy} />
 
           {route === 'byok' &&
             (providers.length > 0 && !showNewProvider ? (
@@ -508,7 +501,7 @@ export function AIReportDialog({ projectId, projectName, targetReport, onClose, 
                 />
               </div>
               <div className="flex items-center gap-3">
-                <Button variant="secondary" onClick={handleTest} disabled={busy}>
+                <Button variant="secondary" onClick={handleTest} disabled={testBusy || running}>
                   {t('settings.aiProvider.testConnection')}
                 </Button>
                 {testState === 'ok' && <span className="text-caption text-success">{t('ai.dialog.testOk')}</span>}
@@ -543,7 +536,7 @@ export function AIReportDialog({ projectId, projectName, targetReport, onClose, 
             {route === 'byok' ? (
               <Button
                 onClick={() => void handleGenerate(false)}
-                disabled={busy || noData || providers.length === 0 || showNewProvider}
+                disabled={running || noData || providers.length === 0 || showNewProvider}
               >
                 {t('ai.report.start')}
               </Button>
@@ -564,7 +557,7 @@ export function AIReportDialog({ projectId, projectName, targetReport, onClose, 
         </div>
       )}
 
-      {stage === 'running' && (
+      {running && (
         <div className="flex flex-col items-center gap-4 py-10" role="status">
           <div
             aria-hidden
@@ -580,7 +573,7 @@ export function AIReportDialog({ projectId, projectName, targetReport, onClose, 
               <span className="ml-1">{t('settings.aiProvider.usagePricingNote')}</span>
             </p>
           )}
-          <Button variant="secondary" onClick={() => abortRef.current?.abort()}>
+          <Button variant="secondary" onClick={cancel}>
             {t('common.cancel')}
           </Button>
         </div>
@@ -765,7 +758,7 @@ export function AIReportDialog({ projectId, projectName, targetReport, onClose, 
             onToggleAll={() => undefined}
             selectable={false}
             applying={applying}
-            regenerating={busy}
+            regenerating={running}
             applyLabel={t('ai.report.applyLabel')}
             applyText={applying ? t('review.applying') : targetReport ? t('ai.report.applyRewrite') : t('ai.report.applyCreate')}
             onApply={() => void handleApply()}

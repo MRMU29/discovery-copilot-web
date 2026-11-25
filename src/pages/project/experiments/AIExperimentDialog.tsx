@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import {
-  AIError,
   createProvider as createAiProvider,
   estimateCostUsd,
   estimateMessagesTokens,
@@ -12,6 +11,7 @@ import { resolvePricing } from '@/ai/pricing'
 import { buildExperimentPrompt } from '@/ai/prompts/builders'
 import { DEFAULT_PROMPT_OPTIONS, type PromptOptions } from '@/ai/prompts/options'
 import { AIReviewActions } from '@/components/ai/AIReviewActions'
+import { useAiRunFlow } from '@/components/ai/useAiRunFlow'
 import { PromptOptionsControl } from '@/components/ai/PromptOptionsControl'
 import { RelayPanel } from '@/components/relay/RelayPanel'
 import { Button } from '@/components/ui/Button'
@@ -31,7 +31,7 @@ import { getOnboarding, markOnboardingDone } from '@/services/onboarding'
 import { getSettings } from '@/services/settings'
 import { useT } from '@/lib/i18n'
 
-type Stage = 'config' | 'running' | 'relay' | 'preview'
+type Stage = 'config' | 'relay' | 'preview'
 
 interface AIExperimentDialogProps {
   projectId: string
@@ -68,10 +68,7 @@ export function AIExperimentDialog({
   const [picks, setPicks] = useState<SuggestedExperiment[]>([])
   const [checked, setChecked] = useState<boolean[]>([])
   const [applying, setApplying] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [budgetError, setBudgetError] = useState<string | null>(null)
-  const [estimate, setEstimate] = useState<{ inputTokens: number; usd: number | null } | null>(null)
-  const abortRef = useRef<AbortController | null>(null)
+  const { busy, error, budgetError, estimate, run, cancel, setError } = useAiRunFlow()
 
   useEffect(() => {
     let alive = true
@@ -87,8 +84,6 @@ export function AIExperimentDialog({
       alive = false
     }
   }, [])
-
-  useEffect(() => () => abortRef.current?.abort(), [])
 
   const route = resolveAiRoute(aiMode, providers.length > 0)
   const selected = providers.find((p) => p.id === selectedId) ?? null
@@ -108,24 +103,13 @@ export function AIExperimentDialog({
 
   async function handleSuggest(budgetConfirmed = false) {
     if (!assumption || !selected || !ensureKey()) return
-    const controller = new AbortController()
-    abortRef.current = controller
-    setStage('running')
-    setError(null)
-    setBudgetError(null)
     // §6.4 请求前预估（输入侧）：假设块 + 背景，按内置参考价折算。
     const pricing = resolvePricing(selected.model)
-    const inputTokens = estimateMessagesTokens([
-      { content: `${assumption.statement}\n${context}` },
-    ])
-    setEstimate({
-      inputTokens,
-      usd: pricing ? estimateCostUsd(inputTokens, 2048, pricing) : null,
-    })
-    try {
-      const result = await suggestExperiments(
-        createAiProvider(selected, { getApiKey: () => getSessionKey(selected.id) }),
-        {
+    const inputTokens = estimateMessagesTokens([{ content: `${assumption.statement}\n${context}` }])
+    await run({
+      estimate: { inputTokens, usd: pricing ? estimateCostUsd(inputTokens, 2048, pricing) : null },
+      execute: (signal) =>
+        suggestExperiments(createAiProvider(selected, { getApiKey: () => getSessionKey(selected.id) }), {
           projectId,
           projectName,
           assumption: {
@@ -136,27 +120,17 @@ export function AIExperimentDialog({
             confidence: assumption.confidence,
           },
           context,
-          signal: controller.signal,
+          signal,
           budgetConfirmed,
           promptOptions,
-        },
-      )
-      setPicks(result.data)
-      setChecked(result.data.map(() => true))
-      void markOnboardingDone('fieldHints').catch(() => undefined)
-      setStage('preview')
-    } catch (err) {
-      if (err instanceof AIError && err.code === 'ABORTED') {
-        setError(t('ai.dialog.cancelled'))
-      } else if (err instanceof AIError && err.code === 'BUDGET') {
-        setBudgetError(err.message)
-      } else {
-        setError(err instanceof Error ? err.message : String(err))
-      }
-      setStage('config')
-    } finally {
-      abortRef.current = null
-    }
+        }),
+      onSuccess: (result) => {
+        setPicks(result.data)
+        setChecked(result.data.map(() => true))
+        void markOnboardingDone('fieldHints').catch(() => undefined)
+        setStage('preview')
+      },
+    })
   }
 
   function handleRelayApply(data: { experiments: SuggestedExperiment[] }) {
@@ -205,7 +179,7 @@ export function AIExperimentDialog({
       onClose={onClose}
       size={stage === 'relay' ? 'lg' : 'md'}
     >
-      {stage === 'config' && (
+      {!busy && stage === 'config' && (
         <div className="space-y-4">
           <p className="rounded-lg border border-hairline bg-surface-2 px-3 py-2 text-caption text-ink-secondary">
             {t('ai.dialog.currentRoute')}
@@ -335,7 +309,7 @@ export function AIExperimentDialog({
         </div>
       )}
 
-      {stage === 'running' && (
+      {busy && (
         <div className="flex flex-col items-center gap-4 py-10" role="status">
           <div
             aria-hidden
@@ -351,7 +325,7 @@ export function AIExperimentDialog({
               <span className="ml-1">{t('settings.aiProvider.usagePricingNote')}</span>
             </p>
           )}
-          <Button variant="secondary" onClick={() => abortRef.current?.abort()}>
+          <Button variant="secondary" onClick={cancel}>
             {t('common.cancel')}
           </Button>
         </div>
