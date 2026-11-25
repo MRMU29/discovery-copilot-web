@@ -189,18 +189,18 @@ export const ru: Dict = {
     'API Key нужно вводить заново в каждой сессии работы с ИИ (он живёт только в памяти сессии, не пишется в локальную базу и не экспортируется в .dcopilot) — заранее приготовьте Key из консоли провайдера.',
   'settings.aiProvider.clearSessionKeys': 'Очистить все ключи сессии',
   'settings.aiProvider.clearSessionKeysConfirm':
-    'Очистить все API Key, сохранённые в этой сессии? Настройки провайдеров останутся; для вызовов ИИ Key придётся ввести заново.',
-  'settings.aiProvider.presetsLabel': 'Быстрые шаблоны:',
-  'settings.aiProvider.fieldLabel': 'Название',
+    'Очистить все API Key, сохранённые в этой сессии? Настройки провайдеров останутся; для вызовов ИИ Key придётся ввести заново.',  'settings.aiProvider.fieldLabel': 'Название',
   'settings.aiProvider.fieldLabelPlaceholder': 'напр. DeepSeek',
   'settings.aiProvider.fieldKind': 'Тип',
   'settings.aiProvider.kindOpenai': 'OpenAI-совместимый (DeepSeek / Kimi / GLM…)',
   'settings.aiProvider.kindGemini': 'Gemini',
   'settings.aiProvider.fieldBaseUrl': 'Base URL',
   'settings.aiProvider.fieldModel': 'Модель',
-  'settings.aiProvider.modelPlaceholder': 'deepseek-chat',
+  'settings.aiProvider.modelPlaceholder': 'deepseek-4.1-flash',
   'settings.aiProvider.noKeyNote':
     'Здесь можно ввести API Key, но он хранится только в памяти сессии; его также можно задать позже в карточке Provider. При закрытии страницы ключ исчезает и никогда не попадает в базу или .dcopilot.',
+  'settings.aiProvider.browserRiskNote':
+    'Внимание: ключ, используемый в браузере, всё равно может утечь — вредоносные расширения, общий компьютер или скрипт на другой странице могут прочитать ввод. Используйте свой ключ только на доверенном устройстве.',
   'settings.aiProvider.emptyTitle': 'Провайдеров пока нет',
   'settings.aiProvider.emptyDesc':
     'Режиму Relay не нужна никакая настройка; только режимы BYOK / гибрид требуют добавить провайдера здесь.',
@@ -342,9 +342,9 @@ export const ru: Dict = {
   'settings.about.title': 'О приложении',
   'settings.about.versionLine': 'Версия {version} · рабочее пространство продуктового поиска без аккаунтов, всё локально',
   'settings.about.stackLabel': 'Стек:',
-  'settings.about.stack': 'React 18 · Vite · Dexie (IndexedDB) · Tailwind CSS 4',
+  'settings.about.stack': 'React 18 · TypeScript · Vite · Dexie (IndexedDB) · Tailwind CSS 4',
   'settings.about.buildLabel': 'Сборка:',
-  'settings.about.build': 'Локально в первую очередь · перенос файлами (.dcopilot) · BYOK / Prompt Relay',
+  'settings.about.build': 'Локально в первую очередь · перенос файлами (.dcopilot) · проект-пакет только для чтения (HTML) · BYOK / Prompt Relay',
   'settings.about.onboardingTitle': 'Первые шаги',
   'settings.about.onboardingDesc':
     'Повторить приветственный тур и примеры заполнения, сбросив всё состояние онбординга (подсказки полей и трёхшаговый гайд Relay появятся снова).',
@@ -352,7 +352,7 @@ export const ru: Dict = {
   'settings.about.resetting': 'Сброс…',
   'settings.about.diagnosticsTitle': 'Диагностика',
   'settings.about.diagnosticsDesc':
-    'Экспорт обезличенных метаданных для отчётов о проблемах: версия приложения/формата, среда браузера, обзор хранилища, последние 50 записей метаданных запросов к ИИ и имена хостов настроенных провайдеров ИИ (только домен, без пути и ключа). Без API Key, без текста Prompt и без данных проектов; перед экспортом всё можно просмотреть.',
+    'Экспорт обезличенных метаданных для отчётов о проблемах: версия приложения/формата, среда браузера, обзор хранилища, последние 50 записей метаданных запросов к ИИ и имена хостов настроенных провайдеров ИИ (только домен, без пути и ключа). Без API Key, без текста Prompt, без параметров промпта (тон / детализация / язык) и без данных проектов; перед экспортом всё можно просмотреть.',
   'settings.about.diagnosticsAction': 'Просмотреть диагностику…',
   'settings.about.diagnosticsBusy': 'Генерация…',
   'settings.about.docsTitle': 'Продукт и документы',
@@ -362,7 +362,7 @@ export const ru: Dict = {
   'settings.about.docPrivacyDesc': 'Что хранится локально и куда уходят данные',
   'settings.about.docTerms': 'Условия использования',
   'settings.about.docTermsDesc': 'Условия использования и отказ от гарантий',
-  'settings.about.openSourceNote': 'Открытые зависимости перечислены в package.json; репозиторий исходного кода:',
+  'settings.about.openSourceNote': 'Уведомления о сторонних зависимостях и брендовых материалах — в THIRD_PARTY_LICENSES.txt и NOTICE; репозиторий исходного кода:',
   'settings.about.resetTitle': 'Сброс приложения',
   'settings.about.resetDesc':
     'Вернуться к состоянию первого запуска: удаляются все данные проектов, настройки приложения (включая режим ИИ), конфигурации провайдеров и состояние онбординга. Действие необратимо — сначала экспортируйте .dcopilot в разделе «Данные и резервные копии».',

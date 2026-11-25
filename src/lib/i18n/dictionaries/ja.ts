@@ -189,18 +189,18 @@ export const ja: Dict = {
     'API Key は AI を使うたび（各セッション）に再入力が必要です（セッションメモリにのみ保持。ローカル DB にも .dcopilot ファイルにも書き込まれません）——各プロバイダーのコンソールで Key を事前に用意してください。',
   'settings.aiProvider.clearSessionKeys': 'セッション Key をすべてクリア',
   'settings.aiProvider.clearSessionKeysConfirm':
-    'このセッションに保存された全 API Key をクリアしますか？Provider 設定は残ります。以後 AI 呼び出しには Key の再入力が必要です。',
-  'settings.aiProvider.presetsLabel': 'クイック設定：',
-  'settings.aiProvider.fieldLabel': '名前',
+    'このセッションに保存された全 API Key をクリアしますか？Provider 設定は残ります。以後 AI 呼び出しには Key の再入力が必要です。',  'settings.aiProvider.fieldLabel': '名前',
   'settings.aiProvider.fieldLabelPlaceholder': '例：DeepSeek',
   'settings.aiProvider.fieldKind': '種類',
   'settings.aiProvider.kindOpenai': 'OpenAI 互換（DeepSeek / Kimi / GLM…）',
   'settings.aiProvider.kindGemini': 'Gemini',
   'settings.aiProvider.fieldBaseUrl': 'Base URL',
   'settings.aiProvider.fieldModel': 'モデル',
-  'settings.aiProvider.modelPlaceholder': 'deepseek-chat',
+  'settings.aiProvider.modelPlaceholder': 'deepseek-4.1-flash',
   'settings.aiProvider.noKeyNote':
     'ここで API Key を入力できますが、保存先は現在のセッションメモリのみです。後から Provider カードでも設定できます。ページを閉じると消え、データベースや .dcopilot に書き込まれることはありません。',
+  'settings.aiProvider.browserRiskNote':
+    '注意：ブラウザで使う Key には依然として漏えいリスクがあります。悪意ある拡張機能、共用端末、他ページのスクリプトから入力内容が読まれる可能性があります。信頼できる端末でのみ自分の Key を使用してください。',
   'settings.aiProvider.emptyTitle': 'Provider がまだありません',
   'settings.aiProvider.emptyDesc':
     'Relay モードは設定なしで全 AI 機能を使えます。BYOK / ハイブリッドモードでのみ、ここで Provider を追加します。',
@@ -343,9 +343,9 @@ export const ja: Dict = {
   'settings.about.title': 'このアプリについて',
   'settings.about.versionLine': 'バージョン {version} · アカウント不要のローカルファースト型プロダクトディスカバリーワークスペース',
   'settings.about.stackLabel': 'スタック：',
-  'settings.about.stack': 'React 18 · Vite · Dexie (IndexedDB) · Tailwind CSS 4',
+  'settings.about.stack': 'React 18 · TypeScript · Vite · Dexie (IndexedDB) · Tailwind CSS 4',
   'settings.about.buildLabel': 'ビルド：',
-  'settings.about.build': 'ローカルファースト · ファイルで移行可能（.dcopilot）· BYOK / Prompt Relay',
+  'settings.about.build': 'ローカルファースト · ファイルで移行可能（.dcopilot）· 読み取り専用プロジェクトパッケージ（HTML）· BYOK / Prompt Relay',
   'settings.about.onboardingTitle': 'はじめに',
   'settings.about.onboardingDesc':
     'ウェルカムツアーと入力例をもう一度見て、オンボーディング状態をすべてリセットします（フィールドヒントと Relay 3 ステップガイドが再表示されます）。',
@@ -353,7 +353,7 @@ export const ja: Dict = {
   'settings.about.resetting': 'リセット中…',
   'settings.about.diagnosticsTitle': '診断パッケージ',
   'settings.about.diagnosticsDesc':
-    '問題報告用に匿名化メタデータを書き出します：アプリ/形式バージョン、ブラウザー環境、ストレージ概況、直近 50 件の AI リクエストメタデータ、および設定した AI Provider のホスト名（ドメインのみ、パス・Key は含みません）。API Key・Prompt 本文・プロジェクトデータは含まれません。書き出し前に全内容をプレビューできます。',
+    '問題報告用に匿名化メタデータを書き出します：アプリ/形式バージョン、ブラウザー環境、ストレージ概況、直近 50 件の AI リクエストメタデータ、および設定した AI Provider のホスト名（ドメインのみ、パス・Key は含みません）。API Key・Prompt 本文・Prompt パラメーター（語調/詳略/言語）・プロジェクトデータは含まれません。書き出し前に全内容をプレビューできます。',
   'settings.about.diagnosticsAction': '診断パッケージをプレビュー…',
   'settings.about.diagnosticsBusy': '生成中…',
   'settings.about.docsTitle': '製品とドキュメント',
@@ -363,7 +363,7 @@ export const ja: Dict = {
   'settings.about.docPrivacyDesc': 'ローカル保存とデータの流れ',
   'settings.about.docTerms': '利用規約',
   'settings.about.docTermsDesc': '利用条件と免責事項',
-  'settings.about.openSourceNote': 'オープンソース依存は package.json を基準とします。ソースリポジトリ：',
+  'settings.about.openSourceNote': 'サードパーティ依存とブランド素材の表示は THIRD_PARTY_LICENSES.txt と NOTICE を参照してください。ソースリポジトリ：',
   'settings.about.resetTitle': 'アプリを初期化',
   'settings.about.resetDesc':
     '初回起動時の状態に戻します：全プロジェクトデータ・アプリ設定（AI モードを含む）・Provider 設定・オンボーディング状態を削除します。この操作は取り消せません——先に「データとバックアップ」で .dcopilot を書き出すことをおすすめします。',

@@ -189,18 +189,18 @@ export const en: Dict = {
     'The API Key must be re-entered every session you use AI (it lives in session memory only, never written to the local database nor exported with .dcopilot files) — have your Key ready from the provider console.',
   'settings.aiProvider.clearSessionKeys': 'Clear all session Keys',
   'settings.aiProvider.clearSessionKeysConfirm':
-    'Clear all API Keys saved in this session? Provider configurations are kept; you will need to re-enter the Key to call AI afterwards.',
-  'settings.aiProvider.presetsLabel': 'Quick presets:',
-  'settings.aiProvider.fieldLabel': 'Name',
+    'Clear all API Keys saved in this session? Provider configurations are kept; you will need to re-enter the Key to call AI afterwards.',  'settings.aiProvider.fieldLabel': 'Name',
   'settings.aiProvider.fieldLabelPlaceholder': 'e.g. DeepSeek',
   'settings.aiProvider.fieldKind': 'Type',
   'settings.aiProvider.kindOpenai': 'OpenAI-compatible (DeepSeek / Kimi / GLM…)',
   'settings.aiProvider.kindGemini': 'Gemini',
   'settings.aiProvider.fieldBaseUrl': 'Base URL',
   'settings.aiProvider.fieldModel': 'Model',
-  'settings.aiProvider.modelPlaceholder': 'deepseek-chat',
+  'settings.aiProvider.modelPlaceholder': 'deepseek-4.1-flash',
   'settings.aiProvider.noKeyNote':
     'You can enter an API Key here, but it is kept in session memory only; you can also set it later on the provider card. It disappears when the page closes and is never written to the database or exported with .dcopilot.',
+  'settings.aiProvider.browserRiskNote':
+    'Heads-up: a Key used in the browser can still leak — malicious extensions, shared machines, or injected scripts on other pages can read what you type. Only use your own Key on a device you trust.',
   'settings.aiProvider.emptyTitle': 'No providers yet',
   'settings.aiProvider.emptyDesc':
     'Relay mode needs no configuration at all; only BYOK / Hybrid mode requires adding a Provider here.',
@@ -341,9 +341,9 @@ export const en: Dict = {
   'settings.about.title': 'About',
   'settings.about.versionLine': 'Version {version} · account-free local-first product discovery workspace',
   'settings.about.stackLabel': 'Stack:',
-  'settings.about.stack': 'React 18 · Vite · Dexie (IndexedDB) · Tailwind CSS 4',
+  'settings.about.stack': 'React 18 · TypeScript · Vite · Dexie (IndexedDB) · Tailwind CSS 4',
   'settings.about.buildLabel': 'Build:',
-  'settings.about.build': 'Local-first · portable via files (.dcopilot) · BYOK / Prompt Relay',
+  'settings.about.build': 'Local-first · portable via files (.dcopilot) · read-only project package (HTML) · BYOK / Prompt Relay',
   'settings.about.onboardingTitle': 'Getting started',
   'settings.about.onboardingDesc':
     'Replay the welcome tour and writing examples, and reset all onboarding state (field hints and the three-step Relay guide will appear again).',
@@ -351,7 +351,7 @@ export const en: Dict = {
   'settings.about.resetting': 'Resetting…',
   'settings.about.diagnosticsTitle': 'Diagnostics',
   'settings.about.diagnosticsDesc':
-    'Export de-identified metadata for issue reports: app/format version, browser environment, storage overview, the last 50 AI request metadata records, and the hostnames of your configured AI providers (domain only, no path or key). Contains no API Key, no Prompt text, no project data; preview everything before exporting.',
+    'Export de-identified metadata for issue reports: app/format version, browser environment, storage overview, the last 50 AI request metadata records, and the hostnames of your configured AI providers (domain only, no path or key). Contains no API Key, no Prompt text or prompt parameters (tone / detail / language), and no project data; preview everything before exporting.',
   'settings.about.diagnosticsAction': 'Preview diagnostics…',
   'settings.about.diagnosticsBusy': 'Generating…',
   'settings.about.docsTitle': 'Product & documents',
@@ -361,7 +361,7 @@ export const en: Dict = {
   'settings.about.docPrivacyDesc': 'What is stored locally and where data flows',
   'settings.about.docTerms': 'Terms of Use',
   'settings.about.docTermsDesc': 'Terms of use and the disclaimer',
-  'settings.about.openSourceNote': 'Open-source dependencies are listed in package.json; source repository:',
+  'settings.about.openSourceNote': 'Third-party dependency and brand asset notices are in THIRD_PARTY_LICENSES.txt and NOTICE; source repository:',
   'settings.about.resetTitle': 'Reset app',
   'settings.about.resetDesc':
     'Return to first-open state: clears all project data, app settings (including AI mode), Provider configuration and onboarding state. This cannot be undone — export a .dcopilot from "Data & Backup" first.',

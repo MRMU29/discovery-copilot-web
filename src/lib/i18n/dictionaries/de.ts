@@ -190,18 +190,18 @@ export const de: Dict = {
     'Der API Key muss in jeder Sitzung, in der du KI nutzt, neu eingegeben werden (er lebt nur im Sitzungsspeicher, wird nie in die lokale Datenbank geschrieben und nicht mit .dcopilot-Dateien exportiert) — halte den Key aus der Provider-Konsole bereit.',
   'settings.aiProvider.clearSessionKeys': 'Alle Sitzungs-Keys löschen',
   'settings.aiProvider.clearSessionKeysConfirm':
-    'Alle in dieser Sitzung gespeicherten API Keys löschen? Provider-Konfigurationen bleiben erhalten; für KI-Aufrufe musst du den Key danach neu eingeben.',
-  'settings.aiProvider.presetsLabel': 'Schnellvorlagen:',
-  'settings.aiProvider.fieldLabel': 'Name',
+    'Alle in dieser Sitzung gespeicherten API Keys löschen? Provider-Konfigurationen bleiben erhalten; für KI-Aufrufe musst du den Key danach neu eingeben.',  'settings.aiProvider.fieldLabel': 'Name',
   'settings.aiProvider.fieldLabelPlaceholder': 'z. B. DeepSeek',
   'settings.aiProvider.fieldKind': 'Typ',
   'settings.aiProvider.kindOpenai': 'OpenAI-kompatibel (DeepSeek / Kimi / GLM…)',
   'settings.aiProvider.kindGemini': 'Gemini',
   'settings.aiProvider.fieldBaseUrl': 'Base URL',
   'settings.aiProvider.fieldModel': 'Modell',
-  'settings.aiProvider.modelPlaceholder': 'deepseek-chat',
+  'settings.aiProvider.modelPlaceholder': 'deepseek-4.1-flash',
   'settings.aiProvider.noKeyNote':
     'Hier kannst du einen API Key eingeben, aber er bleibt nur im Sitzungsspeicher; du kannst ihn auch später auf der Provider-Karte setzen. Beim Schließen verschwindet er und wird nie in die Datenbank oder .dcopilot geschrieben.',
+  'settings.aiProvider.browserRiskNote':
+    'Achtung: Ein im Browser verwendeter Key kann weiterhin abfließen — bösartige Erweiterungen, gemeinsam genutzte Geräte oder Skripte anderer Seiten können Eingaben mitlesen. Nutze deinen eigenen Key nur auf einem vertrauenswürdigen Gerät.',
   'settings.aiProvider.emptyTitle': 'Noch keine Provider',
   'settings.aiProvider.emptyDesc':
     'Der Relay-Modus braucht keinerlei Einrichtung; nur BYOK / Hybrid benötigt hier einen Provider.',
@@ -344,9 +344,9 @@ export const de: Dict = {
   'settings.about.title': 'Über',
   'settings.about.versionLine': 'Version {version} · konto-freier, lokal arbeitender Produkt-Discovery-Arbeitsplatz',
   'settings.about.stackLabel': 'Stack:',
-  'settings.about.stack': 'React 18 · Vite · Dexie (IndexedDB) · Tailwind CSS 4',
+  'settings.about.stack': 'React 18 · TypeScript · Vite · Dexie (IndexedDB) · Tailwind CSS 4',
   'settings.about.buildLabel': 'Build:',
-  'settings.about.build': 'Lokal zuerst · portabel per Datei (.dcopilot) · BYOK / Prompt Relay',
+  'settings.about.build': 'Lokal zuerst · portabel per Datei (.dcopilot) · schreibgeschütztes Projektpaket (HTML) · BYOK / Prompt Relay',
   'settings.about.onboardingTitle': 'Einstieg',
   'settings.about.onboardingDesc':
     'Willkommenstour und Ausfüllbeispiele erneut ansehen und den gesamten Onboarding-Zustand zurücksetzen (Feldhinweise und die 3-Schritt-Relay-Anleitung erscheinen wieder).',
@@ -354,7 +354,7 @@ export const de: Dict = {
   'settings.about.resetting': 'Wird zurückgesetzt…',
   'settings.about.diagnosticsTitle': 'Diagnose',
   'settings.about.diagnosticsDesc':
-    'Anonymisierte Metadaten für Fehlermeldungen exportieren: App-/Formatversion, Browserumgebung, Speicherübersicht, die letzten 50 KI-Anfrage-Metadaten sowie die Hostnamen deiner konfigurierten KI-Provider (nur Domain, ohne Pfad und Key). Ohne API Key, ohne Prompt-Text und ohne Projektdaten; vor dem Export ist alles einsehbar.',
+    'Anonymisierte Metadaten für Fehlermeldungen exportieren: App-/Formatversion, Browserumgebung, Speicherübersicht, die letzten 50 KI-Anfrage-Metadaten sowie die Hostnamen deiner konfigurierten KI-Provider (nur Domain, ohne Pfad und Key). Ohne API Key, ohne Prompt-Text, ohne Prompt-Parameter (Ton / Detailtiefe / Sprache) und ohne Projektdaten; vor dem Export ist alles einsehbar.',
   'settings.about.diagnosticsAction': 'Diagnose-Vorschau…',
   'settings.about.diagnosticsBusy': 'Wird erzeugt…',
   'settings.about.docsTitle': 'Produkt & Dokumente',
@@ -364,7 +364,7 @@ export const de: Dict = {
   'settings.about.docPrivacyDesc': 'Was lokal liegt und wohin Daten fließen',
   'settings.about.docTerms': 'Nutzungsbedingungen',
   'settings.about.docTermsDesc': 'Nutzungsbedingungen und Haftungsausschluss',
-  'settings.about.openSourceNote': 'Open-Source-Abhängigkeiten stehen in package.json; Quellcode-Repository:',
+  'settings.about.openSourceNote': 'Hinweise zu Drittanbieter-Abhängigkeiten und Markenmaterial stehen in THIRD_PARTY_LICENSES.txt und NOTICE; Quellcode-Repository:',
   'settings.about.resetTitle': 'App zurücksetzen',
   'settings.about.resetDesc':
     'In den Zustand beim ersten Öffnen zurück: löscht alle Projektdaten, App-Einstellungen (inkl. KI-Modus), Provider-Konfigurationen und den Onboarding-Zustand. Das kann nicht rückgängig gemacht werden — vorher unter „Daten & Backup“ ein .dcopilot exportieren.',

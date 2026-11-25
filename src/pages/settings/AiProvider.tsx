@@ -36,14 +36,6 @@ const MODE_DESC_KEYS: Record<AiMode, string> = {
 
 const cardClass = 'rounded-lg border border-hairline bg-surface-1 p-4'
 
-/** 常见 OpenAI 兼容服务的公开端点预填（用户只需填 Key）——纯静态数据，不联网探测。 */
-const PROVIDER_PRESETS = [
-  { label: 'DeepSeek', baseUrl: 'https://api.deepseek.com/v1', model: 'deepseek-chat' },
-  { label: 'Kimi（月之暗面）', baseUrl: 'https://api.moonshot.cn/v1', model: 'moonshot-v1-8k' },
-  { label: 'GLM（智谱）', baseUrl: 'https://open.bigmodel.cn/api/paas/v4', model: 'glm-4-flash' },
-  { label: '硅基流动', baseUrl: 'https://api.siliconflow.cn/v1', model: 'deepseek-ai/DeepSeek-V3' },
-] as const
-
 const inputClass =
   'mt-1 w-full rounded-btn border border-hairline-strong bg-surface-1 px-3 py-2 text-body text-ink placeholder:text-ink-faint focus:border-accent-focus focus:outline-none'
 
@@ -468,24 +460,6 @@ export default function AiProvider() {
 
         {showAdd && (
           <form onSubmit={handleAdd} className="space-y-3 rounded-lg border border-hairline bg-surface-2 p-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-caption text-ink-muted">{t('settings.aiProvider.presetsLabel')}</span>
-              {PROVIDER_PRESETS.map((preset) => (
-                <button
-                  key={preset.label}
-                  type="button"
-                  onClick={() => {
-                    setKind('openai-compatible')
-                    setLabel(preset.label)
-                    setBaseUrl(preset.baseUrl)
-                    setModel(preset.model)
-                  }}
-                  className="min-h-9 rounded-btn border border-hairline-strong bg-surface-1 px-3 text-caption text-ink hover:border-accent-focus hover:text-accent-hover"
-                >
-                  {preset.label}
-                </button>
-              ))}
-            </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <label htmlFor="provider-label" className="text-caption text-ink-muted">
@@ -538,7 +512,7 @@ export default function AiProvider() {
                 id="provider-model"
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
-                placeholder="deepseek-chat"
+                placeholder={t('settings.aiProvider.modelPlaceholder')}
                 className={inputClass}
               />
             </div>
@@ -556,9 +530,10 @@ export default function AiProvider() {
                 className={inputClass}
               />
             </div>
-            <p className="rounded-lg border border-hairline bg-surface-1 px-3 py-2 text-caption text-ink-muted">
-              {t('settings.aiProvider.noKeyNote')}
-            </p>
+            <div className="rounded-lg border border-hairline bg-surface-1 px-3 py-2 text-caption text-ink-muted">
+              <p>{t('settings.aiProvider.noKeyNote')}</p>
+              <p className="mt-1 text-warning">{t('settings.aiProvider.browserRiskNote')}</p>
+            </div>
             <Button type="submit" disabled={!label.trim() || !baseUrl.trim() || !model.trim()}>
               {t('common.save')}
             </Button>

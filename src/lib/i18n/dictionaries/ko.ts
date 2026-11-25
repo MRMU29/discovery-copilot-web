@@ -184,18 +184,18 @@ export const ko: Dict = {
     'API Key는 AI를 사용하는 매 세션마다 다시 입력해야 합니다(세션 메모리에만 보관되며 로컬 DB나 .dcopilot 파일에 기록되지 않음) — 각 서비스 콘솔에서 Key를 미리 준비하세요.',
   'settings.aiProvider.clearSessionKeys': '세션 Key 모두 지우기',
   'settings.aiProvider.clearSessionKeysConfirm':
-    '이 세션에 저장된 모든 API Key를 지울까요? Provider 설정은 유지되며, 이후 AI 호출 시 Key를 다시 입력해야 합니다.',
-  'settings.aiProvider.presetsLabel': '빠른 프리셋:',
-  'settings.aiProvider.fieldLabel': '이름',
+    '이 세션에 저장된 모든 API Key를 지울까요? Provider 설정은 유지되며, 이후 AI 호출 시 Key를 다시 입력해야 합니다.',  'settings.aiProvider.fieldLabel': '이름',
   'settings.aiProvider.fieldLabelPlaceholder': '예: DeepSeek',
   'settings.aiProvider.fieldKind': '유형',
   'settings.aiProvider.kindOpenai': 'OpenAI 호환 (DeepSeek / Kimi / GLM…)',
   'settings.aiProvider.kindGemini': 'Gemini',
   'settings.aiProvider.fieldBaseUrl': 'Base URL',
   'settings.aiProvider.fieldModel': '모델',
-  'settings.aiProvider.modelPlaceholder': 'deepseek-chat',
+  'settings.aiProvider.modelPlaceholder': 'deepseek-4.1-flash',
   'settings.aiProvider.noKeyNote':
     '여기에서 API Key를 입력할 수 있지만 현재 세션 메모리에만 보관됩니다. 나중에 Provider 카드에서도 설정할 수 있습니다. 페이지를 닫으면 사라지며 데이터베이스나 .dcopilot에 기록되지 않습니다.',
+  'settings.aiProvider.browserRiskNote':
+    '주의: 브라우저에서 사용하는 Key는 여전히 유출 위험이 있습니다. 악성 확장 프로그램, 공용 기기, 다른 페이지의 스크립트가 입력 내용을 읽을 수 있습니다. 신뢰할 수 있는 기기에서만 본인 Key를 사용하세요.',
   'settings.aiProvider.emptyTitle': 'Provider가 아직 없어요',
   'settings.aiProvider.emptyDesc': 'Relay 모드는 설정 없이 모든 AI 기능을 쓸 수 있습니다. BYOK / 하이브리드 모드만 이곳에서 Provider를 추가합니다.',
   'settings.aiProvider.defaultBadge': '기본',
@@ -335,9 +335,9 @@ export const ko: Dict = {
   'settings.about.title': '정보',
   'settings.about.versionLine': '버전 {version} · 계정 없는 로컬 퍼스트 제품 디스커버리 워크스페이스',
   'settings.about.stackLabel': '스택:',
-  'settings.about.stack': 'React 18 · Vite · Dexie (IndexedDB) · Tailwind CSS 4',
+  'settings.about.stack': 'React 18 · TypeScript · Vite · Dexie (IndexedDB) · Tailwind CSS 4',
   'settings.about.buildLabel': '빌드:',
-  'settings.about.build': '로컬 퍼스트 · 파일로 이동 가능(.dcopilot) · BYOK / Prompt Relay',
+  'settings.about.build': '로컬 퍼스트 · 파일로 이동 가능(.dcopilot) · 읽기 전용 프로젝트 패키지(HTML) · BYOK / Prompt Relay',
   'settings.about.onboardingTitle': '시작 안내',
   'settings.about.onboardingDesc':
     '환영 투어와 작성 예시를 다시 보고 온보딩 상태를 모두 초기화합니다(필드 힌트와 Relay 3단계 안내가 다시 나타납니다).',
@@ -345,7 +345,7 @@ export const ko: Dict = {
   'settings.about.resetting': '초기화 중…',
   'settings.about.diagnosticsTitle': '진단 패키지',
   'settings.about.diagnosticsDesc':
-    '문제 보고를 위해 비식별 메타데이터를 내보냅니다: 앱/형식 버전, 브라우저 환경, 저장 개요, 최근 50건의 AI 요청 메타데이터, 그리고 설정한 AI Provider 호스트 이름(도메인만, 경로·Key 미포함). API Key, Prompt 본문, 프로젝트 데이터는 포함되지 않으며 내보내기 전에 전체를 미리 볼 수 있습니다.',
+    '문제 보고를 위해 비식별 메타데이터를 내보냅니다: 앱/형식 버전, 브라우저 환경, 저장 개요, 최근 50건의 AI 요청 메타데이터, 그리고 설정한 AI Provider 호스트 이름(도메인만, 경로·Key 미포함). API Key, Prompt 본문, Prompt 매개변수(어조/상세도/언어), 프로젝트 데이터는 포함되지 않으며 내보내기 전에 전체를 미리 볼 수 있습니다.',
   'settings.about.diagnosticsAction': '진단 패키지 미리 보기…',
   'settings.about.diagnosticsBusy': '생성 중…',
   'settings.about.docsTitle': '제품과 문서',
@@ -355,7 +355,7 @@ export const ko: Dict = {
   'settings.about.docPrivacyDesc': '로컬 저장과 데이터 흐름',
   'settings.about.docTerms': '이용약관',
   'settings.about.docTermsDesc': '이용 조건과 면책 조항',
-  'settings.about.openSourceNote': '오픈소스 의존성은 package.json 기준입니다. 소스 저장소:',
+  'settings.about.openSourceNote': '서드파티 의존성과 브랜드 자산 고지는 THIRD_PARTY_LICENSES.txt 및 NOTICE를 참고하세요. 소스 저장소:',
   'settings.about.resetTitle': '앱 초기화',
   'settings.about.resetDesc':
     '처음 연 상태로 되돌립니다: 모든 프로젝트 데이터, 앱 설정(AI 모드 포함), Provider 설정, 온보딩 상태를 지웁니다. 되돌릴 수 없으니 먼저 "데이터와 백업"에서 .dcopilot을 내보내는 것을 권장합니다.',

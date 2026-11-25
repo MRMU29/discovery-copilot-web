@@ -190,18 +190,18 @@ export const fr: Dict = {
     'La clé API doit être saisie à nouveau à chaque session d’utilisation de l’IA (elle ne vit qu’en mémoire de session, jamais écrite dans la base locale ni exportée dans les fichiers .dcopilot) — préparez votre clé depuis la console du fournisseur.',
   'settings.aiProvider.clearSessionKeys': 'Effacer toutes les clés de session',
   'settings.aiProvider.clearSessionKeysConfirm':
-    'Effacer toutes les clés API enregistrées dans cette session ? Les configurations de Provider sont conservées ; il faudra ressaisir la clé pour appeler l’IA ensuite.',
-  'settings.aiProvider.presetsLabel': 'Préréglages rapides :',
-  'settings.aiProvider.fieldLabel': 'Nom',
+    'Effacer toutes les clés API enregistrées dans cette session ? Les configurations de Provider sont conservées ; il faudra ressaisir la clé pour appeler l’IA ensuite.',  'settings.aiProvider.fieldLabel': 'Nom',
   'settings.aiProvider.fieldLabelPlaceholder': 'ex. DeepSeek',
   'settings.aiProvider.fieldKind': 'Type',
   'settings.aiProvider.kindOpenai': 'Compatible OpenAI (DeepSeek / Kimi / GLM…)',
   'settings.aiProvider.kindGemini': 'Gemini',
   'settings.aiProvider.fieldBaseUrl': 'Base URL',
   'settings.aiProvider.fieldModel': 'Modèle',
-  'settings.aiProvider.modelPlaceholder': 'deepseek-chat',
+  'settings.aiProvider.modelPlaceholder': 'deepseek-4.1-flash',
   'settings.aiProvider.noKeyNote':
     'Vous pouvez saisir une API Key ici, mais elle reste uniquement en mémoire de session ; vous pouvez aussi la définir plus tard sur la fiche du Provider. Elle disparaît à la fermeture et n’est jamais écrite dans la base ni exportée avec .dcopilot.',
+  'settings.aiProvider.browserRiskNote':
+    'Attention : une clé utilisée dans le navigateur peut toujours fuir — extensions malveillantes, ordinateur partagé ou script injecté dans une autre page peuvent lire ce que vous saisissez. N’utilisez votre propre clé que sur un appareil de confiance.',
   'settings.aiProvider.emptyTitle': 'Aucun provider pour l’instant',
   'settings.aiProvider.emptyDesc':
     'Le mode Relay fonctionne sans aucune configuration ; seuls les modes BYOK / Hybride nécessitent d’ajouter un provider ici.',
@@ -344,9 +344,9 @@ export const fr: Dict = {
   'settings.about.title': 'À propos',
   'settings.about.versionLine': 'Version {version} · espace de découverte produit sans compte, tout en local',
   'settings.about.stackLabel': 'Stack :',
-  'settings.about.stack': 'React 18 · Vite · Dexie (IndexedDB) · Tailwind CSS 4',
+  'settings.about.stack': 'React 18 · TypeScript · Vite · Dexie (IndexedDB) · Tailwind CSS 4',
   'settings.about.buildLabel': 'Build :',
-  'settings.about.build': 'Local d’abord · portable par fichier (.dcopilot) · BYOK / Prompt Relay',
+  'settings.about.build': 'Local d’abord · portable par fichier (.dcopilot) · paquet projet en lecture seule (HTML) · BYOK / Prompt Relay',
   'settings.about.onboardingTitle': 'Prise en main',
   'settings.about.onboardingDesc':
     'Revoir la visite de bienvenue et les exemples, et réinitialiser tout l’état d’onboarding (les astuces de champs et le guide Relay en 3 étapes réapparaîtront).',
@@ -354,7 +354,7 @@ export const fr: Dict = {
   'settings.about.resetting': 'Réinitialisation…',
   'settings.about.diagnosticsTitle': 'Diagnostics',
   'settings.about.diagnosticsDesc':
-    'Exporte des métadonnées anonymisées pour les rapports de bugs : version app/format, environnement navigateur, aperçu du stockage, les 50 dernières métadonnées de requêtes IA ainsi que les noms d’hôte de vos fournisseurs d’IA configurés (domaine uniquement, sans chemin ni clé). Sans clé API, sans texte de Prompt ni données de projet ; tout est prévisualisable avant export.',
+    'Exporte des métadonnées anonymisées pour les rapports de bugs : version app/format, environnement navigateur, aperçu du stockage, les 50 dernières métadonnées de requêtes IA ainsi que les noms d’hôte de vos fournisseurs d’IA configurés (domaine uniquement, sans chemin ni clé). Sans clé API, sans texte de Prompt, sans paramètres de prompt (ton / détail / langue) ni données de projet ; tout est prévisualisable avant export.',
   'settings.about.diagnosticsAction': 'Prévisualiser les diagnostics…',
   'settings.about.diagnosticsBusy': 'Génération…',
   'settings.about.docsTitle': 'Produit et documents',
@@ -364,7 +364,7 @@ export const fr: Dict = {
   'settings.about.docPrivacyDesc': 'Ce qui est stocké localement et où vont les données',
   'settings.about.docTerms': 'Conditions d’utilisation',
   'settings.about.docTermsDesc': 'Conditions d’utilisation et avertissement',
-  'settings.about.openSourceNote': 'Les dépendances open source sont listées dans package.json ; dépôt du code source :',
+  'settings.about.openSourceNote': 'Les mentions des dépendances tierces et des éléments de marque figurent dans THIRD_PARTY_LICENSES.txt et NOTICE ; dépôt du code source :',
   'settings.about.resetTitle': 'Réinitialiser l’application',
   'settings.about.resetDesc':
     'Revenir à l’état de première ouverture : efface toutes les données de projets, les réglages (mode IA inclus), les configurations de provider et l’état d’onboarding. Irréversible — exportez d’abord un .dcopilot depuis « Données et sauvegarde ».',
