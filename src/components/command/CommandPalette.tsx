@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Dialog } from '@/components/ui/Dialog'
@@ -24,7 +24,7 @@ interface PaletteItem {
  * reuses Dialog for focus trapping; the search box gets first focus via
  * `initialFocus` so typing works immediately.
  */
-export function CommandPalette({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function CommandPalette({ onClose }: { onClose: () => void }) {
   const t = useT()
   const navigate = useNavigate()
   const location = useLocation()
@@ -32,14 +32,8 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
   const [query, setQuery] = useState('')
   const [active, setActive] = useState(0)
 
-  const projects = useLiveQuery(() => listActiveProjects(), []) ?? []
+  const projectRows = useLiveQuery(() => listActiveProjects(), [])
   const projectId = /^\/project\/([^/]+)/.exec(location.pathname)?.[1] ?? null
-
-  useEffect(() => {
-    if (!open) return
-    setQuery('')
-    setActive(0)
-  }, [open])
 
   const items = useMemo<PaletteItem[]>(() => {
     const actions: PaletteItem[] = [
@@ -72,7 +66,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
       },
     ]
 
-    const projectItems: PaletteItem[] = [...projects]
+    const projectItems: PaletteItem[] = [...(projectRows ?? [])]
       .sort((a, b) => a.name.localeCompare(b.name))
       .map((project) => ({
         id: `project-${project.id}`,
@@ -84,7 +78,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
     const q = query.trim().toLowerCase()
     if (!q) return [...actions, ...projectItems.slice(0, 5)]
     return [...actions, ...projectItems].filter((item) => item.label.toLowerCase().includes(q))
-  }, [navigate, projectId, projects, query, t])
+  }, [navigate, projectId, projectRows, query, t])
 
   const clamped = Math.min(active, Math.max(0, items.length - 1))
 
@@ -95,7 +89,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
   }
 
   return (
-    <Dialog open={open} title={t('palette.title')} onClose={onClose} initialFocus={searchRef}>
+    <Dialog open title={t('palette.title')} onClose={onClose} initialFocus={searchRef}>
       <div className="space-y-3">
         <input
           ref={searchRef}

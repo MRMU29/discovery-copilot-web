@@ -299,7 +299,8 @@ export default function AppShell() {
         </div>
       )}
       {showWelcome && <WelcomeDialog onClose={() => undefined} />}
-      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+      {/* Mounted per open so the search state resets without an effect. */}
+      {paletteOpen && <CommandPalette onClose={() => setPaletteOpen(false)} />}
     </div>
   )
 }

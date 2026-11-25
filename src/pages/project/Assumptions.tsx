@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
@@ -31,7 +31,7 @@ export default function Assumptions({ projectId }: { projectId: string }) {
     }
   }, [projectId])
   const [searchParams, setSearchParams] = useSearchParams()
-  const [formOpen, setFormOpen] = useState(false)
+  const [formOpenState, setFormOpenState] = useState(false)
   const [aiOpen, setAiOpen] = useState(false)
   const [batchOpen, setBatchOpen] = useState(false)
   const [showArchived, setShowArchived] = useState(false)
@@ -43,14 +43,17 @@ export default function Assumptions({ projectId }: { projectId: string }) {
     setSearchParams(next === 'table' ? { view: 'table' } : {}, { replace: true })
 
   // Cross-page entry from the command palette: /assumptions?new=assumption.
+  // Derived instead of an effect so closing the form does not fight the URL.
   const wantsNew = searchParams.get('new') === 'assumption'
-  useEffect(() => {
-    if (!wantsNew) return
-    setFormOpen(true)
+  const formOpen = formOpenState || wantsNew
+
+  function closeForm() {
+    setFormOpenState(false)
+    if (!searchParams.has('new')) return
     const next = new URLSearchParams(searchParams)
     next.delete('new')
     setSearchParams(next, { replace: true })
-  }, [wantsNew, searchParams, setSearchParams])
+  }
 
   if (assumptions === undefined || experiments === undefined) return <PageSkeleton />
 
@@ -90,7 +93,7 @@ export default function Assumptions({ projectId }: { projectId: string }) {
           <Button variant="secondary" onClick={() => setBatchOpen(true)}>
             {t('assumptions.batch.cta')}
           </Button>
-          <Button variant="secondary" onClick={() => setFormOpen(true)}>
+          <Button variant="secondary" onClick={() => setFormOpenState(true)}>
             {t('assumptions.add')}
           </Button>
         </div>
@@ -169,11 +172,11 @@ export default function Assumptions({ projectId }: { projectId: string }) {
         </>
       )}
 
-      <Dialog open={formOpen} title={t('assumptions.formTitle')} onClose={() => setFormOpen(false)}>
+      <Dialog open={formOpen} title={t('assumptions.formTitle')} onClose={closeForm}>
         <AssumptionForm
           projectId={projectId}
-          onDone={() => setFormOpen(false)}
-          onCancel={() => setFormOpen(false)}
+          onDone={closeForm}
+          onCancel={closeForm}
         />
       </Dialog>
 
