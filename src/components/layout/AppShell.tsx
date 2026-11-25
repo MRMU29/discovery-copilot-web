@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { purgeExpiredProjects } from '@/services/projects'
@@ -41,6 +41,20 @@ export default function AppShell() {
   const settings = useLiveQuery(() => getSettings(), [])
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
+  const mainRef = useRef<HTMLElement>(null)
+  const firstRoute = useRef(true)
+
+  // Route focus (§v0.2.4): after navigation, put the caret at the top of the
+  // content region so keyboard/screen-reader users are not left in the old page.
+  // The container — not the h1 — because sections are lazy (skeleton first) and
+  // the project page nests two h1s.
+  useEffect(() => {
+    if (firstRoute.current) {
+      firstRoute.current = false
+      return
+    }
+    mainRef.current?.focus()
+  }, [location.pathname])
 
   // Theme: the settings row is authoritative, but it loads asynchronously. Do
   // nothing until it arrives — applying 'system' as a placeholder used to flip the
@@ -188,7 +202,11 @@ export default function AppShell() {
             {t('shell.offline')}
           </div>
         )}
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 md:px-8 md:py-10">
+        <main
+          ref={mainRef}
+          tabIndex={-1}
+          className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 outline-none md:px-8 md:py-10"
+        >
           <div key={topSegment} className="dc-page-enter">
             <Suspense fallback={<PageSkeleton />}>
               <Outlet />

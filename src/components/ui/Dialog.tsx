@@ -1,5 +1,6 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode, type RefObject } from 'react'
 import { createPortal } from 'react-dom'
+import { createInertCounter } from '@/lib/focus'
 import { useT } from '@/lib/i18n'
 
 interface DialogProps {
@@ -8,11 +9,20 @@ interface DialogProps {
   onClose: () => void
   /** 'lg' widens the panel for long-form content (Relay prompt reading). */
   size?: 'md' | 'lg'
+  /** Optional first target (command palette search box); falls back to the first focusable. */
+  initialFocus?: RefObject<HTMLElement | null>
   children: ReactNode
 }
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+
+/** Shared across every Dialog instance so nested modals keep the app inert. */
+const inertCounter = createInertCounter((active) => {
+  const appRoot = document.getElementById('root')
+  if (active) appRoot?.setAttribute('inert', '')
+  else appRoot?.removeAttribute('inert')
+})
 
 /**
  * Minimal modal (no Radix by decision): Esc + backdrop click to close,
@@ -26,7 +36,7 @@ const FOCUSABLE =
  * On narrow screens the panel is bounded to the viewport, the close button is
  * a 44px target, and the body scrolls internally with Home-Indicator room.
  */
-export function Dialog({ open, title, onClose, size = 'md', children }: DialogProps) {
+export function Dialog({ open, title, onClose, size = 'md', initialFocus, children }: DialogProps) {
   const t = useT()
   const panelRef = useRef<HTMLDivElement>(null)
   // Keep the latest callback without re-running the focus effect on every render.
@@ -39,15 +49,15 @@ export function Dialog({ open, title, onClose, size = 'md', children }: DialogPr
     if (!open) return
     const panel = panelRef.current
     const previouslyFocused = document.activeElement as HTMLElement | null
-    const appRoot = document.getElementById('root')
-    appRoot?.setAttribute('inert', '')
+    // Counted: closing an inner dialog must not un-inert the app behind an outer one.
+    inertCounter.acquire()
 
     const items = () =>
       Array.from(panel?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? []).filter(
         (el) => el.offsetParent !== null,
       )
 
-    items()[0]?.focus()
+    ;(initialFocus?.current ?? items()[0])?.focus()
 
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -79,7 +89,7 @@ export function Dialog({ open, title, onClose, size = 'md', children }: DialogPr
     window.addEventListener('keydown', onKey)
     return () => {
       window.removeEventListener('keydown', onKey)
-      appRoot?.removeAttribute('inert')
+      inertCounter.release()
       previouslyFocused?.focus?.()
     }
   }, [open])
