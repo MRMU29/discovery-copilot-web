@@ -1,9 +1,12 @@
 import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis } from 'recharts'
 import { AIError, createProvider as createAiProvider, clearSessionKeys, getSessionKey, setSessionKey, summarizeUsage } from '@/ai'
+import { getMonthUsage, groupUsageByPrompt, usageCsv, usageSinceIso, usageWindow } from '@/ai/usage'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/common/states'
 import { db } from '@/db/db'
+import { downloadFile } from '@/lib/download'
 import { resolveAiRoute, AI_MODES, type AiMode } from '@/lib/ai-mode'
 import type { AiRequest, ProviderConfigRow } from '@/schemas/entities'
 import { listActiveProjects } from '@/services/projects'
@@ -47,6 +50,7 @@ const inputClass =
 const PROMPT_LABEL_KEYS: Record<string, string> = {
   'identify-assumptions': 'settings.aiProvider.prompt.identifyAssumptions',
   'design-experiments': 'settings.aiProvider.prompt.designExperiments',
+  'generate-report': 'settings.aiProvider.prompt.generateReport',
   chat: 'settings.aiProvider.prompt.chat',
   'chat-json': 'settings.aiProvider.prompt.chatJson',
 }
@@ -55,12 +59,32 @@ function fmtUsd(usd: number): string {
   return `$${usd.toFixed(4)}`
 }
 
-/** §6.4 用量视图：月合计 + 按日汇总 + 最近 20 条明细。 */
-function UsageView({ rows, projects }: { rows: AiRequest[]; projects: { id: string; name: string }[] }) {
+/** §6.4 用量视图：月合计 + 30 天曲线 + 任务分布 + 预算进度 + 按日汇总 + 最近 20 条明细。 */
+function UsageView({
+  rows,
+  projects,
+  monthUsage,
+  monthlyBudgetUsd,
+}: {
+  rows: AiRequest[]
+  projects: { id: string; name: string }[]
+  monthUsage: { totalUsd: number; requestCount: number } | null
+  monthlyBudgetUsd: number | null
+}) {
   const t = useT()
   const summary = summarizeUsage(rows)
+  const days = usageWindow(rows)
+  const tasks = groupUsageByPrompt(rows)
   const projectNameById = new Map(projects.map((p) => [p.id, p.name]))
-  const details = rows.slice(0, 20)
+  const details = [...rows].reverse().slice(0, 20)
+  const budgetPercent =
+    monthlyBudgetUsd && monthlyBudgetUsd > 0
+      ? Math.min(100, Math.round(((monthUsage?.totalUsd ?? 0) / monthlyBudgetUsd) * 100))
+      : 0
+
+  function handleExportCsv() {
+    downloadFile(`usage-${new Date().toISOString().slice(0, 10)}.csv`, usageCsv(rows), 'text/csv;charset=utf-8')
+  }
   return (
     <div className="space-y-4">
       <p className="text-body-sm text-ink">
@@ -72,6 +96,88 @@ function UsageView({ rows, projects }: { rows: AiRequest[]; projects: { id: stri
         })}
         <span className="ml-1 text-caption text-ink-faint">{t('settings.aiProvider.usagePricingNote')}</span>
       </p>
+
+      <div className="grid gap-3 lg:grid-cols-2">
+        <section className="rounded-lg border border-hairline p-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-caption text-ink-muted">{t('settings.aiProvider.usage30dHeading')}</p>
+            <Button variant="ghost" onClick={handleExportCsv}>
+              {t('settings.aiProvider.usageCsv')}
+            </Button>
+          </div>
+          <div className="mt-2 h-40">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={days} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+                <defs>
+                  <linearGradient id="usageFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--color-accent)" stopOpacity={0.35} />
+                    <stop offset="100%" stopColor="var(--color-accent)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-hairline)" vertical={false} />
+                <XAxis
+                  dataKey="date"
+                  interval={6}
+                  tickFormatter={(value: string) => value.slice(5)}
+                  tick={{ fontSize: 10, fill: 'var(--color-ink-faint)' }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip
+                  formatter={(value) => [String(value), t('settings.aiProvider.usageChartCount')]}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="count"
+                  stroke="var(--color-accent)"
+                  strokeWidth={2}
+                  fill="url(#usageFill)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+          <p className="mt-1 text-caption text-ink-faint">{t('settings.aiProvider.usage30dNote')}</p>
+        </section>
+
+        <section className="rounded-lg border border-hairline p-3">
+          <p className="text-caption text-ink-muted">{t('settings.aiProvider.usageTaskHeading')}</p>
+          <ul className="mt-2 space-y-1 text-caption text-ink-secondary">
+            {tasks.map((task) => (
+              <li key={task.promptId} className="flex items-center justify-between gap-2">
+                <span className="min-w-0 truncate">
+                  {t(PROMPT_LABEL_KEYS[task.promptId] ?? task.promptId)}
+                </span>
+                <span className="shrink-0 text-ink-faint">
+                  {t('settings.aiProvider.usageTaskLine', {
+                    count: task.count,
+                    usd: fmtUsd(task.estimatedUsd),
+                  })}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-3 border-t border-hairline pt-3">
+            <p className="text-caption text-ink-muted">{t('settings.aiProvider.usageBudgetHeading')}</p>
+            <p className="mt-1 text-caption text-ink-secondary">
+              {monthlyBudgetUsd && monthlyBudgetUsd > 0
+                ? t('settings.aiProvider.usageBudgetProgress', {
+                    usd: fmtUsd(monthUsage?.totalUsd ?? 0),
+                    limit: fmtUsd(monthlyBudgetUsd),
+                    percent: budgetPercent,
+                  })
+                : t('settings.aiProvider.usageBudgetNone', { usd: fmtUsd(monthUsage?.totalUsd ?? 0) })}
+            </p>
+            {monthlyBudgetUsd && monthlyBudgetUsd > 0 && (
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-3">
+                <div
+                  className={`h-full rounded-full ${budgetPercent >= 100 ? 'bg-danger' : 'bg-accent'}`}
+                  style={{ width: `${budgetPercent}%` }}
+                />
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
 
       <div className="overflow-x-auto rounded-lg border border-hairline">
         <table className="w-full min-w-[480px] text-left text-caption">
@@ -143,7 +249,11 @@ export default function AiProvider() {
   const perRequestValue = budgetDrafts.perRequest ?? (settings?.perRequestBudgetUsd != null ? String(settings.perRequestBudgetUsd) : '')
   const monthlyValue = budgetDrafts.monthly ?? (settings?.monthlyBudgetUsd != null ? String(settings.monthlyBudgetUsd) : '')
 
-  const usageRows = useLiveQuery(() => db.ai_requests.orderBy('id').reverse().limit(500).toArray(), [])
+  const usageRows = useLiveQuery(
+    () => db.ai_requests.where('createdAt').aboveOrEqual(usageSinceIso()).toArray(),
+    [],
+  )
+  const monthUsage = useLiveQuery(() => getMonthUsage(), [])
   const projects = useLiveQuery(() => listActiveProjects(), [])
 
   async function handleMode(mode: AiMode) {
@@ -527,7 +637,12 @@ export default function AiProvider() {
             {t('settings.aiProvider.usageEmpty')}
           </p>
         ) : (
-          <UsageView rows={usageRows} projects={projects ?? []} />
+          <UsageView
+            rows={usageRows}
+            projects={projects ?? []}
+            monthUsage={monthUsage ?? null}
+            monthlyBudgetUsd={settings?.monthlyBudgetUsd ?? null}
+          />
         )}
       </section>
 
