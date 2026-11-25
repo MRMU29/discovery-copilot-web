@@ -79,7 +79,3 @@ export async function resetDb(): Promise<void> {
   await db.delete()
   await db.open()
 }
-
-export async function closeDb(): Promise<void> {
-  db.close()
-}

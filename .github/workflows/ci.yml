@@ -9,6 +9,11 @@ on:
     branches: [main]
   pull_request:
 
+# The verify job only reads the repo; declare it so the default token can't
+# exceed that if repository defaults ever change.
+permissions:
+  contents: read
+
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -28,5 +33,7 @@ jobs:
         run: pnpm typecheck
       - name: Unit + integration tests
         run: pnpm test
+      - name: Build (catches bundling/asset errors typecheck misses)
+        run: pnpm build
       - name: Security gate (keys, sensitive paths, internal docs)
         run: pnpm security:check

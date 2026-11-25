@@ -84,6 +84,14 @@ export function usageSinceIso(now: Date = new Date(), days = 30): string {
 }
 
 /**
+ * 用量视图的行集：`createdAt >= sinceIso`，走 createdAt 索引区间。
+ * 页面不该自己碰 `db.ai_requests`——口径（窗口起点、排序、聚合）都留在本模块。
+ */
+export async function listUsageSince(sinceIso: string): Promise<AiRequest[]> {
+  return db.ai_requests.where('createdAt').aboveOrEqual(sinceIso).toArray()
+}
+
+/**
  * Zero-filled UTC day window, oldest → newest. Charts need the zeros: a gap in
  * usage must read as "no requests", not "no data". Rows outside the window are
  * ignored so a wide query cannot distort the chart.

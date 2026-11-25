@@ -1,6 +1,6 @@
 import 'fake-indexeddb/auto'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { getMonthUsage, summarizeUsage } from '@/ai/usage'
+import { getMonthUsage, listUsageSince, summarizeUsage } from '@/ai/usage'
 import { db, resetDb } from '@/db/db'
 import type { AiRequest } from '@/schemas/entities'
 
@@ -49,6 +49,22 @@ describe('summarizeUsage (§6.4 按日聚合)', () => {
       totalInputTokens: 0,
       totalOutputTokens: 0,
     })
+  })
+})
+
+describe('listUsageSince (§6.4 用量视图行集)', () => {
+  beforeEach(async () => {
+    await resetDb()
+  })
+
+  it('returns rows at or after the cutoff and nothing older', async () => {
+    await db.ai_requests.bulkPut([
+      row({ id: 1, createdAt: '2026-10-01T00:00:00.000Z' }),
+      row({ id: 2, createdAt: '2026-10-25T00:00:00.000Z' }),
+      row({ id: 3, createdAt: '2026-10-31T00:00:00.000Z' }),
+    ])
+    const rows = await listUsageSince('2026-10-25T00:00:00.000Z')
+    expect(rows.map((r) => r.id)).toEqual([2, 3])
   })
 })
 

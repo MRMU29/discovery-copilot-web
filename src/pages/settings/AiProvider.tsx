@@ -2,10 +2,9 @@ import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis } from 'recharts'
 import { AIError, createProvider as createAiProvider, clearSessionKeys, getSessionKey, setSessionKey, summarizeUsage } from '@/ai'
-import { getMonthUsage, groupUsageByPrompt, usageCsv, usageSinceIso, usageWindow } from '@/ai/usage'
+import { getMonthUsage, groupUsageByPrompt, listUsageSince, usageCsv, usageSinceIso, usageWindow } from '@/ai/usage'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/common/states'
-import { db } from '@/db/db'
 import { downloadFile } from '@/lib/download'
 import { resolveAiRoute, AI_MODES, type AiMode } from '@/lib/ai-mode'
 import type { AiRequest, ProviderConfigRow } from '@/schemas/entities'
@@ -241,10 +240,7 @@ export default function AiProvider() {
   const perRequestValue = budgetDrafts.perRequest ?? (settings?.perRequestBudgetUsd != null ? String(settings.perRequestBudgetUsd) : '')
   const monthlyValue = budgetDrafts.monthly ?? (settings?.monthlyBudgetUsd != null ? String(settings.monthlyBudgetUsd) : '')
 
-  const usageRows = useLiveQuery(
-    () => db.ai_requests.where('createdAt').aboveOrEqual(usageSinceIso()).toArray(),
-    [],
-  )
+  const usageRows = useLiveQuery(() => listUsageSince(usageSinceIso()), [])
   const monthUsage = useLiveQuery(() => getMonthUsage(), [])
   const projects = useLiveQuery(() => listActiveProjects(), [])
 
