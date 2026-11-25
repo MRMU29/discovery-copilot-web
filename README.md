@@ -6,7 +6,7 @@
 
 无需账号 · IndexedDB 本地存储 · BYOK · `.dcopilot` 文件跨设备迁移的产品发现工作台
 
-[![Version](https://img.shields.io/badge/version-v0.2.3-2b4ea8?style=for-the-badge)](./package.json)
+[![Version](https://img.shields.io/badge/version-v0.2.4-2b4ea8?style=for-the-badge)](./package.json)
 [![License](https://img.shields.io/badge/license-MIT-227b70?style=for-the-badge)](LICENSE)
 [![Node](https://img.shields.io/badge/Node.js-22%2B-43853d?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-12-227b70?style=for-the-badge&logo=pnpm&logoColor=white)](https://pnpm.io/)
@@ -47,14 +47,15 @@
 | 你想完成的工作 | 工作台提供的能力 |
 | --- | --- |
 | 管理产品项目 | 创建 / 重命名 / 归档（可逆，数据保留）/ 删除（回收站保留 30 天）/ 示例项目一键加载 |
+| 命令面板 | ⌘/Ctrl+K 跳项目、新建假设、导出全部备份、切换主题；桌面侧栏与移动抽屉均有入口 |
 | 梳理关键假设 | 八类风险假设、Impact × Risk × (1 − Confidence) 优先级、Recharts 优先级矩阵（含表格等价视图）；支持一行一条批量粘贴，实验结论回显在假设卡片上 |
 | 规划实验 | 从假设生成 → 审核 → 保存；四列看板（拖拽或键盘改状态）+ 结论（支持 / 推翻 / 不确定）、指标与实测值 |
 | 记录决策 | 只追加的决策日志：记录选了什么、依据哪条假设或实验；方向变了就标为已推翻，原文保留 |
 | 画机会解决方案树（OST） | 拖拽 + 双指缩放 + 键盘等价操作 + 表格等价视图 + 视口裁剪 |
-| 用 AI 辅助发现 | 三种模式：BYOK 直连（OpenAI 兼容 / Gemini）、Prompt Relay（零配置复制粘贴）、Hybrid（混合）；识别 / 实验 / 报告三类任务；审核式工作流（预览 / 应用 / 拒绝 / 重新生成 / 取消）；输出语言跟随界面语言 |
-| 控制 AI 成本 | 请求前 Token/费用预估、预算熔断（单次 + 月度）、按日用量视图；未知定价模型不预估、不熔断 |
-| 产出发现报告 | AI 生成 + 手动撰写，区分 AI 生成与用户确认内容；重新生成先看行级差异，可采纳新版 / 保留旧版 / 逐节合并；HTML（保真推荐）/ Markdown（二次编辑）/ JSON（程序处理）/ PNG（尽力而为）导出 |
-| 备份与迁移 | `.dcopilot` 导出（全部 / 单项目）、导入（六类场景校验、冲突三选、失败回滚）、覆盖前自动快照（保留 3 份）；数据自检扫描孤儿行 / 断链 / OST 成环并逐条修复 |
+| 用 AI 辅助发现 | 三种模式：BYOK 直连（OpenAI 兼容 / Gemini）、Prompt Relay（零配置复制粘贴）、Hybrid（混合）；识别 / 实验 / 报告三类任务；审核式工作流（预览 / 应用 / 拒绝 / 重新生成 / 取消）；输出语言跟随界面语言，语气与详略各三档（Prompt 1.2.0） |
+| 控制 AI 成本 | 请求前 Token/费用预估、预算熔断（单次 + 月度）、近 30 天曲线与任务分布、月度预算进度、CSV 导出；未知定价模型不预估、不熔断 |
+| 产出发现报告 | AI 生成 + 手动撰写，区分 AI 生成与用户确认内容；重新生成先看行级差异，可采纳新版 / 保留旧版 / 逐节合并；可选审阅水印（来源页脚 + AI 段左边线）；HTML（保真推荐）/ Markdown（二次编辑）/ JSON（程序处理）/ PNG（尽力而为）导出 |
+| 备份与迁移 | `.dcopilot` 导出（全部 / 单项目）、导入（六类场景校验、冲突三选、失败回滚）、覆盖前自动快照（保留 3 份）；数据自检扫描孤儿行 / 断链 / OST 成环并逐条修复；可导出只读项目包（单文件 HTML，概览 / 假设 / 实验 / OST / 报告，≤2 MB） |
 | 调整外观与语言 | 浅色 / 深色 / 跟随系统三档主题（首帧无闪烁）、启动页动画、8 种界面语言（简中 / 繁中 / 英 / 日 / 韩 / 俄 / 德 / 法，随 `.dcopilot` 迁移） |
 | 保护隐私与可观测性 | 数据本地存储、诊断包脱敏导出 |
 
@@ -83,7 +84,7 @@ pnpm build            # 类型检查 + 产物构建
 pnpm test             # Vitest 全量（约 10s）
 pnpm test:coverage    # 覆盖率门槛（schemas/db/ai ≥ 80%，services 纳入统计）
 pnpm test:stress      # 20 MB 导入压测探针（默认不跑：单例耗时长且随机器负载波动）
-pnpm test:e2e         # Playwright 冒烟 6 条：建项目 / 录假设 / 导出 / 改名归档 / 决策 / 数据自检（需本机 Edge）
+pnpm test:e2e         # Playwright 冒烟 8 条：建项目 / 录假设 / 导出 / 改名归档 / 决策 / 数据自检 / 命令面板 / 项目包（需本机 Edge）
 pnpm lint && pnpm typecheck
 pnpm preview          # 生产构建本地预览
 pnpm probe:provider-cors   # Provider 浏览器直连 CORS 矩阵（无 Key）
@@ -181,6 +182,8 @@ GitHub 仓库端：本仓库已配置 `.github/dependabot.yml`（npm / GitHub Ac
 7. 无自动同步：**本地数据即唯一副本**，请定期导出 `.dcopilot` 备份（删除项目 30 天内可从回收站恢复）。
 8. 无 Service Worker / 离线清单：首次访问需联网加载静态资源；断网后仅当浏览器仍缓存资源时可继续使用，不保证完整离线。
 9. 计费未知的模型不做费用预估与预算熔断（设计使然），仅对已知定价模型生效。
+10. 项目包是只读快照，单文件 ≤ 2 MB（超出直接拒绝，不截断）；审阅水印只表示「该节标题由 AI 生成」，不表示正文未被人工修改。
+11. 用量视图按 UTC 日聚合（与月度熔断口径一致）；Prompt 的语气/详略只记录在本次请求，不持久化为默认值。
 
 ## 测试
 
@@ -192,7 +195,7 @@ GitHub 仓库端：本仓库已配置 `.github/dependabot.yml`（npm / GitHub Ac
 | --- | --- | --- |
 | 静态 | `pnpm lint` / `pnpm typecheck` | ESLint（含 react-hooks）+ `tsc --noEmit` |
 | 回归 | `pnpm test` / `pnpm test:coverage` | 20 MB 导入压测移出默认集（单例耗时随机器负载波动，会拖垮回归），单独 `pnpm test:stress` |
-| 端到端 | `pnpm test:e2e` | Playwright + 本机 Edge 六条冒烟：新建项目 → 录入假设 → 导出 `.dcopilot` → 改名归档 → 记录决策 → 数据自检 |
+| 端到端 | `pnpm test:e2e` | Playwright + 本机 Edge 八条冒烟：新建项目 → 录入假设 → 导出 `.dcopilot` → 改名归档 → 记录决策 → 数据自检 → 命令面板 → 项目包 |
 
 CI（`.github/workflows/ci.yml`）在 push / PR 时跑 lint + typecheck + test + `security:check`；E2E 需浏览器，本地执行。
 

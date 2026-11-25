@@ -88,6 +88,22 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     void item.run()
   }
 
+  /** Enter on a disabled row falls through to the first usable one (e.g. project results). */
+  function activateAt(index: number) {
+    const item = items[index]
+    activate(item && !item.disabled ? item : items.find((candidate) => !candidate.disabled))
+  }
+
+  function moveActive(step: 1 | -1) {
+    for (let offset = 1; offset <= items.length; offset += 1) {
+      const next = (clamped + step * offset + items.length * offset) % items.length
+      if (!items[next]?.disabled) {
+        setActive(next)
+        return
+      }
+    }
+  }
+
   return (
     <Dialog open title={t('palette.title')} onClose={onClose} initialFocus={searchRef}>
       <div className="space-y-3">
@@ -101,13 +117,13 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
           onKeyDown={(event) => {
             if (event.key === 'ArrowDown') {
               event.preventDefault()
-              setActive((current) => Math.min(current + 1, items.length - 1))
+              moveActive(1)
             } else if (event.key === 'ArrowUp') {
               event.preventDefault()
-              setActive((current) => Math.max(current - 1, 0))
+              moveActive(-1)
             } else if (event.key === 'Enter') {
               event.preventDefault()
-              activate(items[clamped])
+              activateAt(clamped)
             }
           }}
           placeholder={t('palette.placeholder')}

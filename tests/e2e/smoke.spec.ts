@@ -86,3 +86,34 @@ test('runs the data self-check and reports a clean database', async ({ page }) =
   await page.getByRole('button', { name: '开始扫描' }).click()
   await expect(page.getByText(/未发现问题/)).toBeVisible()
 })
+
+test('opens the command palette and jumps to a project', async ({ page }) => {
+  await createProject(page, '烟测-面板')
+  await page.goto('/')
+  await page.waitForTimeout(400)
+
+  await page.keyboard.press('Control+k')
+  const dialog = page.getByRole('dialog')
+  await expect(dialog).toBeVisible()
+  await expect(dialog.getByRole('textbox')).toBeFocused()
+
+  await dialog.getByRole('textbox').fill('烟测-面板')
+  await page.keyboard.press('Enter')
+  await expect(page).toHaveURL(/\/project\/[^/]+/, { timeout: 15_000 })
+  await expect(page.getByRole('heading', { name: '烟测-面板' })).toBeVisible()
+})
+
+test('exports a read-only project package as a single HTML file', async ({ page }) => {
+  const url = await createProject(page, '烟测-项目包')
+  await page.goto(url)
+  await page.waitForTimeout(400)
+
+  await page.getByRole('button', { name: '导出项目包' }).click()
+  const dialog = page.getByRole('dialog')
+  await expect(dialog).toBeVisible()
+
+  const downloadPromise = page.waitForEvent('download')
+  await dialog.getByRole('button', { name: '生成并下载' }).click()
+  const download = await downloadPromise
+  expect(download.suggestedFilename()).toBe('烟测-项目包-package.html')
+})
