@@ -7,9 +7,10 @@ import { getOnboarding } from '@/services/onboarding'
 import { pruneOldAiRequests } from '@/ai/usage'
 import { PageSkeleton } from '@/components/common/states'
 import { WelcomeDialog } from '@/components/onboarding/WelcomeDialog'
+import { CommandPalette } from '@/components/command/CommandPalette'
 import { SETTINGS_PATHS } from '@/app/nav'
 import { applyThemePreference, useResolvedTheme } from '@/lib/theme'
-import { CloseIcon, GridIcon, MenuIcon, MoonIcon, SettingsIcon, SunIcon } from '@/components/ui/icons'
+import { CloseIcon, CompassIcon, GridIcon, MenuIcon, MoonIcon, SettingsIcon, SunIcon } from '@/components/ui/icons'
 import { setLocale, useT } from '@/lib/i18n'
 import { BRAND_ICON_URL } from '@/lib/brand'
 
@@ -41,6 +42,7 @@ export default function AppShell() {
   const settings = useLiveQuery(() => getSettings(), [])
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [paletteOpen, setPaletteOpen] = useState(false)
   const mainRef = useRef<HTMLElement>(null)
   const firstRoute = useRef(true)
 
@@ -118,6 +120,18 @@ export default function AppShell() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [menuOpen])
+
+  // ⌘/Ctrl+K: skip while any dialog is open (its own Esc/Tab trap owns the keyboard).
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 'k') return
+      if (document.querySelector('[role="dialog"]')) return
+      event.preventDefault()
+      setPaletteOpen((current) => !current)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   const showWelcome = onboarding !== undefined && !onboarding.welcome
   // 顶层路由段作为 key:跨页面导航(工作台/项目/设置)时内容区重放进入动画;
@@ -261,6 +275,18 @@ export default function AppShell() {
             <div className="border-t border-hairline p-3">
               <button
                 type="button"
+                onClick={() => {
+                  setMenuOpen(false)
+                  setPaletteOpen(true)
+                }}
+                className="mb-1 flex min-h-11 w-full items-center gap-3 rounded-btn px-3 text-body-sm text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink"
+              >
+                <CompassIcon size={18} />
+                <span className="flex-1 text-left">{t('palette.open')}</span>
+                <kbd className="rounded border border-hairline px-1 text-caption text-ink-faint">⌘K</kbd>
+              </button>
+              <button
+                type="button"
                 onClick={() => void handleToggleTheme()}
                 aria-label={themeLabel}
                 className="flex min-h-11 w-full items-center gap-3 rounded-btn px-3 text-body-sm text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink"
@@ -273,6 +299,7 @@ export default function AppShell() {
         </div>
       )}
       {showWelcome && <WelcomeDialog onClose={() => undefined} />}
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
     </div>
   )
 }

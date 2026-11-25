@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
@@ -41,6 +41,16 @@ export default function Assumptions({ projectId }: { projectId: string }) {
   const view: View = searchParams.get('view') === 'table' ? 'table' : 'matrix'
   const setView = (next: View) =>
     setSearchParams(next === 'table' ? { view: 'table' } : {}, { replace: true })
+
+  // Cross-page entry from the command palette: /assumptions?new=assumption.
+  const wantsNew = searchParams.get('new') === 'assumption'
+  useEffect(() => {
+    if (!wantsNew) return
+    setFormOpen(true)
+    const next = new URLSearchParams(searchParams)
+    next.delete('new')
+    setSearchParams(next, { replace: true })
+  }, [wantsNew, searchParams, setSearchParams])
 
   if (assumptions === undefined || experiments === undefined) return <PageSkeleton />
 

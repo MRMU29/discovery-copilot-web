@@ -92,7 +92,8 @@ export function Dialog({ open, title, onClose, size = 'md', initialFocus, childr
       inertCounter.release()
       previouslyFocused?.focus?.()
     }
-  }, [open])
+    // Callers must pass a stable ref (useRef), so this only re-runs with `open`.
+  }, [open, initialFocus])
 
   if (!open) return null
   return createPortal(
