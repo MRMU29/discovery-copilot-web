@@ -2,8 +2,8 @@ name: CI
 
 # §7.5 / v0.3 §8: the project shipped entirely on manual gates. This is the
 # minimum check that catches the class of defect the audit found (an undefined
-# i18n key, a production-reachable dev route): lint + typecheck + tests + the
-# repository's own security gate.
+# i18n key, a production-reachable dev route): lint + typecheck + tests + build
+# + the repository's own security gate.
 on:
   push:
     branches: [main]
