@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { requestPersistent, storageEstimate, type QuotaReport } from '@/db/quota'
-import { SNAPSHOT_BUDGET_BYTES, SNAPSHOT_KEEP, snapshotsRepo } from '@/db/repositories'
-import { Button } from '@/components/ui/Button'
-import { Dialog } from '@/components/ui/Dialog'
+import { SNAPSHOT_KEEP, snapshotsRepo } from '@/db/repositories'
 import { PageSkeleton } from '@/components/common/states'
 import { downloadFile } from '@/lib/download'
-import { formatWhen } from '@/lib/report-export'
 import { confirmAction } from '@/lib/confirm'
 import { useT } from '@/lib/i18n'
 import {
@@ -19,7 +16,6 @@ import {
   summarizeImport,
   type ConflictStrategy,
   type DcopilotFile,
-  type ImportItemStatus,
   type ImportSummary,
 } from '@/services/backup'
 import { clearProductData } from '@/services/maintenance'
@@ -27,50 +23,23 @@ import { scanDataHealth, repairHealthIssue, type HealthIssue, type HealthReport 
 import { updateSettings } from '@/services/settings'
 import { nowIso } from '@/lib/clock'
 import { listActiveProjects, listDeletedProjects } from '@/services/projects'
-
-function formatBytes(bytes: number | null): string {
-  return bytes != null ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : '—'
-}
-
-/** Stable list key: one row can carry several broken links (different fields). */
-function issueKey(issue: HealthIssue): string {
-  return `${issue.kind}|${issue.table}|${issue.entityId}|${issue.detail?.field ?? ''}|${issue.detail?.refId ?? ''}`
-}
-
-const HEALTH_KIND_KEYS: Record<HealthIssue['kind'], string> = {
-  orphan: 'health.kind.orphan',
-  'broken-link': 'health.kind.brokenLink',
-  cycle: 'health.kind.cycle',
-  'over-capacity': 'health.kind.overCapacity',
-}
-
-const STRATEGY_OPTIONS: { value: ConflictStrategy; labelKey: string; hintKey: string }[] = [
-  { value: 'copy', labelKey: 'settings.dataBackup.strategyCopy', hintKey: 'settings.dataBackup.strategyCopyHint' },
-  {
-    value: 'overwrite',
-    labelKey: 'settings.dataBackup.strategyOverwrite',
-    hintKey: 'settings.dataBackup.strategyOverwriteHint',
-  },
-  { value: 'skip', labelKey: 'settings.dataBackup.strategySkip', hintKey: 'settings.dataBackup.strategySkipHint' },
-]
-
-const STATUS_LABEL_KEYS: Record<ImportItemStatus, string> = {
-  new: 'settings.dataBackup.status.new',
-  conflict: 'settings.dataBackup.status.conflict',
-  duplicate: 'settings.dataBackup.status.duplicate',
-}
-
-const STATUS_BADGES: Record<ImportItemStatus, string> = {
-  new: 'bg-success/15 text-success border border-success/30',
-  conflict: 'bg-warning/10 text-warning border border-warning/40',
-  duplicate: 'bg-surface-3 text-ink-muted border border-hairline',
-}
+import { QuotaSection } from './data-backup/QuotaSection'
+import { BackupSection } from './data-backup/BackupSection'
+import { SnapshotSection } from './data-backup/SnapshotSection'
+import { HealthSection } from './data-backup/HealthSection'
+import { issueKey } from './data-backup/issue-key'
+import { DangerSection } from './data-backup/DangerSection'
+import { ImportConfirmDialog } from './data-backup/ImportConfirmDialog'
 
 interface PendingImport {
   file: DcopilotFile
   summary: ImportSummary
 }
 
+/**
+ * 设置 · 数据与备份。本身只做「状态 + 副作用」，各分区是纯展示组件
+ * （见 ./data-backup/*），这样单个文件不再堆到 600 行。
+ */
 export default function DataBackup() {
   const t = useT()
   const [quota, setQuota] = useState<QuotaReport | null>(null)
@@ -305,338 +274,60 @@ export default function DataBackup() {
     <div className="space-y-6">
       <h2 className="text-headline text-ink">{t('settings.dataBackup.title')}</h2>
 
-      <section aria-label={t('settings.dataBackup.quotaHeading')} className="rounded-lg border border-hairline bg-surface-1 p-4">
-        <h3 className="text-eyebrow text-ink-muted">{t('settings.dataBackup.quotaHeading')}</h3>
-        <p className="mt-2 text-body text-ink">
-          {t('settings.dataBackup.quotaUsage', {
-            used: quota?.usage != null ? formatBytes(quota.usage) : t('settings.dataBackup.unknown'),
-            quota: quota?.quota != null ? formatBytes(quota.quota) : t('settings.dataBackup.unknown'),
-          })}
-        </p>
-        <p className="mt-1 text-caption text-ink-faint">{t('settings.dataBackup.quotaNote')}</p>
-        {quota?.low && (
-          <p role="status" className="mt-2 text-body-sm text-warning">
-            {t('settings.dataBackup.quotaLow')}
-          </p>
-        )}
-        <div className="mt-3 flex flex-wrap items-center gap-3">
-          <Button variant="secondary" onClick={() => void handlePersist()}>
-            {t('settings.dataBackup.requestPersistent')}
-          </Button>
-          {persist === 'granted' && <span className="text-body-sm text-success">{t('settings.dataBackup.persistGranted')}</span>}
-          {persist === 'denied' && (
-            <span className="text-body-sm text-ink-muted">{t('settings.dataBackup.persistDenied')}</span>
-          )}
-        </div>
-      </section>
+      <QuotaSection quota={quota} persist={persist} onRequestPersist={() => void handlePersist()} />
 
-      <section aria-label={t('settings.dataBackup.backupHeading')} className="rounded-lg border border-hairline bg-surface-1 p-4">
-        <h3 className="text-eyebrow text-ink-muted">{t('settings.dataBackup.backupHeading')}</h3>
-        <p className="mt-2 text-caption text-ink-faint">{t('settings.dataBackup.backupNote')}</p>
+      <BackupSection
+        projects={projectRows}
+        selectedProjectId={selectedProjectId}
+        onSelectProject={setSelectedProjectId}
+        exportingAll={exportingAll}
+        exportingOne={exportingOne}
+        onExportAll={() => void handleExportAll()}
+        onExportOne={() => void handleExportOne()}
+        onImportFile={handleImportFile}
+        parseIssues={parseIssues}
+      />
 
-        <div className="mt-3 flex flex-wrap items-center gap-3">
-          <Button onClick={() => void handleExportAll()} disabled={exportingAll}>
-            {exportingAll ? t('settings.dataBackup.exportingAll') : t('settings.dataBackup.exportAll')}
-          </Button>
-        </div>
+      <SnapshotSection
+        snapshots={snapshots}
+        snapshotBytes={snapshotBytes}
+        snapshotting={snapshotting}
+        onCreate={() => void handleCreateSnapshot()}
+        onRestore={(payload) => void openImport(payload)}
+        onDownload={(payload) =>
+          downloadFile(dcopilotFileName(t('dashboard.title')), payload, 'application/json')
+        }
+        onDelete={(id) => void handleDeleteSnapshot(id)}
+      />
 
-        <div className="mt-3 flex flex-wrap items-end gap-3">
-          <div>
-            <label htmlFor="backup-project-select" className="text-caption text-ink-muted">
-              {t('settings.dataBackup.exportOneLabel')}
-            </label>
-            <select
-              id="backup-project-select"
-              value={selectedProjectId}
-              onChange={(e) => setSelectedProjectId(e.target.value)}
-              className="mt-1 min-h-11 w-64 rounded-btn border border-hairline-strong bg-surface-1 px-3 text-body text-ink focus:border-accent-focus focus:outline-none"
-            >
-              <option value="">{t('settings.dataBackup.selectPlaceholder')}</option>
-              {projectRows.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                  {p.deletedAt ? t('settings.dataBackup.trashSuffix') : ''}
-                </option>
-              ))}
-            </select>
-          </div>
-          <Button
-            variant="secondary"
-            onClick={() => void handleExportOne()}
-            disabled={!selectedProjectId || exportingOne}
-          >
-            {exportingOne ? t('settings.dataBackup.exportingOne') : t('settings.dataBackup.exportSelected')}
-          </Button>
-        </div>
+      <HealthSection
+        report={healthReport}
+        scanning={scanning}
+        repairingKey={repairingKey}
+        notice={healthNotice}
+        error={healthError}
+        onScan={() => void handleScanHealth()}
+        onRepair={(issue) => void handleRepair(issue)}
+      />
 
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <label className="inline-flex min-h-11 cursor-pointer items-center rounded-btn border border-hairline-strong bg-surface-2 px-4 py-2.5 text-button text-ink hover:bg-surface-3">
-            {t('settings.dataBackup.importLabel')}
-            <input type="file" accept=".dcopilot,.json" onChange={handleImportFile} className="sr-only" />
-          </label>
-        </div>
+      <DangerSection
+        notice={notice}
+        error={error}
+        clearing={clearing}
+        onClear={() => void handleClearData()}
+      />
 
-        {parseIssues && (
-          <div role="alert" className="mt-3 rounded-lg border border-danger/40 bg-danger/5 p-3">
-            <p className="text-body-sm font-medium text-danger">{t('settings.dataBackup.importRejected')}</p>
-            <ul className="mt-1 list-disc space-y-0.5 pl-5 text-caption text-ink-secondary">
-              {parseIssues.map((issue) => (
-                <li key={issue}>{issue}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </section>
-
-      <section aria-label={t('settings.dataBackup.snapshotHeading')} className="rounded-lg border border-hairline bg-surface-1 p-4">
-        <h3 className="text-eyebrow text-ink-muted">{t('settings.dataBackup.snapshotHeading')}</h3>
-        <p className="mt-2 text-caption text-ink-faint">{t('settings.dataBackup.snapshotNote')}</p>
-        <p className="mt-1 text-caption text-ink-faint">
-          {t('settings.dataBackup.snapshotBudget', {
-            size: (snapshotBytes / 1024 / 1024).toFixed(1),
-            budget: Math.round(SNAPSHOT_BUDGET_BYTES / 1024 / 1024),
-            keep: SNAPSHOT_KEEP,
-          })}
-        </p>
-        <div className="mt-3">
-          <Button variant="secondary" onClick={() => void handleCreateSnapshot()} disabled={snapshotting}>
-            {snapshotting ? t('settings.dataBackup.creatingSnapshot') : t('settings.dataBackup.createSnapshot')}
-          </Button>
-        </div>
-        {snapshots.length === 0 ? (
-          <p className="mt-3 text-caption text-ink-faint">{t('settings.dataBackup.noSnapshots')}</p>
-        ) : (
-          <ul className="mt-3 space-y-2">
-            {snapshots.map((s) => (
-              <li
-                key={s.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-btn border border-hairline bg-surface-2 px-3 py-2"
-              >
-                <span className="text-caption text-ink">
-                  {formatWhen(s.createdAt)} · {s.projectCount} · {Math.max(1, Math.round(s.payload.length / 1024))} KB
-                </span>
-                <span className="flex gap-2">
-                  <Button variant="ghost" onClick={() => void openImport(s.payload)}>
-                    {t('settings.dataBackup.snapshotRestore')}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    onClick={() => downloadFile(dcopilotFileName(t('dashboard.title')), s.payload, 'application/json')}
-                  >
-                    {t('settings.dataBackup.snapshotDownload')}
-                  </Button>
-                  <Button variant="ghost" onClick={() => void handleDeleteSnapshot(s.id)}>
-                    {t('common.delete')}
-                  </Button>
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <section aria-label={t('settings.dataBackup.healthHeading')} className="rounded-lg border border-hairline bg-surface-1 p-4">
-        <h3 className="text-eyebrow text-ink-muted">{t('settings.dataBackup.healthHeading')}</h3>
-        <p className="mt-2 text-caption text-ink-faint">{t('settings.dataBackup.healthDesc')}</p>
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <Button variant="secondary" onClick={() => void handleScanHealth()} disabled={scanning}>
-            {scanning ? t('settings.dataBackup.healthScanning') : t('settings.dataBackup.healthScan')}
-          </Button>
-          {healthReport && (
-            <span className="text-caption text-ink-faint">
-              {t('settings.dataBackup.healthScannedAt', { when: formatWhen(healthReport.scannedAt) })}
-            </span>
-          )}
-        </div>
-
-        {healthNotice && (
-          <p role="status" className="mt-2 text-body-sm text-success">
-            {healthNotice}
-          </p>
-        )}
-        {healthError && (
-          <p role="alert" className="mt-2 text-body-sm text-danger">
-            {healthError}
-          </p>
-        )}
-
-        {healthReport && healthReport.issues.length === 0 && (
-          <p role="status" className="mt-3 text-body-sm text-success">
-            {t('settings.dataBackup.healthClean', {
-              rows: Object.values(healthReport.counts).reduce((sum, value) => sum + value, 0),
-            })}
-          </p>
-        )}
-
-        {healthReport && healthReport.issues.length > 0 && (
-          <>
-            <p className="mt-3 text-caption text-ink-secondary">
-              {t('settings.dataBackup.healthSummary', { count: healthReport.issues.length })}
-            </p>
-            <ul className="mt-2 space-y-2">
-              {healthReport.issues.map((issue) => {
-                const key = issueKey(issue)
-                const label =
-                  issue.label.length > 80 ? `${issue.label.slice(0, 80)}…` : issue.label
-                return (
-                  <li
-                    key={key}
-                    className="flex flex-col gap-2 rounded-btn border border-hairline bg-surface-2 px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
-                  >
-                    <span className="min-w-0 flex-1 text-body-sm text-ink-secondary">
-                      <span className="mr-2 rounded-full border border-hairline bg-surface-1 px-1.5 text-caption text-ink-muted">
-                        {t(HEALTH_KIND_KEYS[issue.kind])}
-                      </span>
-                      {label || issue.entityId}
-                      {issue.kind === 'over-capacity' && issue.detail && (
-                        <span className="ml-2 text-caption text-danger">
-                          {t('health.detail.overCapacity', {
-                            count: issue.detail.count ?? 0,
-                            limit: issue.detail.limit ?? 0,
-                          })}
-                        </span>
-                      )}
-                    </span>
-                    {issue.kind !== 'over-capacity' && (
-                      <Button
-                        variant="ghost"
-                        onClick={() => void handleRepair(issue)}
-                        disabled={repairingKey !== null}
-                      >
-                        {repairingKey === key
-                          ? t('settings.dataBackup.healthRepairing')
-                          : t('settings.dataBackup.healthRepair')}
-                      </Button>
-                    )}
-                  </li>
-                )
-              })}
-            </ul>
-          </>
-        )}
-      </section>
-
-      <section aria-label={t('settings.dataBackup.dangerHeading')} className="rounded-lg border border-danger/40 bg-surface-1 p-4">
-        <h3 className="text-eyebrow text-danger">{t('settings.dataBackup.dangerHeading')}</h3>
-        <p className="mt-2 text-body-sm text-ink-secondary">{t('settings.dataBackup.dangerDesc')}</p>
-        {notice && (
-          <p role="status" className="mt-2 text-body-sm text-success">
-            {notice}
-          </p>
-        )}
-        {error && (
-          <p role="alert" className="mt-2 text-body-sm text-danger">
-            {error}
-          </p>
-        )}
-        <Button className="mt-3" variant="danger" onClick={() => void handleClearData()} disabled={clearing}>
-          {clearing ? t('settings.dataBackup.clearing') : t('settings.dataBackup.clearData')}
-        </Button>
-      </section>
-
-      <Dialog
-        open={pending !== null}
-        title={t('settings.dataBackup.importConfirmTitle')}
-        onClose={() => {
-          if (!importing) setPending(null)
-        }}
-      >
-        {pending && (
-          <div className="space-y-4">
-            <div className="rounded-lg border border-hairline bg-surface-2 p-3 text-caption text-ink-secondary">
-              <p className="font-medium text-ink">{t('settings.dataBackup.summaryTitle')}</p>
-              <p className="mt-1">
-                {t('settings.dataBackup.summaryProjects', {
-                  count: pending.file.projects.length,
-                  created: pending.summary.counts.new,
-                  conflict: pending.summary.counts.conflict,
-                  duplicate: pending.summary.counts.duplicate,
-                })}
-              </p>
-              <p className="mt-0.5">
-                {t('settings.dataBackup.summaryTotals', {
-                  assumptions: pending.summary.totals.assumptions,
-                  experiments: pending.summary.totals.experiments,
-                  ostNodes: pending.summary.totals.ostNodes,
-                  reports: pending.summary.totals.reports,
-                })}
-              </p>
-              <p className="mt-0.5">
-                {t('settings.dataBackup.summarySettings', {
-                  has: pending.summary.hasSettings
-                    ? t('settings.dataBackup.settingsInFile')
-                    : t('settings.dataBackup.settingsNotInFile'),
-                })}
-              </p>
-            </div>
-
-            <ul className="space-y-1.5 text-caption">
-              {pending.summary.items.map((item) => (
-                <li key={item.project.id} className="flex flex-wrap items-center gap-2">
-                  <span className="text-body-sm text-ink">{item.project.name}</span>
-                  {item.project.deletedAt && (
-                    <span className="rounded-full border border-hairline bg-surface-2 px-2 py-0.5 text-ink-faint">
-                      {t('settings.dataBackup.trashSuffix')}
-                    </span>
-                  )}
-                  <span className={`rounded-full px-2 py-0.5 ${STATUS_BADGES[item.status]}`}>
-                    {t(STATUS_LABEL_KEYS[item.status])}
-                  </span>
-                  {item.sameName && <span className="text-warning">{t('settings.dataBackup.sameNameWarning')}</span>}
-                </li>
-              ))}
-            </ul>
-
-            <fieldset>
-              <legend className="text-caption text-ink-muted">{t('settings.dataBackup.strategyLegend')}</legend>
-              <div className="mt-1 space-y-1">
-                {STRATEGY_OPTIONS.map((opt) => (
-                  <label key={opt.value} className="flex min-h-9 items-start gap-2 text-body-sm text-ink">
-                    <input
-                      type="radio"
-                      name="conflict-strategy"
-                      value={opt.value}
-                      checked={strategy === opt.value}
-                      onChange={() => setStrategy(opt.value)}
-                      className="mt-1 size-4 accent-accent"
-                    />
-                    <span>
-                      <span className="font-medium">{t(opt.labelKey)}</span>
-                      <span className="text-ink-muted"> — {t(opt.hintKey)}</span>
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-
-            <label className="flex min-h-9 items-center gap-2 text-body-sm text-ink">
-              <input
-                type="checkbox"
-                checked={restoreSettings}
-                disabled={!pending.summary.hasSettings}
-                onChange={(e) => setRestoreSettings(e.target.checked)}
-                className="size-4 accent-accent"
-              />
-              {t('settings.dataBackup.restoreSettings')}
-            </label>
-
-            {error && (
-              <p role="alert" className="text-body-sm text-danger">
-                {error}
-              </p>
-            )}
-
-            <div className="flex gap-2">
-              <Button onClick={() => void handleConfirmImport()} disabled={importing}>
-                {importing ? t('settings.dataBackup.importing') : t('settings.dataBackup.confirmImport')}
-              </Button>
-              <Button variant="ghost" onClick={() => setPending(null)} disabled={importing}>
-                {t('common.cancel')}
-              </Button>
-            </div>
-          </div>
-        )}
-      </Dialog>
+      <ImportConfirmDialog
+        pending={pending}
+        strategy={strategy}
+        onStrategy={setStrategy}
+        restoreSettings={restoreSettings}
+        onRestoreSettings={setRestoreSettings}
+        importing={importing}
+        error={error}
+        onConfirm={() => void handleConfirmImport()}
+        onClose={() => setPending(null)}
+      />
     </div>
   )
 }
