@@ -96,7 +96,7 @@ body {
   padding: 44px 52px 36px;
 }
 .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 26px; }
-.brand img { width: 28px; height: 28px; border-radius: 6px; }
+.brand img { width: 28px; height: 28px; }
 .brand span { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: #5c6479; }
 h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.6px; line-height: 1.25; margin: 0 0 8px; color: #222435; }
 .meta { font-size: 13px; color: #494e62; margin: 0 0 6px; }

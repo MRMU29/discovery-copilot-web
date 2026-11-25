@@ -97,9 +97,9 @@ describe('buildReportHtmlDocument', () => {
   })
 
   it('escapes hostile title text and inlines the brand logo when provided', () => {
-    const html = buildReportHtmlDocument({ ...base, title: '<script>x</script>' }, 'data:image/jpeg;base64,abc')
+    const html = buildReportHtmlDocument({ ...base, title: '<script>x</script>' }, 'data:image/svg+xml;base64,abc')
     expect(html).toContain('<title>&lt;script&gt;x&lt;/script&gt;</title>')
-    expect(html).toContain('src="data:image/jpeg;base64,abc"')
+    expect(html).toContain('src="data:image/svg+xml;base64,abc"')
     expect(html).not.toContain('<script>x</script>')
   })
 

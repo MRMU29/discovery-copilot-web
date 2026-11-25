@@ -16,17 +16,9 @@ Third-party software:
   DOMPurify's (MPL-2.0 OR Apache-2.0) dual license (Apache-2.0 selected).
   No GPL-only / AGPL / SSPL / non-commercial dependency is bundled.
 
-AI-generated asset notice:
-  public/brand-icon.jpg was generated with an AI image service (Doubao).
-  Under the Doubao User Agreement §9.1 the service does not claim ownership
-  of output content, and §9.2 assigns uploaded/published content to the
-  user; §9.4 reserves the platform's own rights in its service materials.
-  The image is distributed with this repository under the MIT license to
-  the extent the project holds rights in it. The embedded AI-generation
-  implicit label in the file metadata (product: doubao / anchorName: AI
-  image generation) is retained intentionally and must not be removed or
-  altered (Doubao User Agreement §6.4). This NOTICE serves as the explicit
-  AI-generation label for the published asset.
+Brand asset:/n  public/brand-icon.svg is an original SVG drawn for this project with a
+  transparent background. It contains no third-party or AI-generated
+  material and is distributed with this repository under the MIT license.
 
 Other assets:
   Interface icons in src/components/ui/icons.tsx are inline SVG geometry

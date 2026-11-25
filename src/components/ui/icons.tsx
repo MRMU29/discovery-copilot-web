@@ -2,7 +2,7 @@ import type { SVGProps } from 'react'
 
 /**
  * 自绘内联 SVG 图标集（命令 7）：简单几何 path，无外部素材依赖，随主题
- * currentColor 着色。品牌 logo 用 /brand-icon.jpg（位图素材），不在此列。
+ * currentColor 着色。品牌 logo 用 /brand-icon.svg（透明背景），不在此列。
  */
 
 type IconProps = SVGProps<SVGSVGElement> & { size?: number }

@@ -12,7 +12,7 @@ import { SETTINGS_PATHS } from '@/app/nav'
 import { applyThemePreference, useResolvedTheme } from '@/lib/theme'
 import { CloseIcon, CompassIcon, GridIcon, MenuIcon, MoonIcon, SettingsIcon, SunIcon } from '@/components/ui/icons'
 import { setLocale, useT } from '@/lib/i18n'
-import { BRAND_ICON_URL } from '@/lib/brand'
+import { BrandMark } from '@/components/layout/BrandMark'
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
   `flex min-h-11 items-center gap-3 rounded-btn px-3 text-body-sm transition-colors ${
@@ -147,7 +147,7 @@ export default function AppShell() {
       {/* 桌面固定左侧导航（≥768px 保持现状）：底色 + 1px 分隔，不用重投影 */}
       <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-hairline bg-surface-1 md:flex">
         <Link to="/" className="flex h-16 shrink-0 items-center gap-2.5 border-b border-hairline px-5">
-          <img src={BRAND_ICON_URL} alt="" className="h-8 w-8 rounded-md" />
+          <BrandMark className="h-8 w-8" />
           <span className="text-subhead text-ink">Discovery Copilot</span>
         </Link>
         <nav aria-label={t('nav.sections')} className="flex flex-1 flex-col gap-1 p-3">
@@ -188,7 +188,7 @@ export default function AppShell() {
               <MenuIcon size={22} />
             </button>
             <Link to="/" className="flex min-w-0 flex-1 items-center gap-2">
-              <img src={BRAND_ICON_URL} alt="" className="h-7 w-7 shrink-0 rounded-md" />
+              <BrandMark className="h-7 w-7" />
               <span className="truncate text-body-sm font-semibold text-ink">Discovery Copilot</span>
             </Link>
             <button
@@ -246,7 +246,7 @@ export default function AppShell() {
           >
             <div className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-hairline px-4">
               <Link to="/" className="flex min-w-0 items-center gap-2" onClick={() => setMenuOpen(false)}>
-                <img src={BRAND_ICON_URL} alt="" className="h-8 w-8 shrink-0 rounded-md" />
+                <BrandMark className="h-8 w-8" />
                 <span className="truncate text-body-sm font-semibold text-ink">Discovery Copilot</span>
               </Link>
               <button

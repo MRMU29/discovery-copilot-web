@@ -3,7 +3,7 @@ import { markOnboardingDone } from '@/services/onboarding'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
 import { BotIcon, ClipboardIcon, CopyIcon } from '@/components/ui/icons'
-import { BRAND_ICON_URL } from '@/lib/brand'
+import { BrandMark } from '@/components/layout/BrandMark'
 import { useT } from '@/lib/i18n'
 
 const FLOW_STEPS = ['welcome.flow.idea', 'welcome.flow.assumption', 'welcome.flow.priority', 'welcome.flow.experiments', 'welcome.flow.ost', 'welcome.flow.report']
@@ -46,11 +46,7 @@ export function WelcomeDialog({ onClose }: WelcomeDialogProps) {
         {step === 0 && (
           <>
             <div className="flex items-start gap-3 sm:items-center sm:gap-4">
-              <img
-                src={BRAND_ICON_URL}
-                alt=""
-                className="h-12 w-12 shrink-0 rounded-xl border border-hairline shadow-card sm:h-14 sm:w-14"
-              />
+              <BrandMark className="h-12 w-12 sm:h-14 sm:w-14" />
               <p className="min-w-0 text-body text-ink">{t('welcome.intro')}</p>
             </div>
             <div>

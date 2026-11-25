@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#f6fbfd" />
-    <link rel="icon" type="image/jpeg" href="%BASE_URL%brand-icon.jpg" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%brand-icon.svg" />
     <!--
       Resolve the theme before the first paint. A classic same-origin script is
       allowed by `script-src 'self'` and blocks rendering, unlike the deferred ES
@@ -47,11 +47,16 @@
         background-color: #11121f;
         background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
       }
-      #dc-splash img {
+      #dc-splash-mark {
         width: 56px;
         height: 56px;
-        border-radius: 14px;
+        background-color: #223f97;
+        -webkit-mask: url('%BASE_URL%brand-icon.svg') center / contain no-repeat;
+        mask: url('%BASE_URL%brand-icon.svg') center / contain no-repeat;
         animation: dc-splash-logo 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      }
+      :root[data-theme='dark'] #dc-splash-mark {
+        background-color: #e8ecf7;
       }
       #dc-splash .dc-splash-name {
         margin: 0;
@@ -110,7 +115,7 @@
         }
       }
       @media (prefers-reduced-motion: reduce) {
-        #dc-splash img,
+        #dc-splash-mark,
         #dc-splash .dc-splash-name,
         #dc-splash .dc-splash-tagline {
           animation: none;
@@ -120,7 +125,7 @@
   </head>
   <body>
     <div id="dc-splash" aria-hidden="true">
-      <img src="%BASE_URL%brand-icon.jpg" alt="" />
+      <span id="dc-splash-mark" aria-hidden="true"></span>
       <p class="dc-splash-name">Discovery <span>Copilot</span></p>
       <p class="dc-splash-tagline">无账号的本地优先产品发现工作台</p>
     </div>
