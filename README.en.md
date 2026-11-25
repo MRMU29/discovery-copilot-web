@@ -197,7 +197,7 @@ Three layers:
 | Regression | `pnpm test` / `pnpm test:coverage` | The 20 MB import stress probe is excluded from the default run (slow and load-sensitive); use `pnpm test:stress` |
 | End-to-end | `pnpm test:e2e` | Playwright + local Edge, eight smoke flows: create project → record assumption → export `.dcopilot` → rename & archive → record a decision → data self-check → command palette → project package |
 
-CI (`.github/workflows/ci.yml`) runs lint + typecheck + test + `security:check` on push / PR; the E2E suite needs a browser and runs locally.
+CI (`.github/workflows/ci.yml`) runs lint + typecheck + test + build + `security:check` on push / PR (`permissions: contents: read`); the E2E suite needs a browser and runs locally.
 
 ## License & credits
 

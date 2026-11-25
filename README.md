@@ -197,7 +197,7 @@ GitHub 仓库端：本仓库已配置 `.github/dependabot.yml`（npm / GitHub Ac
 | 回归 | `pnpm test` / `pnpm test:coverage` | 20 MB 导入压测移出默认集（单例耗时随机器负载波动，会拖垮回归），单独 `pnpm test:stress` |
 | 端到端 | `pnpm test:e2e` | Playwright + 本机 Edge 八条冒烟：新建项目 → 录入假设 → 导出 `.dcopilot` → 改名归档 → 记录决策 → 数据自检 → 命令面板 → 项目包 |
 
-CI（`.github/workflows/ci.yml`）在 push / PR 时跑 lint + typecheck + test + `security:check`；E2E 需浏览器，本地执行。
+CI（`.github/workflows/ci.yml`）在 push / PR 时跑 lint + typecheck + test + build + `security:check`（`permissions: contents: read`）；E2E 需浏览器，本地执行。
 
 ## 许可证与致谢
 

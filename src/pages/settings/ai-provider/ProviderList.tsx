@@ -54,7 +54,7 @@ export function ProviderList({
                 </Button>
               )}
               <Button variant="danger" onClick={() => onDelete(p.id)}>
-                删除
+                {t('common.delete')}
               </Button>
             </span>
           </div>

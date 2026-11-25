@@ -299,7 +299,7 @@ export function AIExperimentDialog({
               </Button>
             ) : (
               <Button disabled={!assumption} onClick={() => setStage('relay')}>
-                生成 Prompt
+                {t('ai.dialog.generatePrompt')}
               </Button>
             )}
             <Button variant="ghost" onClick={onClose}>
