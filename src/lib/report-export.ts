@@ -66,7 +66,7 @@ export function reportFileName(title: string, ext: string): string {
   return `${fileNameSlug(title, 'report')}.${ext}`
 }
 
-function escapeHtml(text: string): string {
+export function escapeHtml(text: string): string {
   return text
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -74,7 +74,7 @@ function escapeHtml(text: string): string {
     .replace(/"/g, '&quot;')
 }
 
-const DOCUMENT_CSS = `
+export const DOCUMENT_CSS = `
 :root { color-scheme: light; }
 * { box-sizing: border-box; }
 body {
@@ -128,17 +128,65 @@ export interface ReportExportInput extends ReportDisplayFields {
   projectName: string
 }
 
+export interface ReportExportOptions {
+  /** Adds the review footer and the left rule around AI-generated sections. */
+  watermark?: boolean
+}
+
+/**
+ * Wraps the sections whose `## ` heading is listed in `generatedSections`.
+ * Runs *after* renderMarkdown's DOMPurify pass: sanitizing after wrapping would
+ * strip the class attribute. The preamble (before the first h2) stays unwrapped.
+ */
+export function annotateAiSections(html: string, sections: string[]): string {
+  if (sections.length === 0) return html
+  const wanted = new Set(sections.map((section) => section.trim()))
+  const doc = new DOMParser().parseFromString(`<div id="dc-annotate-root">${html}</div>`, 'text/html')
+  const root = doc.getElementById('dc-annotate-root')
+  if (!root) return html
+
+  let current: HTMLElement | null = null
+  for (const child of Array.from(root.children)) {
+    if (child.tagName === 'H2') {
+      current = null
+      const title = child.textContent?.trim() ?? ''
+      if (wanted.has(title)) {
+        const section = doc.createElement('section')
+        section.className = 'ai-section'
+        root.replaceChild(section, child)
+        section.appendChild(child)
+        current = section
+      }
+      continue
+    }
+    if (current) current.appendChild(child)
+  }
+  return root.innerHTML
+}
+
 /**
  * Self-contained share file: sanitized body + inlined styles + provenance
  * header. Nothing external is referenced, so the file renders offline.
  */
-export function buildReportHtmlDocument(input: ReportExportInput, logoDataUrl?: string | null): string {
+export function buildReportHtmlDocument(
+  input: ReportExportInput,
+  logoDataUrl?: string | null,
+  options: ReportExportOptions = {},
+): string {
+  const watermark = options.watermark === true
   const brand = logoDataUrl
     ? `<img src="${logoDataUrl}" alt="Discovery Copilot" />`
     : ''
   const title = escapeHtml(input.title)
   const meta = escapeHtml(reportMetaLine(input))
-  const body = renderMarkdown(input.content)
+  const rendered = renderMarkdown(input.content)
+  const body = watermark ? annotateAiSections(rendered, input.generatedSections) : rendered
+  const css = watermark
+    ? `${DOCUMENT_CSS}\n.ai-section { border-left: 3px solid #b8c4dd; padding-left: 14px; margin-left: -17px; }\n`
+    : DOCUMENT_CSS
+  const watermarkFooter = watermark
+    ? `<p class="footer">${escapeHtml(translate('report.export.watermark'))}</p>`
+    : ''
   return `<!doctype html>
 <html lang="${LOCALE_TAGS[getLocale()]}">
 <head>
@@ -146,7 +194,7 @@ export function buildReportHtmlDocument(input: ReportExportInput, logoDataUrl?: 
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; base-uri 'none'; form-action 'none'" />
 <title>${title}</title>
-<style>${DOCUMENT_CSS}</style>
+<style>${css}</style>
 </head>
 <body>
 <div class="page">
@@ -160,7 +208,7 @@ export function buildReportHtmlDocument(input: ReportExportInput, logoDataUrl?: 
 ${body}
 </div>
 </article>
-<p class="footer">${escapeHtml(translate('report.export.footer'))}</p>
+<p class="footer">${escapeHtml(translate('report.export.footer'))}</p>${watermarkFooter}
 </div>
 </body>
 </html>

@@ -39,6 +39,7 @@ export function ReportDetail({ report, projectName, onBack, onAiRewrite }: Repor
   const [editContent, setEditContent] = useState(report.content)
   const [saving, setSaving] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
+  const [watermark, setWatermark] = useState(true)
   const [busyExport, setBusyExport] = useState<'html' | 'png' | 'md' | 'json' | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -112,7 +113,7 @@ export function ReportDetail({ report, projectName, onBack, onAiRewrite }: Repor
     setNotice(null)
     try {
       const logo = await loadBrandLogoDataUrl()
-      const html = buildReportHtmlDocument(exportInput(), logo)
+      const html = buildReportHtmlDocument(exportInput(), logo, { watermark })
       downloadFile(reportFileName(report.title, 'html'), html, 'text/html;charset=utf-8')
       setExportOpen(false)
       setNotice(t('report.exportedHtml'))
@@ -293,6 +294,20 @@ export function ReportDetail({ report, projectName, onBack, onAiRewrite }: Repor
       >
         <div className="space-y-4">
           <p className="text-body-sm text-ink-muted">{t('report.exportDialogIntro')}</p>
+          <label className="flex items-start gap-2 text-body-sm text-ink-secondary">
+            <input
+              type="checkbox"
+              checked={watermark}
+              onChange={(event) => setWatermark(event.target.checked)}
+              className="mt-1 size-4 accent-accent"
+            />
+            <span>
+              {t('report.export.watermarkToggle')}
+              <span className="mt-0.5 block text-caption text-ink-faint">
+                {t('report.export.watermarkHint')}
+              </span>
+            </span>
+          </label>
           <div className="grid gap-2 sm:grid-cols-2">
             <Button variant="secondary" onClick={() => void handleExportHtml()} disabled={busyExport !== null}>
               {busyExport === 'html' ? t('report.exporting') : t('report.exportHtml')}

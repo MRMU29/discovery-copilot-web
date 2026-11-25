@@ -1,10 +1,12 @@
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy, useState } from 'react'
 import { Link, NavLink, useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { projectsRepo } from '@/db/repositories'
 import { ErrorState, PageSkeleton, Skeleton } from '@/components/common/states'
 import { PROJECT_SECTIONS, SECTION_LABELS, projectPath, resolveSection, type ProjectSection } from '@/app/nav'
 import { useT } from '@/lib/i18n'
+import { Button } from '@/components/ui/Button'
+import { ProjectPackageDialog } from '@/components/project/ProjectPackageDialog'
 
 const Overview = lazy(() => import('@/pages/project/Overview'))
 const Assumptions = lazy(() => import('@/pages/project/Assumptions'))
@@ -35,6 +37,7 @@ const tabClass = ({ isActive }: { isActive: boolean }) =>
 export default function ProjectPage() {
   const t = useT()
   const { projectId, section } = useParams()
+  const [packageOpen, setPackageOpen] = useState(false)
   const data = useLiveQuery(async () => {
     const project = projectId ? await projectsRepo.get(projectId) : undefined
     return { project: project ?? null }
@@ -66,15 +69,22 @@ export default function ProjectPage() {
 
   return (
     <div className="pb-24 md:pb-8">
-      <div className="flex min-w-0 items-center gap-3">
-        <Link
-          to="/"
-          className="flex min-h-11 shrink-0 items-center rounded-btn px-2 text-body-sm text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink"
-          aria-label={t('shell.backToProjects')}
-        >
-          ←
-        </Link>
-        <h1 className="min-w-0 text-subhead text-ink sm:text-headline">{data.project.name}</h1>
+      <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <Link
+            to="/"
+            className="flex min-h-11 shrink-0 items-center rounded-btn px-2 text-body-sm text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink"
+            aria-label={t('shell.backToProjects')}
+          >
+            ←
+          </Link>
+          <h1 className="min-w-0 text-subhead text-ink sm:text-headline">{data.project.name}</h1>
+        </div>
+        {projectId && (
+          <Button variant="secondary" onClick={() => setPackageOpen(true)}>
+            {t('package.dialogTitle')}
+          </Button>
+        )}
       </div>
 
       {/* Desktop rail */}
@@ -115,6 +125,13 @@ export default function ProjectPage() {
           ))}
         </div>
       </nav>
+      {projectId && (
+        <ProjectPackageDialog
+          projectId={projectId}
+          open={packageOpen}
+          onClose={() => setPackageOpen(false)}
+        />
+      )}
     </div>
   )
 }

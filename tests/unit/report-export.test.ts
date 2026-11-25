@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest'
 import {
+  annotateAiSections,
   buildReportHtmlDocument,
   buildReportJson,
   buildReportMarkdown,
@@ -105,6 +106,33 @@ describe('buildReportHtmlDocument', () => {
   it('omits the logo when none is available', () => {
     const html = buildReportHtmlDocument(base, null)
     expect(html).not.toContain('<img')
+  })
+
+  it('keeps the pre-watermark output byte-identical when the toggle is off', () => {
+    const plain = buildReportHtmlDocument(base, null)
+    expect(buildReportHtmlDocument(base, null, { watermark: false })).toBe(plain)
+    expect(plain).not.toContain('ai-section')
+    expect(plain).not.toContain('审阅水印')
+  })
+
+  it('adds the review footer and wraps only AI-generated sections when enabled', () => {
+    const marked = buildReportHtmlDocument(base, null, { watermark: true })
+    expect(marked).toContain('审阅水印')
+    expect(marked).toContain('class="ai-section"')
+    expect(marked).toContain('<h2>背景</h2>')
+    expect(marked).toContain('<h2>结论与下一步</h2>')
+    expect((marked.match(/class="ai-section"/g) ?? []).length).toBe(2)
+  })
+
+  it('leaves the preamble and non-AI sections unwrapped', () => {
+    const html = annotateAiSections(
+      '<p>前言</p><h2>背景</h2><p>AI 段</p><h2>人工结论</h2><p>人工段</p>',
+      ['背景'],
+    )
+    expect(html).toContain('<p>前言</p>')
+    expect(html).toContain('<section class="ai-section"><h2>背景</h2><p>AI 段</p></section>')
+    expect(html).toContain('<h2>人工结论</h2>')
+    expect((html.match(/class="ai-section"/g) ?? []).length).toBe(1)
   })
 })
 
